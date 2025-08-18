@@ -1,0 +1,36 @@
+.dashboard-container {
+  height: 100vh;           /* Full screen height */
+  overflow: hidden;        /* Prevent global scroll */
+}
+
+.dashboard-row {
+  height: 100%;
+}
+
+.sidebar-col {
+  background-color: #f8f9fa; /* Light gray background */
+  height: 100%;
+  overflow-y: auto;          /* Vertical scroll only in sidebar */
+  padding: 1rem;
+}
+
+.main-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.dashboard .card-title , .dashboard .card-text { padding-left:  var(--bs-card-cap-padding-x); 
+padding-right: var(--bs-card-cap-padding-x);}
+
+.icon {
+  color: rgba(255,255,255,0.3);
+  transform: scale(0.8);
+}
+.dashboard .card:hover .icon {
+  transform: scale(1);
+  transition: all 0.6s ease;
+}
+.card .right-cont { position:absolute; right: 0; top: 0; left: auto; bottom: auto; }
+.top-breadcrumb ol { margin-bottom: 0; }
+.dashboard .card-header { background: #d3d3d3; }

@@ -1,0 +1,15 @@
+.row { margin: 0 !important;}
+.p-20 { padding: 20px; }
+.pl-0 {padding-left: 0 !important;}
+.pr-0 {padding-right: 0 !important;}
+.pb-0 {padding-bottom: 0 !important;}
+.pos-rel {position: relative;}
+a { text-decoration: none !important; }
+.bg-white { background-color: #fff;}
+.pl-3 { padding-left: 1rem; }
+.pr-3 { padding-right: 1rem; }
+.position-sticky {
+  position: sticky !important;
+  left: 0;
+  top: 0;
+}
