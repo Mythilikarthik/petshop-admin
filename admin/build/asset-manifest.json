@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/pet-admin/static/css/main.2ea6c3da.css",
+    "main.js": "/pet-admin/static/js/main.516f74db.js",
+    "static/js/453.88b7b595.chunk.js": "/pet-admin/static/js/453.88b7b595.chunk.js",
+    "index.html": "/pet-admin/index.html",
+    "main.2ea6c3da.css.map": "/pet-admin/static/css/main.2ea6c3da.css.map",
+    "main.516f74db.js.map": "/pet-admin/static/js/main.516f74db.js.map",
+    "453.88b7b595.chunk.js.map": "/pet-admin/static/js/453.88b7b595.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2ea6c3da.css",
+    "static/js/main.516f74db.js"
+  ]
+}
