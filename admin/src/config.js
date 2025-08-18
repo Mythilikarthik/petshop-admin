@@ -1,7 +1,2 @@
-// src/config.js
-const API_BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://petshop-admin.onrender.com"
-    : "http://localhost:5000";
-
+const API_BASE_URL = "https://petshop-admin-backend.onrender.com";
 export default API_BASE_URL;
