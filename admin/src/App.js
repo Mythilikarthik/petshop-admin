@@ -22,7 +22,7 @@ import BusinessPromotion from './Pages/BusinessPromotion';
 
 function App() {
   return (
-    <Router basename="/pet-admin">
+    <Router>
       <Routes>
         {/* Login route shown first */}
         <Route path="/login" element={<PublicAuth><Login /></PublicAuth>} />
