@@ -57,7 +57,7 @@ const Dashboard = () => {
           { text: '', bg: 'bg-warning', number: 50, label: 'New Users', icon: <AiOutlineUserAdd size={80} /> },
           { text: 'text-white', bg: 'bg-danger', number: 5, label: 'Fraud Cases', icon: <AiOutlinePieChart size={80} /> },
         ].map((stat, i) => (
-          <Col md={3} key={i}>
+          <Col className='mb-3' lg={3} md={6} sm={6} key={i}>
             <Link to="/">
               <Card className={`${stat.text} ${stat.bg}`}>
                 <Card.Body className='pl-0 pr-0 pb-0'>
@@ -80,7 +80,7 @@ const Dashboard = () => {
 
       {/* === Top Categories (Pie Chart) === */}
       <Row className="mb-4">
-        <Col xs={6}>
+        <Col lg={6} sm={12} className='mb-3'>
           
           <Card className='shadow-sm p-3 '>
             <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'> <MdShowChart /> Top-Performing Categories</h5>
@@ -108,7 +108,7 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col xs={6}>
+        <Col lg={6} sm={12} className='mb-3'>
           
           <Card className='shadow-sm p-3 '>
             <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'><MdEventNote /> Recent User ACtivity</h5>

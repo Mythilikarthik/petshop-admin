@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  MdDashboard, MdFormatListBulleted, MdLogout, MdPeople, MdAttachMoney,  MdCategory, MdLocationCity, 
+  MdDashboard, MdFormatListBulleted, MdLogout, MdPeople, MdAttachMoney,  MdCategory, MdLocationCity, MdPlace, 
   MdPlaylistAddCheck,
-  MdLibraryBooks
+  MdLibraryBooks,
+  MdApps
 } from 'react-icons/md';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import './Sidebar.css';
@@ -18,9 +19,9 @@ const menuItems = [
     children: [
       { name: "Listing", path: "/business-listing", icon: <MdLibraryBooks /> },
       { name: "Add Listing", path: "/add-listing", icon: <MdPlaylistAddCheck /> },
-      { name: "Category Listing", path: "/category-listing", icon: <MdCategory /> },
+      { name: "Category Listing", path: "/category-listing", icon: <MdApps /> },
       { name: "Add Category", path: "/add-category", icon: <MdCategory /> },
-      { name: "City Listing", path: "/city-listing", icon: <MdCategory /> },
+      { name: "City Listing", path: "/city-listing", icon: <MdPlace/> },
       { name: "Add City", path: "/add-city", icon: <MdLocationCity /> }
     ]
   },

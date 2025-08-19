@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Col, Card, Button, Table, Breadcrumb } from 'react-bootstrap';
 import { MdAttachMoney, MdCalendarMonth, MdOutlineAdsClick, MdWorkspacePremium, MdEventNote, MdShowChart, MdOutlineSource } from 'react-icons/md';
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 
 const revenueData = [
   { month: 'Jan', revenue: 1200 },
@@ -93,39 +93,49 @@ export default function RevenueTracking() {
       <Row className="mb-4">
         <Col md={8}>
           <Card className="shadow-sm p-3">
-            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'><MdShowChart />Revenue Over Time</h5>
-            <LineChart width={600} height={300} data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="revenue" stroke="#8884d8" />
-            </LineChart>
+            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'>
+              <MdShowChart />Revenue Over Time
+            </h5>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="revenue" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
           </Card>
         </Col>
+
         <Col md={4}>
           <Card className="shadow-sm p-3">
-            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'><MdOutlineSource /> Revenue by Source</h5>
-            <PieChart width={300} height={300}>
-              <Pie
-                data={revenueBySource}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label
-              >
-                {revenueBySource.map((entry, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend />
-              <Tooltip />
-            </PieChart>
+            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'>
+              <MdOutlineSource /> Revenue by Source
+            </h5>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={revenueBySource}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius="80%"
+                  fill="#8884d8"
+                  dataKey="value"
+                  label
+                >
+                  {revenueBySource.map((entry, index) => (
+                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Legend />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </Card>
         </Col>
       </Row>
+
 
       {/* Revenue Table */}
       <Card className="shadow-sm p-3">

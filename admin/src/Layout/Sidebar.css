@@ -2,9 +2,11 @@
   height: 100vh;
   position: sticky;
   top: 0;
+  left: 0;
   overflow-y: auto;
   background: rgb(52, 58, 64);
   padding: 0 1rem;
+  
 }
 .sidebar-border-bottom {
   border-bottom: 1px solid #4f5962;
@@ -21,4 +23,12 @@
   color: white;
   padding-left: 8px;
   transition: all 0.2s ease-in-out;
+}
+.sidebar.position-fixed {
+  position: fixed !important;
+  width: auto;
+  top: 0;
+  left: -100%;
+  z-index: 100;
+  transition: all 0.7s ease;
 }
