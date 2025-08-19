@@ -10,7 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, error, user } = useSelector((state) => state.auth);
+  const { loading, error } = useSelector((state) => state.auth);
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -24,7 +24,8 @@ const Login = () => {
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center vh-100">
+    <Container className="d-flex flex-direction-column justify-content-center align-items-center vh-100">
+      <h1 className='main-title'>Pet Directory</h1>
       <Card style={{ width: '400px' }} className="p-4 shadow">
         <h3 className="text-center mb-3">Login</h3>
         <Form onSubmit={handleSubmit}>

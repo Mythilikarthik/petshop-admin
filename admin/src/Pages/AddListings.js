@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Form, Button, Container, Row, Col, Image } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Image, Breadcrumb } from 'react-bootstrap';
 
 const AddListing = () => {
   const { state } = useLocation();
@@ -64,8 +64,20 @@ const AddListing = () => {
   return (
     <Container className="mt-4">
       <div className='pl-3 pr-3'>
-        <h2 className="mb-4">Add Listing</h2>
-        <Form onSubmit={handleSubmit}>
+        <Row className='mb-3 justify-content-end align-items-center'>
+          <Col>
+            <h2 className='main-title mb-0'>Add Listing</h2>
+          </Col>
+          <Col xs={'auto'}>
+            <Breadcrumb className='top-breadcrumb'>
+              <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+              <Breadcrumb.Item active>Add Listing</Breadcrumb.Item>
+            </Breadcrumb>
+          </Col>
+        </Row>
+        
+        <div className='form-container'>
+          <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
             <Form.Label>Category</Form.Label>
             <Form.Control
@@ -189,6 +201,7 @@ const AddListing = () => {
             Save
             </Button>
         </Form>
+        </div>
       </div>
     </Container>
   );

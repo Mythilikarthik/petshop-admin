@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { Table, Button, Form, Badge } from 'react-bootstrap';
+import { Table, Button, Form, Badge, Row, Col, Breadcrumb } from 'react-bootstrap';
 import ReactPaginate from 'react-paginate';
 import { useNavigate } from 'react-router-dom';
 
 const UserManagement = () => {
   const initialListings = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', roll: "Admin", status: "Active" },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', roll: "User", status: "Active" },
-    { id: 3, name: 'Michael Scott', email: 'michael@dundermifflin.com', roll:  "User", status: "Active" },
-    { id: 4, name: 'Dwight Schrute', email: 'dwight@dundermifflin.com', roll:  "User", status: "Active" },
-    { id: 5, name: 'Pam Beesly', email: 'pam@dundermifflin.com', roll:  "User", status: "Inactive" },
-    { id: 6, name: 'Jim Halpert', email: 'jim@dundermifflin.com', roll:  "User", status: "Active" },
-    { id: 7, name: 'Ryan Howard', email: 'ryan@dundermifflin.com', roll:  "User", status: "Active" },
-    { id: 8, name: 'Kelly Kapoor', email: 'kelly@dundermifflin.com', roll:  "User", status: "Active" }
+    { id: 1, name: 'John Doe', type: "Premium", email: 'john@example.com', roll: "Admin", status: "Active" },
+    { id: 2, name: 'Jane Smith', type: "Free", email: 'jane@example.com', roll: "User", status: "Active" },
+    { id: 3, name: 'Michael Scott', type: "Premium", email: 'michael@dundermifflin.com', roll:  "User", status: "Active" },
+    { id: 4, name: 'Dwight Schrute', type: "Free", email: 'dwight@dundermifflin.com', roll:  "User", status: "Active" },
+    { id: 5, name: 'Pam Beesly', type: "Premium", email: 'pam@dundermifflin.com', roll:  "User", status: "Inactive" },
+    { id: 6, name: 'Jim Halpert', type: "Premium", email: 'jim@dundermifflin.com', roll:  "User", status: "Active" },
+    { id: 7, name: 'Ryan Howard', type: "Premium", email: 'ryan@dundermifflin.com', roll:  "User", status: "Active" },
+    { id: 8, name: 'Kelly Kapoor', type: "Free", email: 'kelly@dundermifflin.com', roll:  "User", status: "Active" }
   ];
 
   const [listings, setListings] = useState(initialListings);
@@ -52,7 +52,17 @@ const handleDelete = (id) => {
   return (
     <div className="container mt-4">
       <div className='pl-3 pr-3'>
-        <h2 className="mb-4">User Management</h2>
+        <Row className='mb-3 justify-content-end align-items-center'>
+        <Col>
+          <h2 className='main-title mb-0'>User Management</h2>
+        </Col>
+        <Col xs={'auto'}>
+          <Breadcrumb className='top-breadcrumb'>
+            <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+            <Breadcrumb.Item active>User Management</Breadcrumb.Item>
+          </Breadcrumb>
+        </Col>
+      </Row>
 
         {/* Search Input */}
         <Form.Control
@@ -73,6 +83,7 @@ const handleDelete = (id) => {
                 <th>S.No</th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Type</th>
                 <th>Roll</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -84,13 +95,16 @@ const handleDelete = (id) => {
                 <td>{currentPage * itemsPerPage + index + 1}</td>
                 <td>{listing.name}</td>
                 <td>{listing.email}</td>
+                <td>
+                  {listing.type && listing.type === "Premium" ? (
+                    <Badge bg="success">{listing.type}</Badge>
+                  ) : (
+                    <Badge bg="warning">{listing.type}</Badge>
+                  )}
+                  </td>
                 <td>{listing.roll}</td>
                 <td>
-                    {listing.status === "Active" ? (
-                        <Badge bg="success">{listing.status}</Badge>
-                    ) : (
-                        <Badge bg="secondary">{listing.status}</Badge>
-                    )}
+                    {listing.status}
                     
                     </td>
                 <td>

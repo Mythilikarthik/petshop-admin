@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  MdDashboard, MdFormatListBulleted, MdLogout, MdPeople, MdAttachMoney, MdEmail, MdCategory, MdLocationCity, MdCampaign, MdPayment,
-  MdList,
+  MdDashboard, MdFormatListBulleted, MdLogout, MdPeople, MdAttachMoney,  MdCategory, MdLocationCity, 
   MdPlaylistAddCheck,
   MdLibraryBooks
 } from 'react-icons/md';
@@ -17,9 +16,11 @@ const menuItems = [
     path: "/business-listing", 
     icon: <MdFormatListBulleted />,
     children: [
-      { name: "Listings", path: "/business-listing", icon: <MdLibraryBooks /> },
+      { name: "Listing", path: "/business-listing", icon: <MdLibraryBooks /> },
       { name: "Add Listing", path: "/add-listing", icon: <MdPlaylistAddCheck /> },
+      { name: "Category Listing", path: "/category-listing", icon: <MdCategory /> },
       { name: "Add Category", path: "/add-category", icon: <MdCategory /> },
+      { name: "City Listing", path: "/city-listing", icon: <MdCategory /> },
       { name: "Add City", path: "/add-city", icon: <MdLocationCity /> }
     ]
   },
@@ -39,8 +40,8 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="sidebar bg-grey text-white vh-100">
-      <h4 className="text-white mb-4 sidebar-border-bottom p-20">Petshop Directory</h4>
+    <div className="sidebar bg-cblue text-white vh-100">
+      <h4 className="text-white mb-4 sidebar-border-bottom p-20">Pet Directory</h4>
       <ul className="list-unstyled">
         {menuItems.map((item, index) => (
           <li key={index}>

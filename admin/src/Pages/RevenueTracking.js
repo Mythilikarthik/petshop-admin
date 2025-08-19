@@ -1,6 +1,6 @@
 import React from 'react';
-import { Container, Row, Col, Card, Button, Table } from 'react-bootstrap';
-import { MdAttachMoney, MdCalendarMonth, MdOutlineAdsClick, MdWorkspacePremium } from 'react-icons/md';
+import { Container, Row, Col, Card, Button, Table, Breadcrumb } from 'react-bootstrap';
+import { MdAttachMoney, MdCalendarMonth, MdOutlineAdsClick, MdWorkspacePremium, MdEventNote, MdShowChart, MdOutlineSource } from 'react-icons/md';
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const revenueData = [
@@ -20,8 +20,18 @@ const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
 
 export default function RevenueTracking() {
   return (
-    <Container fluid className="p-4">
-      <h3 className="mb-4">Revenue Tracking & Reports</h3>
+    <Container fluid className="">
+      <Row className='mb-3 justify-content-end align-items-center'>
+        <Col>
+          <h2 className='main-title mb-0'>Revenue Tracking & Reports</h2>
+        </Col>
+        <Col xs={'auto'}>
+          <Breadcrumb className='top-breadcrumb'>
+            <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+            <Breadcrumb.Item active>Revenue Tracking & Reports</Breadcrumb.Item>
+          </Breadcrumb>
+        </Col>
+      </Row>
 
       {/* Summary Cards */}
       <Row className="mb-4">
@@ -83,7 +93,7 @@ export default function RevenueTracking() {
       <Row className="mb-4">
         <Col md={8}>
           <Card className="shadow-sm p-3">
-            <h6>Revenue Over Time</h6>
+            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'><MdShowChart />Revenue Over Time</h5>
             <LineChart width={600} height={300} data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
@@ -95,7 +105,7 @@ export default function RevenueTracking() {
         </Col>
         <Col md={4}>
           <Card className="shadow-sm p-3">
-            <h6>Revenue by Source</h6>
+            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'><MdOutlineSource /> Revenue by Source</h5>
             <PieChart width={300} height={300}>
               <Pie
                 data={revenueBySource}
@@ -119,7 +129,7 @@ export default function RevenueTracking() {
 
       {/* Revenue Table */}
       <Card className="shadow-sm p-3">
-        <h6>Detailed Revenue Report</h6>
+        <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'><MdEventNote /> Detailed Revenue Report</h5>
         <Table striped bordered hover className="mt-3">
           <thead>
             <tr>

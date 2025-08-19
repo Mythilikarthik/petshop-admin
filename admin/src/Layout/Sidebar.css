@@ -4,9 +4,10 @@
   top: 0;
   overflow-y: auto;
   background: rgb(52, 58, 64);
+  padding: 0 1rem;
 }
 .sidebar-border-bottom {
-  border: 1px solid #4f5962;
+  border-bottom: 1px solid #4f5962;
 }
 .sidebar a {
   display: block;

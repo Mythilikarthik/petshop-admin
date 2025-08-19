@@ -3,16 +3,12 @@ import { Table, Button, Form, Row, Col, Breadcrumb } from 'react-bootstrap';
 import ReactPaginate from 'react-paginate';
 import { useNavigate } from 'react-router-dom';
 
-const BusinessListings = () => {
+const CategoryListings = () => {
   const initialListings = [
-    { id: 1, name: 'John Doe', email: 'john@example.com' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
-    { id: 3, name: 'Michael Scott', email: 'michael@dundermifflin.com' },
-    { id: 4, name: 'Dwight Schrute', email: 'dwight@dundermifflin.com' },
-    { id: 5, name: 'Pam Beesly', email: 'pam@dundermifflin.com' },
-    { id: 6, name: 'Jim Halpert', email: 'jim@dundermifflin.com' },
-    { id: 7, name: 'Ryan Howard', email: 'ryan@dundermifflin.com' },
-    { id: 8, name: 'Kelly Kapoor', email: 'kelly@dundermifflin.com' }
+    { id: 1, name: 'Pet Shop' },
+    { id: 2, name: 'Pet Food' },
+    { id: 3, name: 'Services' },
+    { id: 4, name: 'Pet Insurance' }
   ];
 
   const [listings, setListings] = useState(initialListings);
@@ -55,12 +51,12 @@ const BusinessListings = () => {
       <div className='pl-3 pr-3'>
         <Row className='mb-3 justify-content-end align-items-center'>
           <Col>
-            <h2 className='main-title mb-0'>Business Listing</h2>
+            <h2 className='main-title mb-0'>Category Listing</h2>
           </Col>
           <Col xs={'auto'}>
             <Breadcrumb className='top-breadcrumb'>
               <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
-              <Breadcrumb.Item active>Business Listing</Breadcrumb.Item>
+              <Breadcrumb.Item active>Category Listing</Breadcrumb.Item>
             </Breadcrumb>
           </Col>
         </Row>
@@ -68,7 +64,7 @@ const BusinessListings = () => {
         {/* Search Input */}
         <Form.Control
           type="text"
-          placeholder="Search by name or email"
+          placeholder="Search by category"
           className="mb-3"
           value={searchTerm}
           onChange={(e) => {
@@ -82,8 +78,7 @@ const BusinessListings = () => {
           <thead className="">
             <tr>
               <th>S.No</th>
-              <th>Name</th>
-              <th>Email</th>
+              <th>Category</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -92,7 +87,6 @@ const BusinessListings = () => {
               <tr key={listing.id}>
                 <td>{currentPage * itemsPerPage + index + 1}</td>
                 <td>{listing.name}</td>
-                <td>{listing.email}</td>
                 <td>
                   
                   <Button
@@ -148,4 +142,4 @@ const BusinessListings = () => {
   );
 };
 
-export default BusinessListings;
+export default CategoryListings;

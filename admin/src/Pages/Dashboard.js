@@ -1,11 +1,11 @@
 // src/Pages/Dashboard.js
 import React from 'react';
-import { Row, Col, Card, Table, Breadcrumb, CardBody, Button } from 'react-bootstrap';
+import { Row, Col, Card, Table, Breadcrumb } from 'react-bootstrap';
 import { 
   AiFillRightCircle, AiOutlineShopping, AiFillSignal, AiOutlineUserAdd, AiOutlinePieChart 
 } from 'react-icons/ai';
 import { Link } from 'react-router-dom';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis,  Legend } from 'recharts';
 import './Dashboard.css';
 import { MdEventNote, MdSecurity, MdShowChart } from 'react-icons/md';
 
@@ -39,7 +39,7 @@ const Dashboard = () => {
       {/* === Header === */}
       <Row className='mb-3 justify-content-end align-items-center'>
         <Col>
-          <h1 className='mb-0'>Dashboard</h1>
+          <h2 className='main-title mb-0'>Dashboard</h2>
         </Col>
         <Col xs={'auto'}>
           <Breadcrumb className='top-breadcrumb'>
@@ -83,7 +83,7 @@ const Dashboard = () => {
         <Col xs={6}>
           
           <Card className='shadow-sm p-3 '>
-            <h5 className='d-flex gap-1 align-items-center mb-3'> <MdShowChart /> Top-Performing Categories</h5>
+            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'> <MdShowChart /> Top-Performing Categories</h5>
             <Card.Body style={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -111,7 +111,7 @@ const Dashboard = () => {
         <Col xs={6}>
           
           <Card className='shadow-sm p-3 '>
-            <h5 className='d-flex gap-1 align-items-center mb-3'><MdEventNote /> Recent User ACtivity</h5>
+            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'><MdEventNote /> Recent User ACtivity</h5>
             <Card.Body style={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={activityData}>                  
@@ -155,7 +155,7 @@ const Dashboard = () => {
         </Col>
       </Row> */}
       <Card className="shadow-sm p-3">
-        <h5 className='d-flex gap-1 align-items-center mb-3'>
+        <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'>
           <MdSecurity/> Fraud Alerts
         </h5>
         <Table striped bordered hover className="mt-3">

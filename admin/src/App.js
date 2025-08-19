@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './Pages/Dashboard';
 import BusinessListings from './Pages/BusinessListings';
+import CategoryListings from './Pages/CategoryListings';
 import ViewListings from './Pages/ViewListings';
 import EditListings from './Pages/EditListings';
 import AddListings from './Pages/AddListings';
@@ -19,6 +20,7 @@ import PublicAuth from './PublicAuth';
 import RevenueTracking from './Pages/RevenueTracking';
 import PaymentPage from './Pages/Payment';
 import BusinessPromotion from './Pages/BusinessPromotion';
+import CityListings from './Pages/CityListings';
 
 function App() {
   return (
@@ -33,7 +35,9 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="business-listing" element={<BusinessListings />} />
           <Route path="add-listing" element={<AddListings />} />
+          <Route path="category-listing" element={<CategoryListings />} />
           <Route path="add-category" element={<AddCategory />} />
+          <Route path="city-listing" element={<CityListings />} />
           <Route path="add-city" element={<AddCity />} />
           <Route path="view-listing" element={<ViewListings />} />
           <Route path="edit-listing" element={<EditListings />} />
