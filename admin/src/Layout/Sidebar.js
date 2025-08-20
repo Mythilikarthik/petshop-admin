@@ -5,7 +5,9 @@ import {
   MdDashboard, MdFormatListBulleted, MdLogout, MdPeople, MdAttachMoney,  MdCategory, MdLocationCity, MdPlace, 
   MdPlaylistAddCheck,
   MdLibraryBooks,
-  MdApps
+  MdApps,
+  MdCampaign,
+  MdOutlinePages
 } from 'react-icons/md';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import './Sidebar.css';
@@ -26,6 +28,8 @@ const menuItems = [
     ]
   },
   { name: "User Management", path: "/user-management", icon: <MdPeople /> },
+  { name: "Ad Management", path: "/ad-management", icon: <MdCampaign /> },
+  { name: "Page Management", path: "/page-management", icon: <MdOutlinePages /> },
   { name: "Revenue Tracking", path: "/revenue-tracking", icon: <MdAttachMoney /> },
   // { name: "Email", path: "/email", icon: <MdEmail /> },
   // { name: "Payment", path: "/payments", icon: <MdPayment /> },

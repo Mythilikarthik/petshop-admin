@@ -9,6 +9,7 @@ import AddListings from './Pages/AddListings';
 import AddCategory from './Pages/AddCategory';
 import AddCity from './Pages/AddCity';
 import UserManagement from './Pages/UserManagement';
+import PageManagement from './Pages/PageManagemnent';
 import Email from './Pages/Email';
 import Login from './Pages/Login';
 import Logout from './Pages/Logout';
@@ -21,6 +22,7 @@ import RevenueTracking from './Pages/RevenueTracking';
 import PaymentPage from './Pages/Payment';
 import BusinessPromotion from './Pages/BusinessPromotion';
 import CityListings from './Pages/CityListings';
+import AdManagemnent from './Pages/AdManagement';
 
 function App() {
   return (
@@ -42,6 +44,8 @@ function App() {
           <Route path="view-listing" element={<ViewListings />} />
           <Route path="edit-listing" element={<EditListings />} />
           <Route path="user-management" element={<UserManagement />} />
+          <Route path="ad-management" element={<AdManagemnent />} />
+          <Route path="page-management" element={<PageManagement />} />
           <Route path="email" element={<Email />} />
           <Route path="payments" element={<PaymentPage />} />
           <Route path="promotion" element={<BusinessPromotion />} />

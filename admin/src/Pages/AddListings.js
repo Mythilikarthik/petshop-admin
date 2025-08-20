@@ -60,7 +60,8 @@ const AddListing = () => {
     alert('Changes saved successfully!');
     navigate('/business-listing');
   };
-
+  const categoryList = ["Pet Shop", "Pet Food", "Services", "Pet Insurance"];
+  const cityList = ["Erode", "Chennai", "Coimbatore", "Salem"];
   return (
     <Container className="mt-4">
       <div className='pl-3 pr-3'>
@@ -77,16 +78,23 @@ const AddListing = () => {
         </Row>
         
         <div className='form-container'>
-          <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
+          <Form onSubmit={handleSubmit}>            
+            <Form.Group className="mb-3">
             <Form.Label>Category</Form.Label>
-            <Form.Control
-                type="text"
+            <Form.Select
                 name="category"
                 value={formData.category}
+                placeholder='Select Category'
                 onChange={handleChange}
                 required
-            />
+            >
+              <option value="">
+                -- Select Category --
+              </option>
+              {categoryList.map((element, index) => (
+                <option key={index} value={element}>{element}</option>
+              ))}
+            </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
             <Form.Label>Shop Name</Form.Label>
@@ -122,12 +130,15 @@ const AddListing = () => {
 
             <Form.Group className="mb-3">
             <Form.Label>City</Form.Label>
-            <Form.Control
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-            />
+            <Form.Select name="city" value={formData.city} onChange={handleChange} required>
+              <option value="">--Select City--</option>
+              {cityList.map((element, index)=> (
+                <option key={index} value={element}>
+                  {element}
+                </option>
+              ))}
+            </Form.Select>
+            
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -196,6 +207,18 @@ const AddListing = () => {
                 ))}
             </Row>
             )}
+            <Form.Group className='mb-4'>
+                            <Form.Label>Meta Name</Form.Label>
+                            <Form.Control type='text' name='metaName' value="" required onChange={handleChange} />
+                        </Form.Group>
+                        <Form.Group className='mb-4'>
+                            <Form.Label>Meta Keyword</Form.Label>
+                            <Form.Control type='text' name='metaWord' value="" required onChange={handleChange} />
+                        </Form.Group>
+                        <Form.Group className='mb-4'>
+                            <Form.Label>Meta Description</Form.Label>
+                            <Form.Control type='text' name='metaDescription' value="" required onChange={handleChange} />
+                        </Form.Group>
 
             <Button variant="primary" type="submit">
             Save
