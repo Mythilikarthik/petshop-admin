@@ -60,7 +60,7 @@ const PageManagement = () => {
           <Col xs={'auto'}>
             <Breadcrumb className='top-breadcrumb'>
               <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
-              <Breadcrumb.Item active>Page Management</Breadcrumb.Item>
+              <Breadcrumb.Item active>Page Managemnent</Breadcrumb.Item>
             </Breadcrumb>
           </Col>
         </Row>

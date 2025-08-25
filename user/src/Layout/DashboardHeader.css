@@ -1,0 +1,7 @@
+.dashboard-header {
+  background-color: #fff;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.dashboard-header svg { cursor: pointer; color: #1142A2; }

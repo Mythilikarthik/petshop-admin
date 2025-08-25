@@ -2,38 +2,29 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-   MdLogout, MdPeople, MdAttachMoney,  MdLocationCity, MdPlace, 
-  
-  MdCampaign,
-  MdOutlinePages,
+   MdLogout, MdOutlineSend , 
+  MdMessage ,
+  MdOutlineContactPhone ,
+  MdOutlineMenuBook ,
   MdPets
 } from 'react-icons/md';
-import { GiJumpingDog , GiDogHouse, GiNestBirds , GiRabbit, GiDogBowl } from "react-icons/gi";
+import { GiNestBirds  } from "react-icons/gi";
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import './Sidebar.css';
 
 const menuItems = [
   { name: "Dashboard", path: "/dashboard", icon: <MdPets /> },
+  { name: "Edit Listing", path: "/edit-listing", icon: <GiNestBirds /> },
   { 
-    name: "Business Listing", 
+    name: "Message", 
     path: "/business-listing", 
-    icon: <GiDogHouse />,
+    icon: <MdMessage  />,
     children: [
-      { name: "Listing", path: "/business-listing", icon: <GiNestBirds  /> },
-      { name: "Add Listing", path: "/add-listing", icon: <GiRabbit /> },
-      { name: "Category Listing", path: "/category-listing", icon: <GiDogBowl /> },
-      { name: "Add Category", path: "/add-category", icon: <GiJumpingDog  /> },
-      { name: "City Listing", path: "/city-listing", icon: <MdPlace/> },
-      { name: "Add City", path: "/add-city", icon: <MdLocationCity /> }
+      { name: "Message List", path: "/view-message", icon: <MdOutlineMenuBook   /> },
+      { name: "Send Message", path: "/send-message", icon: <MdOutlineSend  /> },
     ]
   },
-  { name: "User Management", path: "/user-management", icon: <MdPeople /> },
-  { name: "Page Management", path: "/page-management", icon: <MdOutlinePages /> },
-  { name: "Ad Management", path: "/ad-management", icon: <MdCampaign /> },
-  { name: "Revenue Tracking", path: "/revenue-tracking", icon: <MdAttachMoney /> },
-  // { name: "Email", path: "/email", icon: <MdEmail /> },
-  // { name: "Payment", path: "/payments", icon: <MdPayment /> },
-  // { name: "Business Promotion", path: "/promotion", icon: <MdCampaign /> },
+  { name: "Contact Admin", path: "/contact-admin", icon: <MdOutlineContactPhone  /> },
   { name: "Logout", path: "/logout", icon: <MdLogout /> },
 ];
 

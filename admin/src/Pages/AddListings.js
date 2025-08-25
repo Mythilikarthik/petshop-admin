@@ -208,17 +208,23 @@ const AddListing = () => {
             </Row>
             )}
             <Form.Group className='mb-4'>
-                            <Form.Label>Meta Name</Form.Label>
-                            <Form.Control type='text' name='metaName' value="" required onChange={handleChange} />
-                        </Form.Group>
-                        <Form.Group className='mb-4'>
-                            <Form.Label>Meta Keyword</Form.Label>
-                            <Form.Control type='text' name='metaWord' value="" required onChange={handleChange} />
-                        </Form.Group>
-                        <Form.Group className='mb-4'>
-                            <Form.Label>Meta Description</Form.Label>
-                            <Form.Control type='text' name='metaDescription' value="" required onChange={handleChange} />
-                        </Form.Group>
+                <Form.Label>Page Title</Form.Label>
+                <Form.Control type='text' name='metaName' value="" required onChange={handleChange} />
+            </Form.Group>
+            <Form.Group className='mb-4'>
+                <Form.Label>Meta Keyword</Form.Label>
+                <Form.Control type='text' name='metaWord' value="" required onChange={handleChange} />
+            </Form.Group>
+            <Form.Group className='mb-4'>
+                <Form.Label>Meta Description</Form.Label>
+                <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                />
+            </Form.Group>
 
             <Button variant="primary" type="submit">
             Save
