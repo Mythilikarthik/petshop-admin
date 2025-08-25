@@ -11,10 +11,25 @@ import Logout from './Pages/Logout';
 import Theme from './Theme'; 
 import './App.css';
 
+
 import RequireAuth from './RequireAuth';
 import PublicAuth from './PublicAuth';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import Loader from './Layout/Loader';
 
 function App() {
+  const [loading, setLoading] = useState(true);
+    useEffect(()=> {
+      const timer = setTimeout(() => {
+        console.log("loading")
+        setLoading(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }, []);
+    if(loading) {
+      return <Loader />;
+    }
   return (
     <Router>
       <Routes>

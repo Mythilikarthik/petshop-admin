@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './Pages/Dashboard';
 import BusinessListings from './Pages/BusinessListings';
@@ -23,8 +23,22 @@ import PaymentPage from './Pages/Payment';
 import BusinessPromotion from './Pages/BusinessPromotion';
 import CityListings from './Pages/CityListings';
 import AdManagemnent from './Pages/AdManagement';
+import Loader from './Layout/Loader';
+
+
 
 function App() {
+  const [loading, setLoading] = useState(true);
+  useEffect(()=> {
+    const timer = setTimeout(() => {
+      console.log("loading")
+      setLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+  if(loading) {
+    return <Loader />;
+  }
   return (
     <Router>
       <Routes>
