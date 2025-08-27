@@ -11,6 +11,7 @@ const EditListing = () => {
   const [formData, setFormData] = useState({
     shopName: listing?.name || '',
     email: listing?.email || '',
+    phone: listing?.phone || '',
     address: listing?.address || '',
     city: listing?.city || '',
     country: listing?.country || '',
@@ -86,6 +87,16 @@ const EditListing = () => {
               type="email"
               name="email"
               value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Phone</Form.Label>
+            <Form.Control
+              type="number"
+              name="phone"
+              value={formData.phone}
               onChange={handleChange}
               required
             />

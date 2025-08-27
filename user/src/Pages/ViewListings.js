@@ -34,6 +34,9 @@ const ViewListing = () => {
         <Col md={6}><strong>Message:</strong></Col>
         <Col md={6}>{listing.message}</Col>
       </Row>
+      <Button variant="primary" className='mr-3'>
+        Reply
+      </Button>
 
       <Button variant="secondary" onClick={() => navigate(-1)}>
         Go Back

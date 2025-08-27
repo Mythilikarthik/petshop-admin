@@ -43,3 +43,19 @@ h1, h2, h3, h4, h5, h6 {
   .form-container form { width: 800px; 
   background: #fff;
 padding: 30px;}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* For Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* General reset (some browsers support this) */
+input[type="number"] {
+  appearance: textfield;
+}
+.mr-3 { margin-right: 1rem; }

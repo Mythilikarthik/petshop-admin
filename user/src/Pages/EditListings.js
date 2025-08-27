@@ -13,6 +13,7 @@ const EditListing = () => {
       category: listing?.category || 'Pet Shop',
       shopName: listing?.name || 'Erode Pet Shop',
       email: listing?.email || 'erodepetshop@gmail.com',
+      phone: listing?.phone || '9865320147',
       address: listing?.address || '45, rose garden, erode.',
       city: listing?.city || 'Erode',
       country: listing?.country || 'India',
@@ -118,6 +119,16 @@ const EditListing = () => {
                   type="email"
                   name="email"
                   value={formData.email}
+                  onChange={handleChange}
+                  required
+              />
+              </Form.Group>
+              <Form.Group className="mb-3">
+              <Form.Label>Phone</Form.Label>
+              <Form.Control
+                  type="number"
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleChange}
                   required
               />
