@@ -5,6 +5,7 @@ import ViewMessage from './Pages/ViewMessage';
 import ViewListings from './Pages/ViewListings';
 import EditListings from './Pages/EditListings';
 import SendMessage from './Pages/SendMessage';
+import GoPremium from './Pages/GoPremium';
 import ContactAdmin from './Pages/ContactAdmin';
 import Login from './Pages/Login';
 import Logout from './Pages/Logout';
@@ -40,6 +41,7 @@ function App() {
         <Route path="/" element={<RequireAuth><Theme /></RequireAuth>}>
           <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="go-premium" element={<GoPremium />} />
           <Route path="view-message" element={<ViewMessage />} />
           <Route path="send-message" element={<SendMessage />} />
           <Route path="contact-admin" element={<ContactAdmin />} />

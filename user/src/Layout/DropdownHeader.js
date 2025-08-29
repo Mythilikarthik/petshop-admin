@@ -2,6 +2,7 @@ import React from 'react';
 import { OverlayTrigger, Tooltip , Col } from 'react-bootstrap';
 import './DashboardHeader.css';
 import { AiOutlineUser,  AiOutlineExpand, AiOutlineBell, AiOutlineMenu } from "react-icons/ai";
+import { Link } from 'react-router-dom';
 
 
 const handleExpand = async () => {
@@ -28,6 +29,11 @@ const DashboardHeader = ({ onToggleMenu }) => {
         </OverlayTrigger>
       </Col>
       <Col className='d-flex justify-content-end align-items-center'>
+        <OverlayTrigger placement='bottom' overlay={<Tooltip id="go-premium">Go Premium</Tooltip>}>
+        <div className="me-3 d-flex justify-content-center align-items-center text-black">
+          <Link className='btn btn-primary' to="/go-premium">Go Premium</Link>
+        </div>
+        </OverlayTrigger>
         <OverlayTrigger placement='bottom' overlay={<Tooltip id="Notification">Notification</Tooltip>}>
         <div className="me-3 d-flex justify-content-center align-items-center text-black" onClick={handleExpand}>
           <AiOutlineBell size={24} />

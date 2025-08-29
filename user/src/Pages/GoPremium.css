@@ -1,0 +1,9 @@
+.list-unstyled.my-4.text-start {
+  display: inline-block; 
+}
+
+.list-unstyled.my-4.text-start li {
+  display: flex; 
+  align-items: center;
+  gap: 6px;             
+}
