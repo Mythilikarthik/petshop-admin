@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Image, Breadcrumb } from 'react-bootstrap';
 import pet from "../images/pet.jpg";
+import { Editor } from "@tinymce/tinymce-react";
+import Select from "react-select"
+import ParaEditor from '../Layout/ParaEditor';
 
 const EditListing = () => {
   const { state } = useLocation();
@@ -86,21 +89,20 @@ const EditListing = () => {
         <div className='form-container'>
           <Form onSubmit={handleSubmit}>            
             <Form.Group className="mb-3">
+              
               <Form.Label>Category</Form.Label>
-              <Form.Select
-                  name="category"
-                  value={formData.category}
-                  placeholder='Select Category'
-                  onChange={handleChange}
-                  required
-              >
-                <option value="">
-                  -- Select Category --
-                </option>
-                {categoryList.map((element, index) => (
-                  <option key={index} value={FormData.category}>{element}</option>
-                ))}
-              </Form.Select>
+              <Select
+              isMulti
+              placeholder= "--Select Category--"
+              options={categoryList.map((c) => ({ value: c, label: c }))}
+              value={(formData.categories || []).map((c) => ({ value: c, label: c }))}
+              onChange={(selected) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  categories: selected.map((s) => s.value),
+                }))
+              }
+              />
               </Form.Group>
               <Form.Group className="mb-3">
               <Form.Label>Shop Name</Form.Label>
@@ -199,16 +201,7 @@ const EditListing = () => {
               </div>
               )}
 
-              <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                  as="textarea"
-                  rows={3}
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-              />
-              </Form.Group>
+              
 
               <Form.Group className="mb-4">
               <Form.Label>Upload Photos</Form.Label>
@@ -248,6 +241,19 @@ const EditListing = () => {
                       value={formData.pageDescription}
                       onChange={handleChange}
                   />
+              </Form.Group>
+              <Form.Group className="mb-3">
+              <Form.Label>Page Description</Form.Label>
+              <ParaEditor
+                value={formData.description}
+                onChange={(html, wordCount) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    para: html,
+                    paraWordCount: wordCount
+                  }))
+                }
+              />
               </Form.Group>
 
               <Button variant="primary" type="submit">

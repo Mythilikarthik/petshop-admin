@@ -14,6 +14,10 @@ const GoPremium = () => {
       price: "99.99",
       description: "Save 20% when billed yearly",
     },
+    lifelong: {
+      price: "999.99",
+      description: "Save 40% when billed Lifelong",
+    },
   };
 
   const handlePayment = (method) => {
@@ -39,14 +43,21 @@ const GoPremium = () => {
             className={`btn ${billingCycle === "monthly" ? "btn-primary" : "btn-outline-primary"}`}
             onClick={() => setBillingCycle("monthly")}
           >
-            Monthly
+            Plan 1
           </button>
           <button
             type="button"
             className={`btn ${billingCycle === "yearly" ? "btn-primary" : "btn-outline-primary"}`}
             onClick={() => setBillingCycle("yearly")}
           >
-            Yearly
+            Plan 2
+          </button>
+          <button
+            type="button"
+            className={`btn ${billingCycle === "lifelong" ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setBillingCycle("lifelong")}
+          >
+            Plan 3
           </button>
         </div>
       </div>
@@ -67,7 +78,7 @@ const GoPremium = () => {
               </ul>
 
               <div className="d-flex justify-content-center gap-2">
-                <button
+                {/* <button
                   className="btn btn-primary"
                   onClick={() => handlePayment("Razorpay")}
                 >
@@ -78,6 +89,12 @@ const GoPremium = () => {
                   onClick={() => handlePayment("Stripe")}
                 >
                   Pay with Stripe
+                </button> */}
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handlePayment("gpay")}
+                >
+                  Pay with Gpay
                 </button>
               </div>
             </div>

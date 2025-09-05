@@ -1,0 +1,6 @@
+.dropdown-toggle:after {
+    right: 10px; top: 17px; position: absolute;
+}
+.form-check-label {
+  width: 100%;
+}

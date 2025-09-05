@@ -29,7 +29,13 @@ const menuItems = [
   },
   { name: "User Management", path: "/user-management", icon: <MdPeople /> },
   { name: "Page Management", path: "/page-management", icon: <MdOutlinePages /> },
-  { name: "Ad Management", path: "/ad-management", icon: <MdCampaign /> },
+  { name: "Ad Management", path: "/ad-management", icon: <MdCampaign />, 
+    children : [
+      { name: "Custom Ad", path: "/custom-ad", icon: <GiDogBowl /> },
+      { name: "Ad Listing", path: "/ad-listing", icon: <GiNestBirds  /> },
+      { name: "Add Ad", path: "/ad-management", icon: <GiRabbit /> },
+    ]
+   },
   { name: "Revenue Tracking", path: "/revenue-tracking", icon: <MdAttachMoney /> },
   // { name: "Email", path: "/email", icon: <MdEmail /> },
   // { name: "Payment", path: "/payments", icon: <MdPayment /> },

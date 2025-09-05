@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Image, Breadcrumb } from 'react-bootstrap';
+import Select from "react-select";
 
 const AddListing = () => {
   const { state } = useLocation();
@@ -79,10 +80,30 @@ const AddListing = () => {
         </Row>
         
         <div className='form-container'>
-          <Form onSubmit={handleSubmit}>            
+          <Form onSubmit={handleSubmit}>
+               
             <Form.Group className="mb-3">
             <Form.Label>Category</Form.Label>
-            <Form.Select
+            <Select
+              isMulti
+              options={categoryList.map((c) => ({ value: c, label: c }))}
+              value={(formData.categories || []).map((c) => ({ value: c, label: c }))}
+              onChange={(selected) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  categories: selected.map((s) => s.value),
+                }))
+              }
+            />
+              {/* <MultiSelectDropdown
+                options={categoryList}
+                selected={formData.categories || []}
+                onChange={(values) =>
+                  setFormData((prev) => ({ ...prev, categories: values }))
+                }
+                label="Select Categories"
+              />  */}
+            {/* <Form.Select
                 name="category"
                 value={formData.category}
                 placeholder='Select Category'
@@ -95,7 +116,7 @@ const AddListing = () => {
               {categoryList.map((element, index) => (
                 <option key={index} value={element}>{element}</option>
               ))}
-            </Form.Select>
+            </Form.Select> */}
             </Form.Group>
             <Form.Group className="mb-3">
             <Form.Label>Shop Name</Form.Label>

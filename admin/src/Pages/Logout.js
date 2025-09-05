@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {logout} from "../features/authSlice"
@@ -16,7 +16,7 @@ const Logout = () => {
 
     // Redirect to login
     navigate('/');
-  }, [navigate]);
+  }, [dispatch,navigate]);
 
   return null; // or a loading message if needed
 };

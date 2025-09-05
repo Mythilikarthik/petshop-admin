@@ -6,7 +6,9 @@ import CategoryListings from './Pages/CategoryListings';
 import ViewListings from './Pages/ViewListings';
 import EditListings from './Pages/EditListings';
 import AddListings from './Pages/AddListings';
+import AdListings from './Pages/AdListings';
 import AddCategory from './Pages/AddCategory';
+import CustomAd from './Pages/CustomAd';
 import AddCity from './Pages/AddCity';
 import UserManagement from './Pages/UserManagement';
 import PageManagement from './Pages/PageManagemnent';
@@ -59,6 +61,9 @@ function App() {
           <Route path="edit-listing" element={<EditListings />} />
           <Route path="user-management" element={<UserManagement />} />
           <Route path="ad-management" element={<AdManagemnent />} />
+          <Route path="custom-ad" element={<CustomAd />} />
+          
+          <Route path="ad-listing" element={<AdListings />} />
           <Route path="page-management" element={<PageManagement />} />
           <Route path="email" element={<Email />} />
           <Route path="payments" element={<PaymentPage />} />
