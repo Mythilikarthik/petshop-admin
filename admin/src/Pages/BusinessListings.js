@@ -88,7 +88,7 @@ const BusinessListings = () => {
             <Form.Group className="mb-3">
               <Form.Control
                 type="text"
-                placeholder="Search by name or email"
+                placeholder="Search by name"
                 className="mb-3"
                 value={searchTerm}
                 onChange={(e) => {
