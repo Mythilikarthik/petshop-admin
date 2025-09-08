@@ -27,7 +27,7 @@ const menuItems = [
       { name: "Add City", path: "/add-city", icon: <MdLocationCity /> }
     ]
   },
-  { name: "User Management", path: "/user-management", icon: <MdPeople /> },
+  // { name: "User Management", path: "/user-management", icon: <MdPeople /> },
   { name: "Page Management", path: "/page-management", icon: <MdOutlinePages /> },
   { name: "Ad Management", path: "/ad-management", icon: <MdCampaign />, 
     children : [
