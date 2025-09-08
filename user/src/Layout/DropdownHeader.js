@@ -69,7 +69,6 @@ const DashboardHeader = ({ onToggleMenu }) => {
           </div>
         </OverlayTrigger>
 
-        {/* ✅ User Profile Dropdown */}
         <Dropdown align="end">
           <Dropdown.Toggle
             as="div"

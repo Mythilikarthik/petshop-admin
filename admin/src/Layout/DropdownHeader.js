@@ -1,7 +1,9 @@
 import React from 'react';
-import { OverlayTrigger, Tooltip , Col } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip , Col, Dropdown } from 'react-bootstrap';
 import './DashboardHeader.css';
-import { AiOutlineUser,  AiOutlineExpand, AiOutlineBell, AiOutlineMenu } from "react-icons/ai";
+import { AiOutlineUser,  AiOutlineExpand, AiOutlineBell, AiOutlineMenu, AiOutlineLogout } from "react-icons/ai";
+import { Link } from 'react-router-dom';
+import { MdOutlineEdit, MdLockReset } from "react-icons/md"; // extra icons
 
 
 const handleExpand = async () => {
@@ -38,14 +40,31 @@ const DashboardHeader = ({ onToggleMenu }) => {
           <AiOutlineExpand size={24} />
         </div>
         </OverlayTrigger>
-        <OverlayTrigger
-          placement="bottom" // position of the tooltip
-          overlay={<Tooltip id="user">User</Tooltip>}
-        >
-        <div className="me-3 d-flex justify-content-center align-items-center text-black" >
-          <AiOutlineUser size={24} />
-        </div>
-        </OverlayTrigger>
+        <Dropdown align="end">
+          <Dropdown.Toggle
+            as="div"
+            className="me-3 d-flex justify-content-center align-items-center text-black"
+            style={{ cursor: "pointer" }}
+          >
+            <AiOutlineUser size={24} />
+            {/* <span className="ms-2">Hi, User</span> */}
+          </Dropdown.Toggle>
+
+          <Dropdown.Menu>
+            <Dropdown.Item as={Link} to="/edit-profile">
+              <MdOutlineEdit className="me-2" size={18} /> Edit Profile
+            </Dropdown.Item>
+            <Dropdown.Item as={Link} to="/change-password">
+              <MdLockReset className="me-2" size={18} /> Change Password
+            </Dropdown.Item>
+            <Dropdown.Divider />
+            <Dropdown.Item onClick={() => console.log("Logout clicked")}>
+              <Link to="/logout">
+                <AiOutlineLogout className="me-2" size={18} /> Logout
+              </Link>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       </Col>
       
     </div>
