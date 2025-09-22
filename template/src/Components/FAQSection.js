@@ -5,23 +5,23 @@ import { FiChevronDown } from 'react-icons/fi';
 const faqs = [
   {
     question: "How do I list my pet business on PetPals India?",
-    answer: "Sign up for an account, then use the 'Add Listing' option in your dashboard to submit your business details."
+    answer: "To list your pet business, create an account and click on 'Add Listing' from your dashboard. Fill in your business details, upload photos, select relevant categories, and submit for review. Our team will verify your information and publish your listing within 24-48 hours."
   },
   {
     question: "Is PetPals India available in all Indian cities?",
-    answer: "PetPals India is expanding rapidly and covers most major cities. Check our directory for the latest coverage."
+    answer: "Yes, PetPals India is available across all major cities in India. We have extensive listings in metropolitan areas like Mumbai, Delhi, Bangalore, Chennai, and Hyderabad, and we're continuously expanding our coverage to smaller cities and towns throughout the country."
   },
   {
     question: "How can I find emergency veterinary services?",
-    answer: "Use the search and filter options in our directory to find 24/7 emergency veterinary services near you."
+    answer: "For emergency veterinary services, use our search filter to select '24/7 Emergency' or 'Emergency Services' under the category options. You can also click on the 'Emergency' quick link on our homepage to see all available emergency pet care providers in your area."
   },
   {
     question: "Are the reviews on PetPals India verified?",
-    answer: "We moderate reviews for authenticity, but always recommend contacting businesses directly for confirmation."
+    answer: "Yes, all reviews on PetPals India are from verified users who have registered accounts. We have a moderation system in place to ensure reviews are authentic and follow our community guidelines. Business owners can also respond to reviews to address any concerns."
   },
   {
     question: "How do I report an issue with a listing?",
-    answer: "Click the 'Report' button on the listing page or contact our support team for assistance."
+    answer: "If you encounter any issues with a listing, click on the 'Report' button on the listing page. Fill out the form with details about the issue, and our moderation team will review it promptly. You can also contact our support team directly through the 'Contact Us' page for urgent matters."
   }
 ];
 
