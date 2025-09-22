@@ -10,7 +10,7 @@ const JoinCommunityNewsletter = () => (
                 <Col xs={6} className="text-center mb-4 d-flex">
                     <div className="community-card">
                         <h3>Join Our Pet Community</h3>
-                        <p>
+                        <p style={{textAlign: "left"}}>
                         Create an account to save your favorite listings, write reviews, and connect with other pet lovers.
                         </p>
                         <div className="community-actions">

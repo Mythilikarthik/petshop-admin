@@ -37,7 +37,7 @@ const Banner = () => {
               <Row className='d-flex align-items-center pt-5 pb-5'>
                 <Col>
                   <h1>Find Perfect <span className='highlight'>Pet Services</span> Near You</h1>
-                  <p className='text-left'>Discover the best pet services, health tips, and pet-friendly places across India with our comprehensive directory.</p>
+                  <p>Discover the best pet services, health tips, and pet-friendly places across India with our comprehensive directory.</p>
                   <div className='d-flex gap-3'>
                       <button className='orange-btn py-2 px-4 border-2 border-orange-500 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition duration-300'>Get Started</button>
                       <button className='border-btn py-2 px-4 border-2 border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition duration-300'>Learn More</button>
