@@ -1,0 +1,137 @@
+.join-newsletter-section {
+  background: #fff;
+  padding: 48px 0 24px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.join-newsletter-container {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.community-card {
+  background: linear-gradient(90deg, #ff9800 60%, #ffd54f 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 32px 28px 28px 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.community-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.community-card p {
+  font-size: 1rem;
+  margin-bottom: 22px;
+  color: #fff;
+  opacity: 0.95;
+}
+
+.community-actions {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.community-actions .login-btn,
+.community-actions .register-btn {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.community-actions .login-btn {
+  background: #fff;
+  color: #ff9800;
+}
+
+.community-actions .login-btn:hover {
+  background: #ffe0b2;
+}
+
+.community-actions .register-btn {
+  background: #222;
+  color: #fff;
+}
+
+.register-btn:hover {
+  background: #ff9800;
+  color: #fff;
+}
+
+.newsletter-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px 28px 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.newsletter-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.newsletter-card p {
+  font-size: 1rem;
+  margin-bottom: 22px;
+  color: #555;
+}
+
+.newsletter-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.newsletter-form input {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #eee;
+  font-size: 1rem;
+  margin-bottom: 0;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.newsletter-form input:focus {
+  border: 1.5px solid #ff9800;
+}
+
+.subscribe-btn {
+  background: #ff9800;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 0;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.subscribe-btn:hover {
+  background: #222;
+}

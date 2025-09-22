@@ -1,0 +1,84 @@
+.featured-section {
+    padding: 40px 0;
+}
+.highlight {
+    color: #ff8800;
+    font-weight: bold;
+}
+.subtitle {
+    color: #888;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+.service-card {
+    border-radius: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    border: none;
+    overflow: hidden;
+    min-height: 420px;
+    position: relative;
+}
+.card-top-rated {
+    background: #fff6ea;
+}
+.card-popular {
+    background: #eef4ff;
+}
+.card-new {
+    background: #eafff2;
+}
+.service-icon {
+    font-size: 48px;
+    margin: 20px 0 40px 0;
+    text-align: center;
+    display: block;
+}
+.service-location {
+    color: #888;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+}
+.service-tags {
+    margin-bottom: 15px;
+}
+.service-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin-right: 6px;
+    margin-bottom: 4px;
+    background: #f3f3f3;
+    color: #555;
+}
+.tag-orange { background: #ffe5d1; color: #ff8800; }
+.tag-green { background: #d6ffe5; color: #1ecb6b; }
+.tag-blue { background: #e0eaff; color: #3b82f6; }
+.tag-pink { background: #ffe0f0; color: #e85aad; }
+.tag-yellow { background: #fff9d6; color: #eab308; }
+.tag-purple { background: #f0eaff; color: #a855f7; }
+.pos-rel { position: relative; }
+.service-rating {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-weight: bold;
+    color: #ff8800;
+    font-size: 1.1rem;
+}
+.details-btn {
+    width: 100%;
+    margin-top: 15px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1.05rem;
+}
+.view-all-btn {
+    border-radius: 24px;
+    padding: 10px 32px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    background: #ff8800;
+    border: none;
+    color: #fff;
+}

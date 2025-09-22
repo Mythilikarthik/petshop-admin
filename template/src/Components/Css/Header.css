@@ -1,0 +1,65 @@
+.navbar-brand { font-size: 25px !important; font-weight: bold; display: flex; align-items: center;  }
+.navbar-brand .icon, .footer-logo .icon { width: 35px; height: 35px; background: #f97316; color: #fff; display: inline-block;
+    border-radius: 50%; text-align: center; line-height: 24px; margin-right: 10px; }
+.navbar-brand .icon svg path { fill: #fff; stroke-width: 50px; }
+.navbar-brand .icon svg {
+  vertical-align: middle;  
+}
+.navbar-brand .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.nav-link {
+  font-weight: 500;
+}
+.border-orange-500 {
+  border-color: rgb(249 115 22);
+}
+.text-orange-500 {
+  color: rgb(249 115 22);
+}
+.transition {
+  transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.duration-300 {
+  transition-duration: 300ms;
+}
+.border-2 {
+  border-width: 2px 2px 2px 2px;
+}
+.rounded-full {
+  border-radius: 9999px;
+}
+.hover\:text-white:hover {
+  
+  color: rgb(255 255 255);
+}
+.hover\:bg-orange-500:hover {  
+  background-color: rgb(249 115 22);
+}
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.login-btn, .signup-btn, .orange-btn, .border-btn {
+  background: transparent;
+  border: 2px solid;
+  font-weight: 600;
+  cursor: pointer;
+}
+.text-white {
+  color: rgb(255 255 255 );
+}
+.bg-orange-500 {
+  background-color: rgb(249 115 22 );
+}
+button { background: #fff; border: none; padding: 0 20px; font: inherit; color: inherit; cursor: pointer; }

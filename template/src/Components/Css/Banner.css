@@ -1,0 +1,12 @@
+.form-container { width: 51%; display: flex; align-items: center; justify-content: center; 
+  padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.form-section { display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;
+    margin-top: -40px; position: relative; z-index: 1; }
+.form-section input, .form-section select { 
+  box-shadow: none;
+  border-width: 3px ;  height: 52px;}
+.form-section input:focus, .form-section select:focus { border-color: rgb(253 186 116);
+  box-shadow: none;
+  border-width: 3px; }
+.form-section button { background: rgb(249 115 22 ); border: none; padding: 10px 20px; 
+  color: white; font-weight: bold; border-radius: 5px; }
