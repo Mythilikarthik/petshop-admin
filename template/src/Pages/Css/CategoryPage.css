@@ -1,0 +1,341 @@
+/* Category Page Styles */
+.category-page {
+  min-height: 100vh;
+}
+
+/* Hero Section */
+.category-hero {
+  padding: 80px 0;
+  position: relative;
+}
+
+.category-hero-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.category-hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.hero-description {
+  font-size: 1.2rem;
+  color: #6c757d;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.cta-button {
+  padding: 12px 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.hero-image img {
+  border-radius: 15px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+/* Section Titles */
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  color: #2c3e50;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  border-radius: 2px;
+}
+
+/* Services Grid Section */
+.services-grid-section {
+  padding: 80px 0;
+  background-color: #f8f9fa;
+}
+
+.service-card {
+  border: none;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.service-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.service-card .card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.service-card .card-text {
+  color: #6c757d;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+/* Service Providers Section */
+.service-providers-section {
+  padding: 80px 0;
+}
+
+.provider-card {
+  border: none;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.provider-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.provider-card .card-img-top {
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.provider-card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+.provider-card .card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.provider-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+
+.star-icon {
+  color: #ffc107;
+}
+
+.provider-rating span {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.review-count {
+  color: #6c757d !important;
+  font-weight: 400 !important;
+}
+
+.provider-info {
+  margin-bottom: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.info-item svg {
+  width: 14px;
+  height: 14px;
+}
+
+.provider-services h6 {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.service-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.service-tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Care Tips Section */
+.care-tips-section {
+  padding: 80px 0;
+}
+
+.tip-card {
+  border: none;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  position: relative;
+  padding-left: 20px;
+}
+
+.tip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.tip-number {
+  position: absolute;
+  left: -15px;
+  top: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.tip-card .card-text {
+  color: #2c3e50;
+  line-height: 1.6;
+  font-weight: 500;
+  margin-left: 35px;
+}
+
+/* Call to Action Section */
+.category-cta-section {
+  padding: 80px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.cta-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.cta-content p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.cta-buttons {
+  margin-top: 2rem;
+}
+
+.cta-buttons .btn {
+  padding: 12px 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.cta-buttons .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .category-hero {
+    padding: 50px 0;
+    text-align: center;
+  }
+  
+  .category-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .category-hero-icon {
+    font-size: 3rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .services-grid-section,
+  .service-providers-section,
+  .care-tips-section,
+  .category-cta-section {
+    padding: 50px 0;
+  }
+  
+  .cta-content h2 {
+    font-size: 1.8rem;
+  }
+  
+  .cta-buttons .btn {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .cta-buttons .me-3 {
+    margin-right: 0 !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .tip-card {
+    padding-left: 10px;
+  }
+  
+  .tip-number {
+    position: relative;
+    left: 0;
+    top: 0;
+    margin-bottom: 1rem;
+  }
+  
+  .tip-card .card-text {
+    margin-left: 0;
+  }
+}
