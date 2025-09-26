@@ -10,7 +10,7 @@ const categories = [
   { name: 'Bird', icon: <GiHummingbird />, color: '#66BB6A', slug: 'bird' },
   { name: 'Fish', icon: <GiTropicalFish />, color: '#AB47BC', slug: 'fish' },
   { name: 'Small Pet', icon: <GiPawHeart />, color: '#EC407A', slug: 'small-pet' },
-  { name: 'Exotic Pet', icon: <GiPhrygianCap />, color: '#C79B4A', slug: 'exotic-pet' },
+  { name: 'Exotic Pet', icon: <GiPhrygianCap />, color: '#FFD600', slug: 'exotic-pet' },
 ];
 
 const BrowseByPetCategory = () => {
