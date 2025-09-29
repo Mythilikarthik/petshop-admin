@@ -54,7 +54,7 @@ const CategoryPage = () => {
     'exotic-pet': { 
       name: 'Exotic Pet', 
       icon: <GiPhrygianCap />, 
-      color: '#FFD600',
+      color: '#ffc107',
       description: 'Specialized care for unique and exotic animals',
       services: ['Exotic Veterinary Care', 'Specialized Grooming', 'Habitat Maintenance', 'Nutritional Consulting', 'Emergency Care', 'Behavioral Support'],
       tips: ['Research specific care requirements', 'Find exotic pet specialists', 'Maintain proper habitat conditions']
@@ -152,7 +152,7 @@ const CategoryPage = () => {
                       Professional {service.toLowerCase()} services for your {currentCategory.name.toLowerCase()}.
                     </Card.Text>
                     <Button 
-                      variant="outline-primary" 
+                      variant="" 
                       style={{ borderColor: currentCategory.color, color: currentCategory.color }}
                     >
                       Learn More
