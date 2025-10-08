@@ -1,0 +1,40 @@
+.city-categories-section {
+  padding: 48px 0;
+  text-align: center;
+}
+.city-categories-section .highlight {
+  color: #ff9800;
+}
+.city-category-grid {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-top: 32px;
+}
+.city-category-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  width: 140px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.city-category-card:hover {
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+}
+.city-category-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
+.city-category-name {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+}

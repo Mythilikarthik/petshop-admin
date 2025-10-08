@@ -9,12 +9,14 @@ import Contact from './Pages/Contact';
 import Header from './Components/Header';
 import Footer from './Components/Footer';
 import CategoryPage from './Pages/CategoryPage';
+import CityCategoriesPage from './Pages/CityCategoriesPage';
+import CityCategoryListingsPage from './Pages/CityCategoryListingsPage';
 
 function App() {
   return (
     <div className="App">
       
-      <BrowserRouter>
+      <BrowserRouter basename='https://petshop-template.onrender.com'>
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -23,6 +25,8 @@ function App() {
           <Route path="/pet-health" element={<PetHealth />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/city/:cityName" element={<CityCategoriesPage />} />
+          <Route path="/city/:cityName/:category" element={<CityCategoryListingsPage />} />
         </Routes>        
         <Footer />
       </BrowserRouter>

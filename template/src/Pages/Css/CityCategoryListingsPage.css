@@ -1,0 +1,84 @@
+.city-category-listings-section {
+  padding: 48px 0;
+  background: #fafbfc;
+  min-height: 80vh;
+  text-align: center;
+}
+.city-category-listings-section .highlight {
+  color: #ff9800;
+}
+.city-category-search {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #eee;
+  font-size: 1rem;
+  outline: none;
+  min-width: 220px;
+  margin: 24px 0 32px 0;
+}
+.city-category-search:focus {
+  border: 1.5px solid #ff9800;
+}
+.city-category-listings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: center;
+}
+.city-category-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 28px 24px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.listing-type {
+  background: #ff9800;
+  color: #fff;
+  border-radius: 8px;
+  padding: 2px 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.listing-location {
+  color: #3b82f6;
+  font-size: 0.98rem;
+  margin-bottom: 4px;
+}
+.listing-description {
+  color: #444;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+.city-category-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  gap: 8px;
+}
+.pagination-btn {
+  background: #fff;
+  color: #ff9800;
+  border: 1.5px solid #ff9800;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.pagination-btn.active,
+.pagination-btn:hover {
+  background: #ff9800;
+  color: #fff;
+}
+.no-results {
+  color: #888;
+  font-size: 1.1rem;
+  margin: 48px 0;
+}
