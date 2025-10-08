@@ -1,6 +1,6 @@
 
 import './App.css';
-import {  Routes, Route, HashRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './Pages/Home';
 import Directory from './Pages/Directory';
 import PetHealth from './Pages/PetHealth';
@@ -17,7 +17,7 @@ function App() {
   return (
     <div className="App">
       
-      <HashRouter>
+      <BrowserRouter>
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -29,10 +29,9 @@ function App() {
           <Route path="/city/:cityName" element={<CityCategoriesPage />} />
           <Route path="/city/:cityName/:category" element={<CityCategoryListingsPage />} />
           <Route path="/cities" element={<ViewAllCitiesPage />} />
-
         </Routes>        
         <Footer />
-      </HashRouter>
+      </BrowserRouter>
     </div>
   );
 }
