@@ -16,7 +16,7 @@ function App() {
   return (
     <div className="App">
       
-      <BrowserRouter basename='https://petshop-template.onrender.com/'>
+      <BrowserRouter basename='/'>
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
