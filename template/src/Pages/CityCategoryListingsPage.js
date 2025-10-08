@@ -6,7 +6,12 @@ import './Css/CityCategoryListingsPage.css';
 const allListings = [
   { id: 1, name: "Paws & Claws Clinic", type: "Veterinary", city: "Mumbai", category: "dog", location: "Bandra West, Mumbai", description: "Premium veterinary services for all your pet’s healthcare needs." },
   { id: 2, name: "Furry Friends Grooming", type: "Grooming", city: "Bangalore", category: "cat", location: "Indiranagar, Bangalore", description: "Professional grooming to keep your pets looking their best." },
-  // ...more
+  { id: 3, name: "Happy Tails Pet Store", type: "Pet Store", city: "Mumbai", category: "dog", location: "Juhu, Mumbai", description: "Your one-stop shop for all pet supplies." },
+  { id: 4, name: "Whiskers & Wings", type: "Pet Adoption", city: "Bangalore", category: "cat", location: "Koramangala, Bangalore", description: "Find your new furry friend today!" },
+  { id: 5, name: "Birdy Care Center", type: "Veterinary", city: "Chennai", category: "bird", location: "T Nagar, Chennai", description: "Specialized care for your feathered friends." },
+  { id: 6, name: "Fishy Spa", type: "Pet Store", city: "Mumbai", category: "fish", location: "Andheri, Mumbai", description: "Aquarium cleaning and fish grooming services." },
+  { id: 7, name: "Small Paws Clinic", type: "Veterinary", city: "Bangalore", category: "small-pet", location: "Whitefield, Bangalore", description: "Healthcare services for small pets like rabbits and hamsters." },
+  { id: 8, name: "Exotic Pets World", type: "Pet Store", city: "Delhi", category: "exotic-pet", location: "Connaught Place, Delhi", description: "Wide range of exotic pets and supplies." },
 ];
 
 const PAGE_SIZE = 4;

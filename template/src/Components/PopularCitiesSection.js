@@ -2,6 +2,7 @@ import React from 'react';
 import './Css/PopularCitiesSection.css';
 import { Row, Col, Container } from 'react-bootstrap';
 import { AiFillHome } from "react-icons/ai";
+import { Link } from 'react-router-dom';
 
 const cities = [
   { name: 'Mumbai', listings: '1200+', color: '#D6A06A', iconColor: '#A05A00' },
@@ -24,35 +25,37 @@ const PopularCitiesSection = () => (
         <Row>
             {cities.map((city) => (
             <Col xs={3} className="d-none d-md-block">
+                <Link to={`/city/${city.name.toLowerCase()}`} style={{ textDecoration: 'none' }}>
                 <div className="cities-grid" 
                     style={{
                         background: `${city.color}`,
                         borderRadius: '18px', marginBottom: '20px'
                     }}>
-                
-                    <div
-                    key={city.name}
-                    className="city-card"
-                    >
-                    <span
-                        className="city-icon"
-                        style={{ color: city.iconColor }}
-                        role="img"
-                        aria-label="home"
-                    >
-                        <AiFillHome size={100} />
-                    </span>
-                    <div className="city-info">
-                        <div className="city-name">{city.name}</div>
-                        <div className="city-listings">{city.listings} listings</div>
-                    </div>
-                    </div>
+                    
+                        <div
+                        key={city.name}
+                        className="city-card"
+                        >
+                        <span
+                            className="city-icon"
+                            style={{ color: city.iconColor }}
+                            role="img"
+                            aria-label="home"
+                        >
+                            <AiFillHome size={100} />
+                        </span>
+                        <div className="city-info">
+                            <div className="city-name">{city.name}</div>
+                            <div className="city-listings">{city.listings} listings</div>
+                        </div>
+                        </div>
                 </div>
+                    </Link>
             </Col>
             
         ))}
         </Row>
-        <button className="view-all-btn">View All Cities</button>
+        <Link to="/cities" className="view-all-btn">View All Cities</Link>
     </Container>
   </section>
 );

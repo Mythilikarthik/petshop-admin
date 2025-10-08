@@ -1,5 +1,6 @@
 body {
   font-family: 'Quicksand', sans-serif !important;
+  overflow-x: hidden;
 }
 .highlight { color: #f97316; }
 .pr-5 { padding-right: 3rem !important; }

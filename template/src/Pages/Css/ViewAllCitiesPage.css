@@ -1,0 +1,60 @@
+.view-all-cities-section {
+  padding: 48px 0;
+  text-align: center;
+  background: #fafbfc;
+}
+
+.view-all-cities-section h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.view-all-cities-section .highlight {
+  color: #ff9800;
+}
+
+.view-all-cities-section p {
+  color: #555;
+  margin-bottom: 32px;
+  font-size: 1rem;
+}
+
+.view-all-cities-section .cities-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: center;
+}
+
+.view-all-cities-section .city-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  width: 200px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 16px;
+}
+
+.view-all-cities-section .city-card:hover {
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+}
+
+.view-all-cities-section .city-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 6px;
+}
+
+.view-all-cities-section .city-listings {
+  font-size: 1rem;
+  color: #888;
+}

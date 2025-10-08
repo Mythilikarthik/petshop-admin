@@ -7,18 +7,21 @@ import PopularCitiesSection from '../Components/PopularCitiesSection';
 import PetHealthTips from '../Components/PetHealthTips';
 import FAQSection from '../Components/FAQSection';
 import JoinCommunityNewsletter from '../Components/JoinCommunityNewsletter';
+import { Container } from 'react-bootstrap';
 
 
 const Home = () => {
   return (
     <div className='home'>
       <Banner />
-      <BrowseByPetCategory />
-      <PopularCitiesSection />
-      <FeaturedPetServicesSection />
-      <PetHealthTips />
-      <JoinCommunityNewsletter />
-      <FAQSection />
+      <Container>
+        <BrowseByPetCategory />
+        <PopularCitiesSection />
+        <FeaturedPetServicesSection />
+        <PetHealthTips />
+        <JoinCommunityNewsletter />
+        <FAQSection />
+      </Container>
     </div>
   )
 }
