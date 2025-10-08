@@ -1,6 +1,6 @@
 
 import './App.css';
-import { BrowserRouter, Routes, Route, HashRouter } from 'react-router-dom';
+import {  Routes, Route, HashRouter } from 'react-router-dom';
 import Home from './Pages/Home';
 import Directory from './Pages/Directory';
 import PetHealth from './Pages/PetHealth';
@@ -29,6 +29,7 @@ function App() {
           <Route path="/city/:cityName" element={<CityCategoriesPage />} />
           <Route path="/city/:cityName/:category" element={<CityCategoryListingsPage />} />
           <Route path="/cities" element={<ViewAllCitiesPage />} />
+
         </Routes>        
         <Footer />
       </HashRouter>
