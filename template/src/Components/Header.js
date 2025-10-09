@@ -24,21 +24,11 @@ const Header = () => {
                         <Navbar.Toggle aria-controls="basic-navbar-nav" />
                         <Navbar.Collapse id="basic-navbar-nav">
                             <Nav className="d-flex align-items-center gap-4 justify-content-between">
-                                <Nav.Link>
-                                    <Link to="/">Home</Link>
-                                </Nav.Link>
-                                <Nav.Link>
-                                    <Link to="/directory">Directory</Link>
-                                </Nav.Link>
-                                <Nav.Link>
-                                    <Link to="/pet-health">Pet Health</Link>
-                                </Nav.Link>
-                                <Nav.Link>
-                                    <Link to="/about">About</Link>
-                                </Nav.Link>
-                                <Nav.Link>
-                                    <Link to="/contact">Contact</Link>
-                                </Nav.Link>
+                                <Link to="/">Home</Link>
+                                <Link to="/directory">Directory</Link>
+                                <Link to="/pet-health">Pet Health</Link>
+                                <Link to="/about">About</Link>
+                                <Link to="/contact">Contact</Link>
                             </Nav>
                         </Navbar.Collapse>
                     </Col>
