@@ -13,6 +13,11 @@
 .nav-link {
   font-weight: 500;
 }
+#basic-navbar-nav a {
+  color: rgb(75 85 99);
+  text-decoration: none;
+  font-weight: 500;
+}
 .border-orange-500 {
   border-color: rgb(249 115 22);
 }
