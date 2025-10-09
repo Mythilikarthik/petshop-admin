@@ -371,3 +371,6 @@
 .featured-section .col-md-4 {
   display: flex;
 }
+.city-link {
+  text-decoration: none;
+}
