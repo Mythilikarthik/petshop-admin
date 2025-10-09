@@ -368,3 +368,6 @@
   transition: all 0.3s ease;
   cursor: pointer;
 }
+.featured-section .col-md-4 {
+  display: flex;
+}
