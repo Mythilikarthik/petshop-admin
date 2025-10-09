@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { GiHollowCat, GiJumpingDog, GiHummingbird, GiTropicalFish, GiPawHeart, GiPhrygianCap } from "react-icons/gi";
 import { FaStar, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
@@ -246,6 +246,32 @@ const CategoryPage = () => {
           </Row>
         </Container>
       </section>
+            {/* Services by Cities */}
+      <section className="services-by-city-section">
+        <Container>
+          <h2 className="section-title">Services by Cities</h2>
+          <Card className="cities-box shadow-sm">
+            <Card.Body>
+              <div className="cities-list">
+                {["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Pune", "Kolkata"].map((city, index) => (
+                  <Link to={`/city/${city.toLowerCase()}/${categoryName}`} key={index} className="city-link">
+                    <span 
+                      key={index} 
+                      className="city-item"
+                      style={{ color: currentCategory.color }}
+                    >
+                      {city}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </Card.Body>
+          </Card>
+        </Container>
+      </section>
+
+
+
 
       {/* Call to Action */}
       <section className="category-cta-section">
@@ -269,6 +295,7 @@ const CategoryPage = () => {
           </div>
         </Container>
       </section>
+      
     </div>
   );
 };

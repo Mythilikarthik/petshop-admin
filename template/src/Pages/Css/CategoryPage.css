@@ -339,3 +339,32 @@
     margin-left: 0;
   }
 }
+.services-by-city-section {
+  padding: 60px 0;
+  background-color: #fff;
+}
+
+.cities-box {
+  border: none;
+  border-radius: 12px;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.cities-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px 0;
+}
+
+.city-item {
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 8px 18px;
+  border: 1px solid currentColor;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}

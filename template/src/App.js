@@ -12,6 +12,8 @@ import CategoryPage from './Pages/CategoryPage';
 import CityCategoriesPage from './Pages/CityCategoriesPage';
 import CityCategoryListingsPage from './Pages/CityCategoryListingsPage';
 import ViewAllCitiesPage from './Pages/ViewAllCitiesPage';
+import ListingDetailPage from './Pages/ListingDetailPage';
+
 
 function App() {
   return (
@@ -29,6 +31,7 @@ function App() {
           <Route path="/city/:cityName" element={<CityCategoriesPage />} />
           <Route path="/city/:cityName/:category" element={<CityCategoryListingsPage />} />
           <Route path="/cities" element={<ViewAllCitiesPage />} />
+          <Route path="/listing/:listingId" element={<ListingDetailPage />} />
         </Routes>        
         <Footer />
       </BrowserRouter>

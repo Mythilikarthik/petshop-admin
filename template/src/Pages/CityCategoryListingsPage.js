@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './Css/CityCategoryListingsPage.css';
 
 // Example data (replace with API)
@@ -18,6 +18,7 @@ const PAGE_SIZE = 4;
 
 const CityCategoryListingsPage = () => {
   const { cityName, category } = useParams();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
@@ -57,6 +58,12 @@ const CityCategoryListingsPage = () => {
               <span className="listing-type">{listing.type}</span>
               <div className="listing-location">{listing.location}</div>
               <div className="listing-description">{listing.description}</div>
+              <button
+                className="view-details-btn"
+                onClick={() => navigate(`/listing/${listing.id}`)}
+              >
+                View Details
+              </button>
             </div>
           ))
         )}
