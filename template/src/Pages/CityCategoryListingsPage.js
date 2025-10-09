@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './Css/CityCategoryListingsPage.css';
+import dummyAd from '../dummyAd.jpg'; // Dummy ad image
 
 // Example data (replace with API)
 const allListings = [
@@ -38,6 +39,9 @@ const CityCategoryListingsPage = () => {
 
   return (
     <section className="city-category-listings-section">
+      <div className="ad-banner mb-4">
+                <img src={dummyAd} alt="Advertisement" className="ad-img" />
+              </div>
       <h2>
         {category.charAt(0).toUpperCase() + category.slice(1)} Services in <span className="highlight">{cityName}</span>
       </h2>

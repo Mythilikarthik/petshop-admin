@@ -4,6 +4,9 @@ import './Css/CityCategoriesPage.css';
 import { GiJumpingDog, GiHollowCat, GiHummingbird, GiTropicalFish, GiPawHeart, GiPhrygianCap } from "react-icons/gi";
 import { Row, Col, Container } from 'react-bootstrap';
 
+// Dummy ad image
+import dummyAd from '../dummyAd.jpg'; 
+
 const categories = [
   { name: 'Dog', icon: <GiJumpingDog />, color: '#FFA726', slug: 'dog' },
   { name: 'Cat', icon: <GiHollowCat />, color: '#42A5F5', slug: 'cat' },
@@ -22,36 +25,41 @@ const CityCategoriesPage = () => {
   }, []);
 
   return (
+        
     <section className="browse-category-section">
-          <Container>
-            <h2>
-              Browse Categories in <span className="highlight">{cityName.charAt(0).toUpperCase() + cityName.slice(1)}</span>
-            </h2>
-            <p>Find the perfect services for your furry, feathery, or scaly friends</p>
-            <Row>
-              {categories.map((cat) => (
-                <Col xs={6} sm={4} md={3} lg={2} className="mb-4" key={cat.slug}>
-                  <div className="category-grid">
-                    <div
-                      className="category-card"
-                      style={{ borderColor: cat.color }}
-                      key={cat.slug}
-                      onClick={() => navigate(`/city/${cityName}/${cat.slug}`)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && navigate(`/city/${cityName}/${cat.slug}`)}
-                    >
-                      <span className="category-icon" style={{ color: cat.color }}>
-                        {cat.icon}
-                      </span>
-                      <div className="category-name">{cat.name}</div>
-                    </div>
-                  </div>
-                </Col>
-              ))}
-            </Row>
-          </Container>
-        </section>
+      <div className="ad-banner mb-4">
+          <img src={dummyAd} alt="Advertisement" className="ad-img" />
+        </div>
+      <Container>
+        
+        <h2>
+          Browse Categories in <span className="highlight">{cityName.charAt(0).toUpperCase() + cityName.slice(1)}</span>
+        </h2>
+        <p>Find the perfect services for your furry, feathery, or scaly friends</p>
+        <Row>
+          {categories.map((cat) => (
+            <Col xs={6} sm={4} md={3} lg={2} className="mb-4" key={cat.slug}>
+              <div className="category-grid">
+                <div
+                  className="category-card"
+                  style={{ borderColor: cat.color }}
+                  key={cat.slug}
+                  onClick={() => navigate(`/city/${cityName}/${cat.slug}`)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && navigate(`/city/${cityName}/${cat.slug}`)}
+                >
+                  <span className="category-icon" style={{ color: cat.color }}>
+                    {cat.icon}
+                  </span>
+                  <div className="category-name">{cat.name}</div>
+                </div>
+              </div>
+            </Col>
+          ))}
+        </Row>
+      </Container>
+    </section>
   );
 };
 
