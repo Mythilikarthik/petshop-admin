@@ -4,6 +4,7 @@ import { AiOutlineHeart } from "react-icons/ai";
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import './Css/Header.css'
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   return (
