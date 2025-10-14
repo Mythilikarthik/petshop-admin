@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
 
-const AddCategory = () => {
+const AddPetCategory = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -29,7 +29,7 @@ const AddCategory = () => {
     setSuccess('');
 
     try {
-      const res = await fetch('/api/category/add', {
+      const res = await fetch('/api/pet-category/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -51,7 +51,7 @@ const AddCategory = () => {
       });
 
       // Optional: redirect after success
-      setTimeout(() => navigate('/category-listing'), 1500);
+      setTimeout(() => navigate('/pet-category-listing'), 1500);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -63,12 +63,12 @@ const AddCategory = () => {
     <Container className="mt-4">
       <Row className='mb-3 justify-content-end align-items-center'>
         <Col>
-          <h2 className='main-title mb-0'>Add Category</h2>
+          <h2 className='main-title mb-0'>Add Pet Category</h2>
         </Col>
         <Col xs={'auto'}>
           <Breadcrumb className='top-breadcrumb'>
             <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
-            <Breadcrumb.Item active>Add Category</Breadcrumb.Item>
+            <Breadcrumb.Item active>Add Pet Category</Breadcrumb.Item>
           </Breadcrumb>
         </Col>
       </Row>
@@ -112,4 +112,4 @@ const AddCategory = () => {
   );
 };
 
-export default AddCategory;
+export default AddPetCategory;

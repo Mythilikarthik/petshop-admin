@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
 
-const AddCategory = () => {
+const API_BASE = process.env.NODE_ENV === "production"
+  ? "https://petshop-admin.onrender.com"
+  : "http://localhost:5000";
+
+const EditCategory = () => {
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const { listing } = state || {}; // category object passed from listing page
 
   const [formData, setFormData] = useState({
     categoryName: '',
@@ -17,9 +23,22 @@ const AddCategory = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Preload category data into form
+  useEffect(() => {
+    if (listing) {
+      setFormData({
+        categoryName: listing.categoryName || '',
+        description: listing.description || '',
+        metaTitle: listing.metaTitle || '',
+        metaKeyword: listing.metaKeyword || '',
+        metaDescription: listing.metaDescription || ''
+      });
+    }
+  }, [listing]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -28,30 +47,30 @@ const AddCategory = () => {
     setError('');
     setSuccess('');
 
+    if (!listing?._id) {
+      setError('Invalid category ID');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch('/api/category/add', {
-        method: 'POST',
+      const res = await fetch(`${API_BASE}/api/category/${listing._id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData)
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Failed to add category');
+        throw new Error(data.message || 'Failed to update category');
       }
 
-      setSuccess('Category added successfully!');
-      setFormData({
-        categoryName: '',
-        description: '',
-        metaTitle: '',
-        metaKeyword: '',
-        metaDescription: ''
-      });
+      setSuccess('Category updated successfully!');
 
-      // Optional: redirect after success
+      // Redirect after success
       setTimeout(() => navigate('/category-listing'), 1500);
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -63,12 +82,12 @@ const AddCategory = () => {
     <Container className="mt-4">
       <Row className='mb-3 justify-content-end align-items-center'>
         <Col>
-          <h2 className='main-title mb-0'>Add Category</h2>
+          <h2 className='main-title mb-0'>Edit Category</h2>
         </Col>
         <Col xs={'auto'}>
           <Breadcrumb className='top-breadcrumb'>
             <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
-            <Breadcrumb.Item active>Add Category</Breadcrumb.Item>
+            <Breadcrumb.Item active>Edit Category</Breadcrumb.Item>
           </Breadcrumb>
         </Col>
       </Row>
@@ -112,4 +131,4 @@ const AddCategory = () => {
   );
 };
 
-export default AddCategory;
+export default EditCategory;

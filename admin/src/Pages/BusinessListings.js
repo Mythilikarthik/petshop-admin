@@ -1,37 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Form, Row, Col, Breadcrumb, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import ReactPaginate from 'react-paginate';
 import { useNavigate } from 'react-router-dom';
 import Select from "react-select";
 
-const BusinessListings = () => {
-  const initialListings = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', categories: ["Pet Shop", "Services"], status: "approved" },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', categories: ["Pet Food"], status: "pending" },
-    { id: 3, name: 'Michael Scott', email: 'michael@dundermifflin.com', categories: ["Pet Shop"], status: "approved" },
-    { id: 4, name: 'Dwight Schrute', email: 'dwight@dundermifflin.com', categories: ["Services", "Pet Insurance"], status: "pending" },
-    { id: 5, name: 'Pam Beesly', email: 'pam@dundermifflin.com', categories: ["Pet Food"], status: "approved" }
-  ];
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
 
-  const categoryList = ["Pet Shop", "Pet Food", "Services", "Pet Insurance"];
+const itemsPerPage = 5;
+
+const BusinessListings = () => {
+  const [listings, setListings] = useState([]);
+  const [categoryList, setCategoryList] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [listings, setListings] = useState(initialListings);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
-  const [statusFilter, setStatusFilter] = useState("approved"); // default approved list
-  const itemsPerPage = 5;
-
+  const [statusFilter, setStatusFilter] = useState("approved");
   const navigate = useNavigate();
 
-  // Filter logic
-  const filteredListings = listings.filter((l) => {
+  // Fetch listings
+  const fetchListings = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/listing`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      console.log(data);
+      if (data.success) setListings(data.listings);
+    } catch (err) {
+      console.error("Error fetching listings:", err);
+    }
+  };
+
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/category`);
+      const data = await res.json();
+      if (data.success) {
+        setCategoryList(data.categories.map(c => c.categoryName));
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchListings();
+    fetchCategories();
+  }, []);
+
+  // Filtered & paginated listings
+  const filteredListings = listings.filter(l => {
     const matchesSearch =
-      l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      l.shopName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       l.email.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesCategory =
       selectedCategories.length === 0 ||
-      selectedCategories.some((cat) => l.categories.includes(cat));
+      selectedCategories.some(cat => l.categories?.includes(cat));
 
     const matchesStatus = l.status === statusFilter;
 
@@ -45,26 +75,43 @@ const BusinessListings = () => {
   );
 
   const handlePageClick = ({ selected }) => setCurrentPage(selected);
+  const handleEdit = (listing) => navigate('/edit-listing', { state: { listing } });
+  const handleView = (listing) => navigate('/view-listing', { state: { listing } });
 
-  const handleEdit = (listing) => {
-    navigate('/edit-listing', { state: { listing } });
-  };
-
-  const handleView = (listing) => {
-    navigate('/view-listing', { state: { listing } });
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this listing?")) {
-      setListings((prevListings) => prevListings.filter(l => l.id !== id));
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this listing?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/listing/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) setListings(prev => prev.filter(l => l._id !== id));
+      else alert("Failed to delete listing");
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting listing");
     }
   };
 
-  // Approve/Unapprove toggle
-  const handleToggleStatus = (id) => {
-    setListings(prev =>
-      prev.map(l => l.id === id ? { ...l, status: l.status === "approved" ? "pending" : "approved" } : l)
-    );
+  const handleToggleStatus = async (id) => {
+    const listing = listings.find(l => l._id === id);
+    if (!listing) return;
+    const newStatus = listing.status === "approved" ? "approved" : "pending";
+
+    try {
+      const res = await fetch(`${API_BASE}/api/listing/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setListings(prev =>
+          prev.map(l => l._id === id ? { ...l, status: newStatus } : l)
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error updating status");
+    }
   };
 
   return (
@@ -82,37 +129,29 @@ const BusinessListings = () => {
           </Col>
         </Row>
 
-        {/* Search + Categories */}
-        <Row className='justify-content-center'>
-          <Col>
-            <Form.Group className="mb-3">
-              <Form.Control
-                type="text"
-                placeholder="Search by name"
-                className="mb-3"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(0);
-                }}
-              />
-            </Form.Group>
+        {/* Filters */}
+        <Row className='mb-3'>
+          <Col md={4}>
+            <Form.Control
+              type="text"
+              placeholder="Search by name/email"
+              value={searchTerm}
+              onChange={e => { setSearchTerm(e.target.value); setCurrentPage(0); }}
+            />
           </Col>
-          <Col>
-            <Form.Group className="mb-3">
-              <Select
-                isMulti
-                options={categoryList.map((c) => ({ value: c, label: c }))}
-                value={selectedCategories.map((c) => ({ value: c, label: c }))}
-                onChange={(selected) => {
-                  setSelectedCategories(selected ? selected.map((s) => s.value) : []);
-                  setCurrentPage(0);
-                }}
-                placeholder="Select by Categories"
-              />
-            </Form.Group>
+          <Col md={4}>
+            <Select
+              isMulti
+              options={categoryList.map(c => ({ value: c, label: c }))}
+              value={selectedCategories.map(c => ({ value: c, label: c }))}
+              onChange={selected => { 
+                setSelectedCategories(selected ? selected.map(s => s.value) : []); 
+                setCurrentPage(0);
+              }}
+              placeholder="Filter by Categories"
+            />
           </Col>
-          <Col>
+          <Col md={4}>
             <ButtonGroup className='w-100'>
               <ToggleButton
                 id="approved"
@@ -130,7 +169,7 @@ const BusinessListings = () => {
                 checked={statusFilter === "pending"}
                 onChange={() => { setStatusFilter("pending"); setCurrentPage(0); }}
               >
-                Pending Approval
+                Pending
               </ToggleButton>
             </ButtonGroup>
           </Col>
@@ -142,50 +181,34 @@ const BusinessListings = () => {
             <tr>
               <th>S.No</th>
               <th>Name</th>
+              <th>Email</th>
               <th>Category</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
+            {console.log(displayedListings)}
             {displayedListings.map((listing, index) => (
-              <tr key={listing.id}>
+              
+              <tr key={listing._id}>
                 <td>{currentPage * itemsPerPage + index + 1}</td>
-                <td>{listing.name}</td>
-                <td>{listing.categories ? listing.categories.join(", ") : ""}</td>
+                <td>{listing.shopName}</td>
+                <td>{listing.email}</td>
+                <td>{listing.categories?.join(", ")}</td>
                 <td>
                   <Form.Check
                     type="switch"
-                    id={`status-${listing.id}`}
+                    id={`status-${listing._id}`}
                     label={listing.status === "approved" ? "Approved" : "Pending"}
                     checked={listing.status === "approved"}
-                    onChange={() => handleToggleStatus(listing.id)}
+                    onChange={() => handleToggleStatus(listing._id)}
                   />
                 </td>
                 <td>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleView(listing)}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleEdit(listing)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleDelete(listing.id)}
-                  >
-                    Delete
-                  </Button>
+                  <Button size="sm" variant="success" onClick={() => handleView(listing)}>View</Button>{' '}
+                  <Button size="sm" variant="primary" onClick={() => handleEdit(listing)}>Edit</Button>{' '}
+                  <Button size="sm" variant="danger" onClick={() => handleDelete(listing._id)}>Delete</Button>
                 </td>
               </tr>
             ))}

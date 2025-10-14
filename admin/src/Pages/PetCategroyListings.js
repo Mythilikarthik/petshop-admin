@@ -7,7 +7,7 @@ const API_BASE = process.env.NODE_ENV === "production"
   ? "https://petshop-admin.onrender.com"
   : "http://localhost:5000";
 
-const CategoryListings = () => {
+const PetCategoryListings = () => {
   const [listings, setListings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
@@ -19,7 +19,7 @@ const CategoryListings = () => {
   // Fetch categories from backend
   const fetchCategories = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/category`);
+      const res = await fetch(`${API_BASE}/api/pet-category`);
       const data = await res.json();
 
       if (res.ok) {
@@ -52,18 +52,18 @@ const CategoryListings = () => {
   const handlePageClick = ({ selected }) => setCurrentPage(selected);
 
   const handleEdit = (listing) => {
-    navigate('/edit-category', { state: { listing } });
+    navigate('/edit-pet-category', { state: { listing } });
   };
 
   const handleView = (listing) => {
-    navigate('/view-category', { state: { listing } });
+    navigate('/view-pet-category', { state: { listing } });
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this category?")) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/category/${id}`, {
+      const res = await fetch(`${API_BASE}/api/pet-category/${id}`, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -84,7 +84,7 @@ const CategoryListings = () => {
       <div className='pl-3 pr-3'>
         <Row className='mb-3 justify-content-end align-items-center'>
           <Col>
-            <h2 className='main-title mb-0'>Category Listing</h2>
+            <h2 className='main-title mb-0'>Pet Category Listing</h2>
           </Col>
           <Col xs={'auto'}>
             <Breadcrumb className='top-breadcrumb'>
@@ -177,4 +177,4 @@ const CategoryListings = () => {
   );
 };
 
-export default CategoryListings;
+export default PetCategoryListings;

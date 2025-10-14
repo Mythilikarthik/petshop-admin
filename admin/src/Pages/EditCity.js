@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import {  useNavigate } from 'react-router-dom';
+import {  useLocation, useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
 
-const AddListing = () => {
+const EditCity = () => {
   const navigate = useNavigate();
+  const {state} = useLocation();
+  const { listing } = state || {}; 
 
   const [formData, setFormData] = useState({
-    city: '',
+    city: listing.city || '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -29,10 +31,14 @@ const AddListing = () => {
     setLoading(true);
     setError('');
     setSuccess('');
-
+    if (!listing?._id) {
+      setError('Invalid city ID');
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch('/api/city/add', {
-        method: 'POST',
+      const res = await fetch(`/api/city/${listing._id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
@@ -43,7 +49,7 @@ const AddListing = () => {
         throw new Error(data.message || 'Failed to add city');
       }
 
-      setSuccess('City added successfully!');
+      setSuccess('City Updated successfully!');
       setFormData({
         city: '',
       });
@@ -62,12 +68,12 @@ const AddListing = () => {
       <div className='pl-3 pr-3'>
         <Row className='mb-3 justify-content-end align-items-center'>
           <Col>
-            <h2 className='main-title mb-0'>Add City</h2>
+            <h2 className='main-title mb-0'>Edit City</h2>
           </Col>
           <Col xs={'auto'}>
             <Breadcrumb className='top-breadcrumb'>
               <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
-              <Breadcrumb.Item active>Add City</Breadcrumb.Item>
+              <Breadcrumb.Item active>Edit City</Breadcrumb.Item>
             </Breadcrumb>
           </Col>
         </Row>
@@ -95,4 +101,4 @@ const AddListing = () => {
   );
 };
 
-export default AddListing;
+export default EditCity;

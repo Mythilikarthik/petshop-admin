@@ -1,26 +1,45 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { Table, Button, Form, Row, Col, Breadcrumb } from 'react-bootstrap';
 import ReactPaginate from 'react-paginate';
 import { useNavigate } from 'react-router-dom';
+const API_BASE = process.env.NODE_ENV === "production"
+  ? "https://petshop-admin.onrender.com"
+  : "http://localhost:5000";
 
 const CityListings = () => {
-  const initialListings = [
-    { id: 1, name: 'Erode' },
-    { id: 2, name: 'Chennai' },
-    { id: 3, name: 'Coimbatore' },
-    { id: 4, name: 'Salem' }
-  ];
+  
 
-  const [listings, setListings] = useState(initialListings);
+  const [listings, setListings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 5;
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
+const fetchCities = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/city`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setListings(data.cities || []);
+      } else {
+        console.error('Error fetching cities:', data.message);
+      }
+    } catch (err) {
+      console.error('Fetch cities error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCities();
+  }, []);
   const filteredListings = listings.filter(l =>
-    l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.email.toLowerCase().includes(searchTerm.toLowerCase())
+    l.city.toLowerCase().includes(searchTerm.toLowerCase()) 
   );
 
   const pageCount = Math.ceil(filteredListings.length / itemsPerPage);
@@ -33,18 +52,32 @@ const CityListings = () => {
 
   const handleEdit = (listing) => {
     console.log('Navigating to edit:', listing);
-    navigate('/edit-listing', { state: { listing } });
+    navigate('/edit-city', { state: { listing } });
   };
 
   const handleView = (listing) => {
     console.log('Navigating to view:', listing);
-    navigate('/view-listing', { state: { listing } });
+    navigate('/view-city', { state: { listing } });
   };
-  const handleDelete = (id) => {
-  if (window.confirm("Are you sure you want to delete this listing?")) {
-    setListings((prevListings) => prevListings.filter(l => l.id !== id));
-  }
-};
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this city?")) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/city/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setListings(prev => prev.filter(l => l._id !== id));
+      } else {
+        alert(data.message || "Failed to delete city");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Server error");
+    }
+  };
 
   return (
     <div className="container mt-4">
@@ -71,7 +104,11 @@ const CityListings = () => {
             setSearchTerm(e.target.value);
             setCurrentPage(0); // reset to first page
           }}
-        />
+        /> 
+        {loading ? (
+          <p>Loading cities...</p>
+        ) : (
+          <>
 
         {/* Table */}
         <Table bordered hover responsive>
@@ -86,7 +123,7 @@ const CityListings = () => {
             {displayedListings.map((listing, index) => (
               <tr key={listing.id}>
                 <td>{currentPage * itemsPerPage + index + 1}</td>
-                <td>{listing.name}</td>
+                <td>{listing.city}</td>
                 <td>
                   
                   <Button
@@ -108,7 +145,7 @@ const CityListings = () => {
                   <Button
                     variant="danger"
                     size="sm"
-                    onClick={() => handleDelete(listing.id)}
+                    onClick={() => handleDelete(listing._id)}
                   >
                     Delete
                   </Button>
@@ -117,6 +154,9 @@ const CityListings = () => {
             ))}
           </tbody>
         </Table>
+
+        </>
+        )}
 
         {/* Pagination */}
         {pageCount > 1 && (
