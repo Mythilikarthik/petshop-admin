@@ -3,10 +3,10 @@
     "concurrently": "^9.2.0"
   },
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run user\" \"npm run template\"",
+    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run user\"",
     "server": "cd server && npm run dev",
-    "client": "cd admin && set PORT=3000 && npm start",
-    "user": "cd user && set PORT=3001 && npm start",
-    "template": "cd template && set PORT=3002 && npm start"
+    "client": "cd admin && npm start",
+    "user": "cd user && npm start",
+    "template": "cd template && npm start"
   }
 }
