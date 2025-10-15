@@ -23,7 +23,7 @@ const menuItems = [
       { name: "Add Listing", path: "/add-listing", icon: <GiRabbit /> },
       { name: "Category Listing", path: "/category-listing", icon: <GiDogBowl /> },
       { name: "Add Category", path: "/add-category", icon: <GiJumpingDog  /> },
-      { name: "Pet Category Listing", path: "/category-listing", icon: <GiDogBowl /> },
+      { name: "Pet Category Listing", path: "/pet-category-listing", icon: <GiDogBowl /> },
       { name: "Add Pet Category", path: "/add-pet-category", icon: <GiJumpingDog  /> },
       { name: "City Listing", path: "/city-listing", icon: <MdPlace/> },
       { name: "Add City", path: "/add-city", icon: <MdLocationCity /> }
