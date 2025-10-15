@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import {  useLocation, useNavigate } from 'react-router-dom';
-import { Form, Button, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
+import { Form, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
 
-const EditCity = () => {
+const ViewCity = () => {
   const navigate = useNavigate();
   const {state} = useLocation();
   const { listing } = state || {}; 
 
-  const [formData, setFormData] = useState({
-    city: listing.city || '',
-  });
+  
+const formData = listing.city || '';
 
-  const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+  if (!listing) {
+    return <p className="text-danger mt-4 text-center">No city data found.</p>;
+  }
 
 
   
@@ -55,4 +54,4 @@ const EditCity = () => {
   );
 };
 
-export default EditCity;
+export default ViewCity;

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import {  useLocation, useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
-
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
 const EditCity = () => {
   const navigate = useNavigate();
   const {state} = useLocation();
@@ -37,7 +40,7 @@ const EditCity = () => {
       return;
     }
     try {
-      const res = await fetch(`/api/city/${listing._id}`, {
+      const res = await fetch(`${API_BASE}/api/city/${listing._id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

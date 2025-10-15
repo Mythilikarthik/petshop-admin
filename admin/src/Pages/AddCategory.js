@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
 
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
 const AddCategory = () => {
   const navigate = useNavigate();
 
@@ -29,7 +33,7 @@ const AddCategory = () => {
     setSuccess('');
 
     try {
-      const res = await fetch('/api/category/add', {
+      const res = await fetch(`${API_BASE}/api/category/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

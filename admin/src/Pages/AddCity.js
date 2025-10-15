@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import {  useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
 
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
 const AddListing = () => {
   const navigate = useNavigate();
 
@@ -31,7 +35,7 @@ const AddListing = () => {
     setSuccess('');
 
     try {
-      const res = await fetch('/api/city/add', {
+      const res = await fetch(`${API_BASE}/api/city/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
