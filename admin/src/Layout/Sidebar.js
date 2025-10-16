@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-   MdLogout, MdPeople, MdAttachMoney,  MdLocationCity, MdPlace, 
+   MdLogout, MdAttachMoney,  MdLocationCity, MdPlace, 
   
   MdCampaign,
   MdOutlinePages,

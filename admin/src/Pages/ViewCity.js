@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import {  useLocation, useNavigate } from 'react-router-dom';
+import React from 'react';
+import {  useLocation } from 'react-router-dom';
 import { Form, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
 
 const ViewCity = () => {
-  const navigate = useNavigate();
   const {state} = useLocation();
   const { listing } = state || {}; 
 
@@ -40,7 +39,7 @@ const formData = listing.city || '';
             <Form.Control
                 type="text"
                 name="city"
-                value={formData.city}
+                value={formData}
                 disabled
                 readOnly
                 required
