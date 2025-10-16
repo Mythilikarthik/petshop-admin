@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Image, Button } from 'react-bootstrap';
 const API_BASE =
   process.env.NODE_ENV === "production"
-    ? "https://your-production-domain.com" // replace with your live server URL
+    ? "https://petshop-admin.onrender.com" // replace with your live server URL
     : "http://localhost:5000";
 
 const ViewListing = () => {

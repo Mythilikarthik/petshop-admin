@@ -231,7 +231,7 @@ const EditListing = () => {
             <Row className="mb-3">
               {formData.existingPhotos.map((url, idx) => (
                 <Col key={idx} xs={6} md={4} lg={3} className="mb-2">
-                  <Image src={url} thumbnail fluid />
+                  <Image src={`${API_BASE}${url}`} thumbnail fluid />
                 </Col>
               ))}
             </Row>
