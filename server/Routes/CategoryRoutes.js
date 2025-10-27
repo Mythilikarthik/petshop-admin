@@ -5,7 +5,7 @@ const Category = require('../Models/Category');
 
 router.post('/add', async (req, res) => {
   try {
-    const { categoryName, description, metaTitle, metaKeyword, metaDescription } = req.body;
+    const { categoryName, description, metaTitle, metaKeyword, metaDescription, petCategories } = req.body;
 
     const existing = await Category.findOne({ categoryName });
     if (existing) {
@@ -15,21 +15,26 @@ router.post('/add', async (req, res) => {
     const newCategory = new Category({
       categoryName,
       description,
+
       metaTitle,
       metaKeyword,
       metaDescription,
+      petCategories
     });
 
     await newCategory.save();
     res.json({ success: true, message: 'Category added successfully', category: newCategory });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ error: "Category name already exists" });
+    }
     console.error('Add Category Error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 router.get('/', async (req, res) => {
   try {
-    const categories = await Category.find().sort({ created_at: -1 });
+    const categories = await Category.find().populate('petCategories', 'categoryName').sort({ created_at: -1 });
     res.json({ success: true, categories });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
@@ -37,10 +42,10 @@ router.get('/', async (req, res) => {
 });
 router.put('/:id', async (req, res) => {
   try {
-    const { categoryName, description, metaTitle, metaKeyword, metaDescription } = req.body;
+    const { categoryName, description, metaTitle, metaKeyword, metaDescription, petCategories } = req.body;
     const category = await Category.findByIdAndUpdate(
       req.params.id,
-      { categoryName, description, metaTitle, metaKeyword, metaDescription },
+      { categoryName, description, metaTitle, metaKeyword, metaDescription, petCategories },
       { new: true, runValidators: true } // returns the updated doc
     );
 
@@ -50,6 +55,9 @@ router.put('/:id', async (req, res) => {
 
     res.json({ success: true, message: 'Category updated successfully', category });
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ error: "Category name already exists" });
+    }
     console.error('Update Category Error:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }

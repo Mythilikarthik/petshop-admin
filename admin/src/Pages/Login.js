@@ -16,8 +16,12 @@ const Login = () => {
     
     const result = await dispatch(loginUser({ username, password }));
     if (loginUser.fulfilled.match(result) && result.payload.success) {
+      console.log("Token:", result.payload.token);
       localStorage.setItem("isPublicAuth", "true");
       localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem("token", result.payload.token);
+      localStorage.setItem("role", result.payload.role);
+      localStorage.setItem("userId", result.payload.id);
       navigate("/dashboard"); // Redirect to dashboard
       // console.log(username)
     }

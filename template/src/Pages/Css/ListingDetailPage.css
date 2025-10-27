@@ -7,13 +7,16 @@
 }
 
 .listing-detail-section h2 {
-  font-size: 2rem;
+  font-size: 24px;
   font-weight: 700;
   margin-bottom: 12px;
+  background: rgb(249 115 22 );
+  color: #fff;
+  padding: 10px;
 }
 
 .listing-type {
-  background: #ff9800;
+  background: rgb(249 115 22 );
   color: #fff;
   border-radius: 8px;
   padding: 4px 14px;

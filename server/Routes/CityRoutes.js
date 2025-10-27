@@ -14,6 +14,9 @@ router.post('/add', async (req, res) => {
     await newCity.save();
     res.json({ success: true, message: 'City added successfully', city: newCity });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ error: "City name already exists" });
+    }
     res.json({ success: false, message: 'Server error' });
   }
 });
@@ -44,15 +47,23 @@ router.get('/:id', async (req, res) => {
 // Update a city by ID
 router.patch('/:id', async (req, res) => {
   try {
-    const city = await City.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!city) {
-      return res.status(404).send();
-    }
-    res.status(200).send(city);
+    const updated = await City.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!updated) return res.status(404).json({ error: "City not found" });
+
+    res.status(200).json({ message: "City updated successfully", city: updated });
   } catch (error) {
-    res.status(400).send(error);
+    if (error.code === 11000) {
+      return res.status(400).json({ error: "City name already exists" });
+    }
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
   }
 });
+
 
 // Delete a city by ID
 router.delete('/:id', async (req, res) => {

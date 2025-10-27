@@ -29,8 +29,8 @@ router.post('/add', async (req, res) => {
 });
 router.get('/', async (req, res) => {
   try {
-    const categories = await PetCategory.find().sort({ created_at: -1 });
-    res.json({ success: true, categories });
+    const petCategories = await PetCategory.find().sort({ created_at: -1 });
+    res.json({ success: true, petCategories });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }

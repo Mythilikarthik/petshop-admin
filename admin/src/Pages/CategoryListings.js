@@ -85,25 +85,36 @@ const CategoryListings = () => {
         <Row className='mb-3 justify-content-end align-items-center'>
           <Col>
             <h2 className='main-title mb-0'>Category Listing</h2>
+            
           </Col>
           <Col xs={'auto'}>
             <Breadcrumb className='top-breadcrumb'>
-              <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>Category Listing</Breadcrumb.Item>
             </Breadcrumb>
+            
+            
+          </Col>
+        </Row>
+        <Row className='mb-3'>
+          <Col md={8} xs={12}>
+              <Form.Control
+              type="text"
+              placeholder="Search by category"
+              className="mb-3"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(0);
+              }}
+            />
+          </Col>
+          <Col md={4} xs={12} className="text-end">
+              <Button variant="primary" onClick={() => navigate('/add-category')}>+ Add New</Button>
           </Col>
         </Row>
 
-        <Form.Control
-          type="text"
-          placeholder="Search by category"
-          className="mb-3"
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(0);
-          }}
-        />
+        
 
         {loading ? (
           <p>Loading categories...</p>

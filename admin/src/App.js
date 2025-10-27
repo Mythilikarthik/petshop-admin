@@ -14,6 +14,10 @@ import CustomAd from './Pages/CustomAd';
 import AddCity from './Pages/AddCity';
 import EditCity from './Pages/EditCity';
 import ViewCity from './Pages/ViewCity';
+import BlogListings from './Pages/BlogListings';  
+import BlogViewPage from './Pages/BlogViewPage';
+import BlogEditPage from './Pages/BlogEditPage';
+import FaqListing from './Pages/FaqListing';  
 import UserManagement from './Pages/UserManagement';
 import PageManagement from './Pages/PageManagemnent';
 import Email from './Pages/Email';
@@ -34,6 +38,9 @@ import PetCategoryListings from './Pages/PetCategroyListings';
 import AddPetCategory from './Pages/AddPetCategory';
 import EditPetCategory from './Pages/EditPetCategory';
 import ViewPetCategory from './Pages/ViewPetCategory';
+import FaqViewPage from './Pages/FaqViewPage';
+import FaqEditPage from './Pages/FaqEditPage';
+
 
 
 
@@ -71,6 +78,15 @@ function App() {
           <Route path="view-city" element={<ViewCity />} />
           <Route path="view-listing" element={<ViewListings />} />
           <Route path="edit-listing" element={<EditListings />} />
+          <Route path="blog-listing" element={<BlogListings />} />
+          <Route path="blogs/new" element={<BlogEditPage />} />
+          <Route path="blogs/:id" element={<BlogViewPage />} />
+          <Route path="blogs/:id/edit" element={<BlogEditPage />} />
+          <Route path="blog-listing" element={<BlogListings />} />
+          <Route path="faq-listing" element={<FaqListing />} />
+          <Route path="faq/:id" element={<FaqViewPage />} />
+          <Route path="faq/:id/edit" element={<FaqEditPage />} />
+          <Route path="faq/new" element={<FaqEditPage />} />
           <Route path="user-management" element={<UserManagement />} />
           <Route path="ad-management" element={<AdManagemnent />} />
           <Route path="custom-ad" element={<CustomAd />} />

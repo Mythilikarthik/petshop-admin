@@ -67,12 +67,13 @@ const AddListing = () => {
         <Row className='mb-3 justify-content-end align-items-center'>
           <Col>
             <h2 className='main-title mb-0'>Add City</h2>
-          </Col>
-          <Col xs={'auto'}>
             <Breadcrumb className='top-breadcrumb'>
-              <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>Add City</Breadcrumb.Item>
             </Breadcrumb>
+          </Col>
+          <Col xs={'auto'}>
+            <Button variant="secondary" onClick={() => navigate('/city-listing')}>Go Back</Button>
           </Col>
         </Row>
         <div className='form-container'>

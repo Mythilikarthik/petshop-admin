@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const CategorySchema = new mongoose.Schema({
-  categoryName: { type: String, required: true },
+  categoryName: { type: String, required: true, unique: true, trim: true },
+  petCategories: [{ type: mongoose.Schema.Types.ObjectId, ref: "PetCategory" }],
   description: { type: String },
   metaTitle: { type: String },
   metaKeyword: { type: String },

@@ -41,10 +41,16 @@
   "bootstrap": "^5.3.7",
   
     
+  "dompurify": "^3.3.0",
+  
+    
   "draft-js": "^0.11.7",
   
     
   "easymde": "^2.20.0",
+  
+    
+  "papaparse": "^5.5.3",
   
     
   "react": "^19.1.1",
@@ -71,6 +77,9 @@
   "react-router-dom": "^7.7.1",
   
     
+  "react-router-prompt": "^0.8.0",
+  
+    
   "react-scripts": "5.0.1",
   
     
@@ -86,7 +95,10 @@
   "tinymce": "^8.0.2",
   
     
-  "web-vitals": "^2.1.4"
+  "web-vitals": "^2.1.4",
+  
+    
+  "xlsx": "^0.18.5"
   
   },
   

@@ -43,7 +43,7 @@ const Dashboard = () => {
         </Col>
         <Col xs={'auto'}>
           <Breadcrumb className='top-breadcrumb'>
-            <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+            <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
             <Breadcrumb.Item active>Dashboard</Breadcrumb.Item>
           </Breadcrumb>
         </Col>

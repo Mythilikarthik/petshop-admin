@@ -9,7 +9,7 @@ import Contact from './Pages/Contact';
 import Header from './Components/Header';
 import Footer from './Components/Footer';
 import CategoryPage from './Pages/CategoryPage';
-import CityCategoriesPage from './Pages/CityCategoriesPage';
+// import CityCategoriesPage from './Pages/CityCategoriesPage';
 import CityCategoryListingsPage from './Pages/CityCategoryListingsPage';
 import ViewAllCitiesPage from './Pages/ViewAllCitiesPage';
 import ListingDetailPage from './Pages/ListingDetailPage';
@@ -28,8 +28,8 @@ function App() {
           <Route path="/pet-health" element={<PetHealth />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/city/:cityName" element={<CityCategoriesPage />} />
-          <Route path="/city/:cityName/:category" element={<CityCategoryListingsPage />} />
+          {/* <Route path="/city/:cityName" element={<CityCategoriesPage />} /> */}
+          <Route path="/city/:cityName/" element={<CityCategoryListingsPage />} />
           <Route path="/cities" element={<ViewAllCitiesPage />} />
           <Route path="/listing/:listingId" element={<ListingDetailPage />} />
         </Routes>        

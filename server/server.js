@@ -8,12 +8,15 @@ const CategoryRoutes = require('./Routes/CategoryRoutes');
 const CityRoutes = require('./Routes/CityRoutes');
 const PetCategoryRoutes = require('./Routes/PetCategoryRoutes');
 const ListingRoutes = require('./Routes/ListingRoutes');
+const BlogRoutes = require('./Routes/BlogRoutes');
+const FaqRoutes = require('./Routes/FaqRoutes');
+const AuthRoutes = require('./Routes/authRoute');
 
 dotenv.config();
 const app = express();
 app.use(cors({
   origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(express.json()); // for parsing JSON
@@ -34,7 +37,9 @@ app.use('/api/category', CategoryRoutes);
 app.use('/api/city', CityRoutes);
 app.use('/api/pet-category', PetCategoryRoutes);
 app.use('/api/listing', ListingRoutes);
-
+app.use('/api/blog', BlogRoutes);
+app.use('/api/faq', FaqRoutes);
+app.use('/api/auth', AuthRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

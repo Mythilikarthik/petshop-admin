@@ -9,7 +9,7 @@ import {
   MdPets
 } from 'react-icons/md';
 import { GiJumpingDog , GiDogHouse, GiNestBirds , GiRabbit, GiDogBowl } from "react-icons/gi";
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaNewspaper, FaQuestionCircle } from 'react-icons/fa';
 import './Sidebar.css';
 
 const menuItems = [
@@ -20,13 +20,15 @@ const menuItems = [
     icon: <GiDogHouse />,
     children: [
       { name: "Listing", path: "/business-listing", icon: <GiNestBirds  /> },
-      { name: "Add Listing", path: "/add-listing", icon: <GiRabbit /> },
+      // { name: "Add Listing", path: "/add-listing", icon: <GiRabbit /> },
       { name: "Category Listing", path: "/category-listing", icon: <GiDogBowl /> },
-      { name: "Add Category", path: "/add-category", icon: <GiJumpingDog  /> },
+      // { name: "Add Category", path: "/add-category", icon: <GiJumpingDog  /> },
       { name: "Pet Category Listing", path: "/pet-category-listing", icon: <GiDogBowl /> },
-      { name: "Add Pet Category", path: "/add-pet-category", icon: <GiJumpingDog  /> },
+      // { name: "Add Pet Category", path: "/add-pet-category", icon: <GiJumpingDog  /> },
       { name: "City Listing", path: "/city-listing", icon: <MdPlace/> },
-      { name: "Add City", path: "/add-city", icon: <MdLocationCity /> }
+      // { name: "Add City", path: "/add-city", icon: <MdLocationCity /> },
+      { name: "Blog Listing", path: "/blog-listing", icon: <FaNewspaper  /> },
+      { name: "FAQ", path: "/faq-listing", icon: <FaQuestionCircle /> },
     ]
   },
   // { name: "User Management", path: "/user-management", icon: <MdPeople /> },

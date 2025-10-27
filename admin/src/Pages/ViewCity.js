@@ -1,11 +1,11 @@
 import React from 'react';
-import {  useLocation } from 'react-router-dom';
-import { Form, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
+import {  useLocation, useNavigate } from 'react-router-dom';
+import { Form, Container, Row, Col, Breadcrumb, Button } from 'react-bootstrap';
 
 const ViewCity = () => {
   const {state} = useLocation();
   const { listing } = state || {}; 
-
+  const navigate = useNavigate();
   
 const formData = listing.city || '';
 
@@ -24,12 +24,13 @@ const formData = listing.city || '';
         <Row className='mb-3 justify-content-end align-items-center'>
           <Col>
             <h2 className='main-title mb-0'>View City</h2>
-          </Col>
-          <Col xs={'auto'}>
             <Breadcrumb className='top-breadcrumb'>
-              <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>View City</Breadcrumb.Item>
             </Breadcrumb>
+          </Col>
+          <Col xs={'auto'}>
+            <Button variant="secondary" onClick={() => navigate(-1)}>Go Back</Button>
           </Col>
         </Row>
         <div className='form-container'>

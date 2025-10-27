@@ -8,13 +8,12 @@
   color: #ff9800;
 }
 .city-category-search {
-  padding: 10px 14px;
+  padding: 8px 14px;
   border-radius: 8px;
   border: 1.5px solid #eee;
   font-size: 1rem;
   outline: none;
   min-width: 220px;
-  margin: 24px 0 32px 0;
 }
 .city-category-search:focus {
   border: 1.5px solid #ff9800;
@@ -35,6 +34,12 @@
   flex-direction: column;
   align-items: flex-start;
   margin-bottom: 16px;
+  text-align: start;
+}
+.city-category-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.3rem;
+  color: #222;
 }
 .listing-type {
   background: #ff9800;
@@ -54,6 +59,9 @@
   color: #444;
   font-size: 1rem;
   margin-bottom: 8px;
+}
+.city-category-card .listing-description {
+  font-size: 0.9rem; color: #6c757d;
 }
 .city-category-pagination {
   display: flex;
@@ -82,3 +90,73 @@
   font-size: 1.1rem;
   margin: 48px 0;
 }
+.filters-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  background: #FAFBFC;
+  padding: 35px 0;
+}
+
+.select-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 240px; /* adjust as needed */
+  vertical-align: middle;
+  margin-left: 12px;
+}
+
+.city-category-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  padding: 10px 42px 10px 14px;
+  font-size: 14px;
+  line-height: inherit;
+  color: #222;
+  background: linear-gradient(180deg, #ffffff, #fbfbfd);
+  border: 1px solid #e6e9ef;
+  border-radius: 10px;
+  /* box-shadow: 0 6px 18px rgba(28,35,50,0.06); */
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.city-category-select:focus {
+  outline: none;
+  border-color: #ff9800;
+  box-shadow: 0 8px 24px rgba(108,140,255,0.12);
+}
+
+.city-category-select:hover {
+  transform: translateY(-1px);
+}
+
+/* caret */
+.select-caret {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 14px;
+  color: #6b7280;
+  user-select: none;
+}
+
+/* Small screen tweak */
+@media (max-width: 480px) {
+  .select-wrapper {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}
+
+/* ...existing code... */

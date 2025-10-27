@@ -4,9 +4,8 @@ import { Editor } from "@tinymce/tinymce-react";
 
 const ParaEditor = ({ value, onChange }) => {
   const handleEditorChange = (content, editor) => {
-    // Count words (TinyMCE has its own wordcount plugin too)
     const words = content
-      .replace(/<[^>]+>/g, " ") // strip HTML
+      .replace(/<[^>]+>/g, " ") 
       .trim()
       .split(/\s+/).filter(Boolean).length;
 
@@ -15,7 +14,7 @@ const ParaEditor = ({ value, onChange }) => {
 
   return (
     <Editor
-      apiKey="23ful9ihnqzftdyc7aw9m10rc6mlpirlq276z06cml7pgcdj"  // ✅ or your TinyMCE API key if you want cloud features
+      apiKey="23ful9ihnqzftdyc7aw9m10rc6mlpirlq276z06cml7pgcdj"
       value={value}
       init={{
         height: 300,

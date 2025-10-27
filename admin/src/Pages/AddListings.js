@@ -12,10 +12,11 @@ const AddListing = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { listing } = state || {};
-
+const [filteredPetCategories, setFilteredPetCategories] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
-
+  const [petCategory, setPetCategory] = useState([]);
+const [newKeyword, setNewKeyword] = useState("");
   const [formData, setFormData] = useState({
     shopName: listing?.shopName || "",
     email: listing?.email || "",
@@ -24,11 +25,12 @@ const AddListing = () => {
     city: listing?.city || "",
     country: listing?.country || "",
     mapUrl: listing?.mapUrl || "",
+    petCategories: listing?.petCategories || [],
     description: listing?.description || "",
     categories: listing?.categories || [],
     photos: [],
     metaTitle: listing?.metaTitle || "",
-    metaKeyword: listing?.metaKeyword || "",
+    metaKeyword: listing?.metaKeyword || [],
     metaDescription: listing?.metaDescription || ""
   });
 
@@ -55,7 +57,24 @@ const AddListing = () => {
     const urls = files.map((file) => URL.createObjectURL(file));
     setPreviewUrls(urls);
   };
+useEffect(() => {
+  if (formData.categories.length > 0) {
+    // find all selected categories
+    const selectedCats = categoryList.filter(cat =>
+      formData.categories.includes(cat.categoryName)
+    );
 
+    // collect all pet categories from selected categories
+    const pets = selectedCats.flatMap(cat => cat.petCategories || []);
+    // remove duplicates
+    const uniquePets = Array.from(new Set(pets.map(p => p.categoryName)))
+      .map(name => ({ value: name, label: name }));
+
+    setFilteredPetCategories(uniquePets);
+  } else {
+    setFilteredPetCategories([]);
+  }
+}, [formData.categories, categoryList]);
   // fetch categories
   const getCategories = async () => {
     try {
@@ -68,7 +87,9 @@ const AddListing = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
       const categories = data.categories || [];
-      return categories.map((cat) => cat.categoryName);
+      // return categories.map((cat) => cat.categoryName);
+
+      return categories;
     } catch (error) {
       console.error("Error fetching categories:", error);
       return [];
@@ -90,13 +111,31 @@ const AddListing = () => {
     return [];
   }
 };
+const getTypes = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/api/pet-category`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) throw new Error("Network response was not ok");
+    const data = await response.json();
+    const types = data.petCategories || [];
+    return types.map((t) => t.categoryName); // ✅ correct key from model
+  } catch (error) {
+    console.error("Error fetching types:", error);
+    return [];
+  }
+};
+
 
  useEffect(() => {
   const fetchData = async () => {
     const categories = await getCategories();
     const cities = await getCities();
+    const petCategory = await getTypes(); 
     setCategoryList(categories);
     setCityList(cities);
+    setPetCategory(petCategory);
   };
   fetchData();
 }, []);
@@ -104,6 +143,11 @@ const AddListing = () => {
   // handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+  if (!token) {
+    alert("You must be logged in");
+    return;
+  }
 
     try {
       const formDataToSend = new FormData();
@@ -124,6 +168,10 @@ const AddListing = () => {
       formData.categories.forEach((cat) => {
         formDataToSend.append("categories[]", cat);
       });
+      formData.petCategories.forEach((type) => {
+        formDataToSend.append("petCategories[]", type);
+      }
+      );
 console.log(formDataToSend.getAll("categories[]"));
       // append image files
       formData.photos.forEach((photo) => {
@@ -132,6 +180,9 @@ console.log(formDataToSend.getAll("categories[]"));
 
       const response = await fetch(`${API_BASE}/api/listing`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ send token
+        },
         body: formDataToSend
       });
 
@@ -141,27 +192,45 @@ console.log(formDataToSend.getAll("categories[]"));
         alert("Listing saved successfully!");
         navigate("/business-listing");
       } else {
-        alert(result.error || "Failed to save listing");
+        alert(result.error || result.message || "Failed to save listing");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("Something went wrong!");
     }
   };
-
-
+const handleAddKeyword = (e) => {
+    e.preventDefault();
+    if (newKeyword.trim() && !formData.metaKeyword.includes(newKeyword.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        metaKeyword: [...prev.metaKeyword, newKeyword.trim()]
+      }));
+      setNewKeyword("");
+    }
+  };
+const handleRemoveKeyword = (keywordToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      metaKeyword: prev.metaKeyword.filter((kw) => kw !== keywordToRemove)
+    }));
+  };
   return (
     <Container className="mt-4">
       <div className="pl-3 pr-3">
         <Row className="mb-3 justify-content-end align-items-center">
           <Col>
             <h2 className="main-title mb-0">Add Listing</h2>
-          </Col>
-          <Col xs="auto">
             <Breadcrumb className="top-breadcrumb">
-              <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>Add Listing</Breadcrumb.Item>
             </Breadcrumb>
+          </Col>
+          <Col xs="auto">
+            
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+                    Go Back
+                  </Button>
           </Col>
         </Row>
 
@@ -169,8 +238,8 @@ console.log(formDataToSend.getAll("categories[]"));
           <Form onSubmit={handleSubmit}>
             {/* Category */}
             <Form.Group className="mb-3">
-              <Form.Label>Category</Form.Label>
-              <Select
+              <Form.Label>Category <span className="text-danger">*</span></Form.Label>
+              {/* <Select
                 isMulti
                 options={categoryList.map((c) => ({ value: c, label: c }))}
                 value={(formData.categories || []).map((c) => ({
@@ -183,12 +252,56 @@ console.log(formDataToSend.getAll("categories[]"));
                     categories: selected.map((s) => s.value)
                   }))
                 }
+              /> */}
+              <Select
+  isMulti
+  options={categoryList.map(c => ({ value: c.categoryName, label: c.categoryName }))}
+  value={(formData.categories || []).map(c => ({ value: c, label: c }))}
+  onChange={(selected) =>
+    setFormData(prev => ({
+      ...prev,
+      categories: selected.map(s => s.value),
+      petCategories: [] // clear pet types when category changes
+    }))
+  }
+/>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Type <span className="text-danger">*</span></Form.Label>
+              {/* <Select
+                isMulti
+                options={petCategory.map((c) => ({ value: c, label: c }))}
+                value={(formData.petCategories || []).map((c) => ({
+                  value: c,
+                  label: c
+                }))}
+                onChange={(selected) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    petCategories: selected.map((s) => s.value)
+                  }))
+                }
+              /> */}
+              <Select
+                isMulti
+                options={filteredPetCategories}
+                value={(formData.petCategories || []).map(c => ({
+                  value: c,
+                  label: c
+                }))}
+                onChange={(selected) =>
+                  setFormData(prev => ({
+                    ...prev,
+                    petCategories: selected.map(s => s.value)
+                  }))
+                }
               />
             </Form.Group>
 
+
             {/* Basic Fields */}
             <Form.Group className="mb-3">
-              <Form.Label>Shop Name</Form.Label>
+              <Form.Label>Shop Name <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 type="text"
                 name="shopName"
@@ -199,7 +312,7 @@ console.log(formDataToSend.getAll("categories[]"));
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
+              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 type="email"
                 name="email"
@@ -210,7 +323,7 @@ console.log(formDataToSend.getAll("categories[]"));
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Phone</Form.Label>
+              <Form.Label>Phone <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 type="number"
                 name="phone"
@@ -236,7 +349,7 @@ console.log(formDataToSend.getAll("categories[]"));
               name="city"
               value={formData.city}
               onChange={handleChange}
-              required
+              
             >
               <option value="">--Select City--</option>
               {cityList.map((element, index) => (
@@ -304,6 +417,9 @@ console.log(formDataToSend.getAll("categories[]"));
                 accept="image/*"
                 onChange={handlePhotoChange}
               />
+              <Form.Text className="text-muted">
+                Note : You can upload multiple images (JPG, PNG, WEBP) up to 2MB each.
+              </Form.Text>
             </Form.Group>
 
             {/* Preview */}
@@ -328,7 +444,7 @@ console.log(formDataToSend.getAll("categories[]"));
               />
             </Form.Group>
 
-            <Form.Group className="mb-4">
+            {/* <Form.Group className="mb-4">
               <Form.Label>Meta Keyword</Form.Label>
               <Form.Control
                 type="text"
@@ -336,6 +452,41 @@ console.log(formDataToSend.getAll("categories[]"));
                 value={formData.metaKeyword}
                 onChange={handleChange}
               />
+            </Form.Group> */}
+            {/* Meta Keywords - Dynamic Add/Remove */}
+<Form.Group className="mb-3">
+              <Form.Label>Meta Keywords</Form.Label>
+
+              <div className="d-flex flex-wrap gap-2 mb-2">
+                
+                {formData.metaKeyword.map((keyword, idx) => (
+                  <span key={idx} className="badge bg-secondary d-flex align-items-center">
+                    {keyword}
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="text-white ms-1 p-0"
+                      onClick={() => handleRemoveKeyword(keyword)}
+                      style={{ lineHeight: "1" }}
+                    >
+                      ✕
+                    </Button>
+                  </span>
+                ))}
+              </div>
+
+              <div className="d-flex">
+                <Form.Control
+                  type="text"
+                  placeholder="Type a keyword and press Add"
+                  value={newKeyword}
+                  onChange={(e) => setNewKeyword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddKeyword(e)}
+                />
+                <Button variant="outline-primary" onClick={handleAddKeyword} className="ms-2">
+                  Add
+                </Button>
+              </div>
             </Form.Group>
 
             <Form.Group className="mb-4">
