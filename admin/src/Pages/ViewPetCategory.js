@@ -83,12 +83,13 @@ const ViewPetCategory = () => {
       <Row className='mb-3 justify-content-end align-items-center'>
         <Col>
           <h2 className='main-title mb-0'>View Pet Category</h2>
-        </Col>
-        <Col xs={'auto'}>
           <Breadcrumb className='top-breadcrumb'>
             <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
             <Breadcrumb.Item active>View Pet Category</Breadcrumb.Item>
           </Breadcrumb>
+        </Col>
+        <Col xs={'auto'}>
+          <Button variant="secondary" onClick={() => navigate(-1)}>Go Back</Button>
         </Col>
       </Row>
 

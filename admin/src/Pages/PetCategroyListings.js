@@ -23,7 +23,7 @@ const PetCategoryListings = () => {
       const data = await res.json();
 
       if (res.ok) {
-        setListings(data.categories || []);
+        setListings(data.petCategories || []);
       } else {
         console.error('Error fetching categories:', data.message);
       }
