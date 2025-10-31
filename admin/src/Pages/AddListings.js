@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Form, Button, Container, Row, Col, Image, Breadcrumb } from "react-bootstrap";
 import Select from "react-select";
+import useUnsavedChanges from "../Hooks/useUnsavedChanges";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -35,6 +36,8 @@ const [newKeyword, setNewKeyword] = useState("");
   });
 
   const [previewUrls, setPreviewUrls] = useState([]);
+const { shouldBlockNavigation, confirmLeave, markAsSaved } =
+    useUnsavedChanges(formData);
 
   // handle normal input change
   const handleChange = (e) => {
@@ -190,6 +193,7 @@ console.log(formDataToSend.getAll("categories[]"));
 
       if (response.ok) {
         alert("Listing saved successfully!");
+        markAsSaved();
         navigate("/business-listing");
       } else {
         alert(result.error || result.message || "Failed to save listing");
@@ -215,6 +219,10 @@ const handleRemoveKeyword = (keywordToRemove) => {
       metaKeyword: prev.metaKeyword.filter((kw) => kw !== keywordToRemove)
     }));
   };
+  const handleGoBack = () => {
+    if (!confirmLeave()) return; // user canceled
+    navigate(-1);
+  };
   return (
     <Container className="mt-4">
       <div className="pl-3 pr-3">
@@ -228,7 +236,7 @@ const handleRemoveKeyword = (keywordToRemove) => {
           </Col>
           <Col xs="auto">
             
-            <Button variant="secondary" onClick={() => navigate(-1)}>
+            <Button variant="secondary" onClick={handleGoBack}>
                     Go Back
                   </Button>
           </Col>
@@ -264,6 +272,7 @@ const handleRemoveKeyword = (keywordToRemove) => {
       petCategories: [] // clear pet types when category changes
     }))
   }
+  required
 />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -295,6 +304,7 @@ const handleRemoveKeyword = (keywordToRemove) => {
                     petCategories: selected.map(s => s.value)
                   }))
                 }
+                required
               />
             </Form.Group>
 
@@ -312,7 +322,7 @@ const handleRemoveKeyword = (keywordToRemove) => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+              <Form.Label>Email</Form.Label>
               <Form.Control
                 type="email"
                 name="email"

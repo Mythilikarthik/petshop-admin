@@ -1,38 +1,53 @@
-import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Form,
   Button,
   Container,
   Row,
   Col,
-  Image,
   Breadcrumb,
+  Spinner,
 } from "react-bootstrap";
 
-const AdManagemnent = () => {
-  const { state } = useLocation();
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
+
+const AdManagement = () => {
   const navigate = useNavigate();
-
-  const { listing } = state || {};
-
   const [formData, setFormData] = useState({
-    category: "",
-    city: "",
-    position: "",
-    slideInterval: 3, // seconds
-    maxImage: 3, 
-    banners: [], // [{ file, url, preview }]
+    slideInterval: 3,
+    maxImages: 3,
   });
 
-  // Temp fields for adding banner
-  const [bannerFile, setBannerFile] = useState(null);
-  const [bannerUrl, setBannerUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const categoryList = ["Pet Shop", "Pet Food", "Services", "Pet Insurance"];
-  const cityList = ["Erode", "Chennai", "Coimbatore", "Salem"];
+  // ✅ Fetch existing Ad settings
+  const fetchAdSettings = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/ad/settings`);
+      const data = await res.json();
+      if (data.success && data.setting) {
+        setFormData({
+          slideInterval: data.setting.slideInterval || 3,
+          maxImages: data.setting.maxImages || 3,
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching ad settings:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Handle input changes
+  useEffect(() => {
+    fetchAdSettings();
+  }, []);
+
+  // ✅ Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -41,104 +56,100 @@ const AdManagemnent = () => {
     }));
   };
 
-  // Handle temp file upload
-  const handleBannerFile = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setBannerFile(file);
-    }
-  };
-
-  // Add banner to list
-  const handleAddBanner = () => {
-    if (!bannerFile || !bannerUrl) {
-      alert("Please select an image and enter URL");
-      return;
-    }
-
-    if (formData.banners.length >= 3) {
-      alert("Maximum 3 banners allowed.");
-      return;
-    }
-
-    const newBanner = {
-      file: bannerFile,
-      url: bannerUrl,
-      preview: URL.createObjectURL(bannerFile),
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      banners: [...prev.banners, newBanner],
-    }));
-
-    // Reset fields
-    setBannerFile(null);
-    setBannerUrl("");
-  };
-
-  // Remove banner
-  const handleRemoveBanner = (index) => {
-    setFormData((prev) => {
-      const updated = [...prev.banners];
-      updated.splice(index, 1);
-      return { ...prev, banners: updated };
-    });
-  };
-
-  // Submit
-  const handleSubmit = (e) => {
+  // ✅ Save settings to backend
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Final submitted data:", formData);
-    alert("Ad banners saved successfully!");
-    navigate("/business-listing");
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/ad/settings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Ad settings saved successfully!");
+        navigate("/ad-listing"); // redirect to ad listing page after save
+      } else {
+        alert(data.message || "Failed to save settings");
+      }
+    } catch (err) {
+      console.error("Error saving settings:", err);
+      alert("Server error while saving settings.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <Container className="mt-5 text-center">
+        <Spinner animation="border" /> <p>Loading Ad Settings...</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="mt-4">
       <div className="pl-3 pr-3">
-        <Row className="mb-3 justify-content-end align-items-center">
+        {/* Header */}
+        <Row className="mb-3 justify-content-between align-items-center">
           <Col>
-            <h2 className="main-title mb-0">Custom Ad</h2>
-          </Col>
-          <Col xs={"auto"}>
+            <h2 className="main-title mb-0">
+              Custom Ad
+            </h2>
             <Breadcrumb className="top-breadcrumb">
-              <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
-              <Breadcrumb.Item active>Custom Ad</Breadcrumb.Item>
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+              <Breadcrumb.Item active>
+                Custom Ad
+              </Breadcrumb.Item>
             </Breadcrumb>
+          </Col>
+          <Col xs="auto">
+            {/* <Button variant="secondary" onClick={() => navigate(-1)}>
+              Go Back
+            </Button> */}
           </Col>
         </Row>
 
-        <div className="form-container">
+        {/* Form */}
+        <div className="form-container border rounded p-4 shadow-sm bg-white">
           <Form onSubmit={handleSubmit}>
-            
-            {/* Slide Interval */}
-            <Form.Group className="mb-3">
-              <Form.Label>Slide Interval (seconds)</Form.Label>
-              <Form.Control
-                type="number"
-                name="slideInterval"
-                min="1"
-                value={formData.slideInterval}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Max.Images</Form.Label>
-              <Form.Control
-                type="number"
-                name="maxImage"
-                min="1"
-                value={formData.maxImage}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Slide Interval (seconds)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="slideInterval"
+                    min="1"
+                    value={formData.slideInterval}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
 
-            <Button variant="primary" type="submit">
-              Save
-            </Button>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Max Images to Slide</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="maxImages"
+                    min="1"
+                    value={formData.maxImages}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <div className="text-end">
+              <Button variant="primary" type="submit" disabled={saving}>
+                {saving ? "Saving..." : "Save Settings"}
+              </Button>
+            </div>
           </Form>
         </div>
       </div>
@@ -146,4 +157,4 @@ const AdManagemnent = () => {
   );
 };
 
-export default AdManagemnent;
+export default AdManagement;

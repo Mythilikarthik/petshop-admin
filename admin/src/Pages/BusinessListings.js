@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Table, Button, Form, Row, Col, Breadcrumb, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import ReactPaginate from 'react-paginate';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Select from "react-select";
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
@@ -44,6 +44,7 @@ const BusinessListings = () => {
             : (item.categories ? String(item.categories).split(/[,;|]/).map(s => s.trim()).filter(Boolean) : []),
           petCategories: Array.isArray(item.petCategories) ? item.petCategories : [],
           status: item.status || 'pending',
+          created_by_type : item.created_by_type,
         }));
         setListings(normalized);
       }
@@ -281,8 +282,9 @@ const BusinessListings = () => {
             <tr>
               <th>S.No</th>
               <th>Name</th>
-              <th>Email</th>
+              <th>Type</th>
               <th>Category</th>
+              <th>Created B y</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -292,8 +294,9 @@ const BusinessListings = () => {
               <tr key={listing._id}>
                 <td>{currentPage * itemsPerPage + index + 1}</td>
                 <td>{listing.shopName}</td>
-                <td>{listing.email}</td>
+                <td>{listing.petCategories?.join(",")}</td>
                 <td>{listing.categories?.join(", ")}</td>
+                <td>{listing.created_by_type.charAt(0).toUpperCase() + listing.created_by_type.slice(1)}</td>
                 <td>
                   <Form.Check
                     type="switch"
@@ -307,6 +310,14 @@ const BusinessListings = () => {
                   <Button size="sm" variant="success" onClick={() => handleView(listing)}>View</Button>{' '}
                   <Button size="sm" variant="primary" onClick={() => handleEdit(listing)}>Edit</Button>{' '}
                   <Button size="sm" variant="danger" onClick={() => handleDelete(listing._id)}>Delete</Button>
+                  {/* <Button
+  as={Link}
+  to={`/add-review/${listing._id}`}
+  variant="outline-primary"
+>
+  Write a Review
+</Button> */}
+
                 </td>
               </tr>
             ))}

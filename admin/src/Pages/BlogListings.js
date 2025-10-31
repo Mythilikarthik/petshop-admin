@@ -142,7 +142,7 @@ const BlogListings = () => {
                 <td>{b.category}</td>
                 <td>{b.date ? new Date(b.date).toISOString().slice(0,10) : ''}</td>
                 <td>
-                  <Button size="sm" variant="success" className="me-2" onClick={() => openView(b)}>View</Button>
+                  {/* <Button size="sm" variant="success" className="me-2" onClick={() => openView(b)}>View</Button> */}
                   <Button size="sm" variant="primary" className="me-2" onClick={() => openEdit(b)}>Edit</Button>
                   <Button size="sm" variant="danger" onClick={() => handleDelete(b._id || b.id)}>Delete</Button>
                 </td>

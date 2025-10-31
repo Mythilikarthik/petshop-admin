@@ -1,5 +1,5 @@
 // src/Pages/Dashboard.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Row, Col, Card, Table, Breadcrumb } from 'react-bootstrap';
 import { 
   AiFillRightCircle, AiOutlineShopping, AiFillSignal, AiOutlineUserAdd, AiOutlinePieChart 
@@ -8,6 +8,10 @@ import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis,  Legend } from 'recharts';
 import './Dashboard.css';
 import { MdEventNote, MdSecurity, MdShowChart } from 'react-icons/md';
+
+const API_BASE = process.env.NODE_ENV === "production"
+  ? "https://petshop-admin.onrender.com"
+  : "http://localhost:5000";
 
 // Chart Data
 const categoryData = [
@@ -33,7 +37,77 @@ const fraudData = [
   { id: 3, alert: 'Multiple accounts with same IP', severity: 'Medium' },
 ];
 
+
 const Dashboard = () => {
+  const [businessListing, setBusinessListing] = useState();
+  const [pendingListing, setPendingListing] = useState();
+  const [ userList,setUserList] = useState();
+  const [categoryData, setCategoryData] = useState([]);
+  useEffect(() => {
+  const fetchListings = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/listing`);
+      const data = await res.json();
+
+      if (data.success && data.listings) {
+        setBusinessListing(data.listings.length);
+       // alert(count);
+      }
+    } catch (err) {
+      console.error("Failed to fetch listings:", err);
+    }
+  };
+  const fetchPending = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/listing/pending`);
+      const data = await res.json();
+      if(data.success && data.listings) {
+        //console.log(data);
+        setPendingListing(data.listings.length);
+      }
+    } catch(err) {
+      console.error("Error : ", err);
+    }
+  }
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/user`);
+      const data = await res.json();
+      if(data.success && data.users) {
+        console.log(data);
+        setUserList(data.users.length);
+      }
+    } catch (err) {
+      console.error("Error: " , err);
+    }
+  }
+  const fetchCategoryStats = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/stats/categories`);
+        const data = await res.json();
+        if (data.success) {
+          setCategoryData(data.chartData);
+        }
+      } catch (err) {
+        console.error("Error fetching category stats:", err);
+      }
+    };
+
+    fetchCategoryStats();
+
+
+
+
+
+
+
+
+
+  fetchUsers();
+  fetchListings();
+  fetchPending();
+}, []);
+
   return (
     <div className='dashboard pl-3 pr-3'>
       {/* === Header === */}
@@ -52,13 +126,12 @@ const Dashboard = () => {
       {/* === Stats Cards === */}
       <Row className="mb-4">
         {[
-          { text: 'text-white', bg: 'bg-info', number: 150, label: 'Business Listings', icon: <AiOutlineShopping size={80} /> },
-          { text: 'text-white', bg: 'bg-success', number: 20, label: 'Waiting Listings', icon: <AiFillSignal size={80} /> },
-          { text: '', bg: 'bg-warning', number: 50, label: 'New Users', icon: <AiOutlineUserAdd size={80} /> },
-          { text: 'text-white', bg: 'bg-danger', number: 5, label: 'Fraud Cases', icon: <AiOutlinePieChart size={80} /> },
+          { text: 'text-white', bg: 'bg-info', number: `${businessListing}`, linkto : '/business-listing', label: 'Business Listings', icon: <AiOutlineShopping size={80} /> },
+          { text: 'text-white', bg: 'bg-success', number: `${pendingListing}`, linkto : '/business-listing', label: 'Pending Listings', icon: <AiFillSignal size={80} /> },
+          { text: '', bg: 'bg-warning', number: `${userList}`, label: 'New Users', linkto : '/business-listing', icon: <AiOutlineUserAdd size={80} /> },
         ].map((stat, i) => (
-          <Col className='mb-3' lg={3} md={6} sm={6} key={i}>
-            <Link to="/">
+          <Col className='mb-3' lg={4} md={6} sm={6} key={i}>
+            <Link to={`${stat.linkto}`}>
               <Card className={`${stat.text} ${stat.bg}`}>
                 <Card.Body className='pl-0 pr-0 pb-0'>
                   <div className='pos-rel d-flex justify-content-between align-items-center'>
@@ -154,7 +227,7 @@ const Dashboard = () => {
           </Card>
         </Col>
       </Row> */}
-      <Card className="shadow-sm p-3">
+      {/* <Card className="shadow-sm p-3">
         <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'>
           <MdSecurity/> Fraud Alerts
         </h5>
@@ -174,7 +247,7 @@ const Dashboard = () => {
             ))}
           </tbody>
         </Table>
-      </Card>
+      </Card> */}
     </div>
   );
 };

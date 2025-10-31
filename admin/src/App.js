@@ -40,9 +40,17 @@ import EditPetCategory from './Pages/EditPetCategory';
 import ViewPetCategory from './Pages/ViewPetCategory';
 import FaqViewPage from './Pages/FaqViewPage';
 import FaqEditPage from './Pages/FaqEditPage';
-
-
-
+import ReviewManagement from './Pages/ReviewManagement';
+import AddReview from './Pages/AddReview';
+import ViewReviews from './Pages/ViewReviews';
+import CustomPages from './Pages/CustomPages';
+import HomePage from './Pages/HomePage';
+import SeoInformation from './Pages/SeoInformation';
+import CreateNewCustomPage from './Pages/CreateNewCustomPage'
+import CategoryPages from "./Pages/CategoryPages"
+import AddCategoryPage from './Pages/AddCategoryPage';
+import EditProfile from './Pages/EditProfile';
+import ChangePassword from './Pages/ChangePassword';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -94,7 +102,7 @@ function App() {
           <Route path="add-pet-category" element={<AddPetCategory />} />
           <Route path="edit-pet-category" element={<EditPetCategory />} />
           <Route path="view-pet-category" element={<ViewPetCategory />} />
-          
+          <Route path="review-management" element={<ReviewManagement />} />
           <Route path="ad-listing" element={<AdListings />} />
           <Route path="page-management" element={<PageManagement />} />
           <Route path="email" element={<Email />} />
@@ -102,6 +110,19 @@ function App() {
           <Route path="promotion" element={<BusinessPromotion />} />
           <Route path="revenue-tracking" element={<RevenueTracking />} />
           <Route path="logout" element={<Logout />} />
+          <Route path="add-review/:listingId" element={<AddReview />} />
+          <Route path="reviews/:id" element={<ViewReviews />} />
+          <Route path='custom-pages' element={<CustomPages />} />
+          <Route path='home-page' element={<HomePage />} />
+          <Route path='seo-information' element={<SeoInformation />} />
+          <Route path='custom-page/new' element={<CreateNewCustomPage />}/>
+          <Route path="custom-page/edit" element={<CreateNewCustomPage />} />
+          <Route path='/category-pages' element={<CategoryPages/>} />
+          <Route path='/category-pages/add' element={<AddCategoryPage/>} />
+          <Route path='/category-pages/edit' element={<AddCategoryPage/>} />
+          <Route path='/ad-management/edit' element={<AdManagemnent/>} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/change-password" element={<ChangePassword />} />
         </Route>
         
 

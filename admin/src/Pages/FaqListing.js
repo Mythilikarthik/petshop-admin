@@ -132,7 +132,7 @@ const FaqListing = () => {
                 <td>{currentPage * itemsPerPage + index + 1}</td>
                 <td>{listing.question}</td>
                 <td>
-                  <Button size="sm" variant="success" className="me-2" onClick={() => openView(listing)}>View</Button>
+                  {/* <Button size="sm" variant="success" className="me-2" onClick={() => openView(listing)}>View</Button> */}
                   <Button size="sm" variant="primary" className="me-2" onClick={() => openEdit(listing)}>Edit</Button>
                   <Button size="sm" variant="danger" onClick={() => handleDelete(listing._id || listing.id)}>Delete</Button>
                 </td>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Form,
@@ -8,104 +8,161 @@ import {
   Col,
   Image,
   Breadcrumb,
+  Spinner,
 } from "react-bootstrap";
 import Select from "react-select";
 
-const AdManagemnent = () => {
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://your-server.com"
+    : "http://localhost:5000";
+
+const AdManagement = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-
-  const { listing } = state || {};
+  const id = state?.id || null;
+  console.log(id);
 
   const [formData, setFormData] = useState({
     category: "",
     city: "",
     position: "",
-    slideInterval: 3, // seconds
-    banners: [], // [{ file, url, preview }]
+    url: "",
+    image: "",
   });
 
-  // Temp fields for adding banner
   const [bannerFile, setBannerFile] = useState(null);
-  const [bannerUrl, setBannerUrl] = useState("");
+  const [categoryList, setCategoryList] = useState([]);
+  const [cityList, setCityList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const categoryList = ["Pet Shop", "Pet Food", "Services", "Pet Insurance"];
-  const cityList = ["Erode", "Chennai", "Coimbatore", "Salem"];
+  // 🔹 Fetch categories & cities
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [catRes, cityRes] = await Promise.all([
+          fetch(`${API_BASE}/api/category`),
+          fetch(`${API_BASE}/api/city`),
+        ]);
 
-  // Handle input changes
+        const catData = await catRes.json();
+        const cityData = await cityRes.json();
+
+        if (catData.success && cityData.success) {
+          setCategoryList(catData.categories || []);
+          setCityList(cityData.cities || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // 🔹 Load ad in edit mode
+  useEffect(() => {
+    if (id) {
+      const fetchAd = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/ads/${id}`);
+          const data = await res.json();
+          if (data.success) {
+            const ad = data.ad;
+
+            setFormData({
+              category: ad.category?._id || ad.category || "",
+              city: ad.city?._id || ad.city || "",
+              position: ad.position || "",
+              url: ad.url || "",
+              image: ad.image || "",
+            });
+          }
+        } catch (err) {
+          console.error("Failed to load ad:", err);
+        }
+      };
+      fetchAd();
+    }
+  }, [id]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle temp file upload
   const handleBannerFile = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setBannerFile(file);
-    }
+    if (file) setBannerFile(file);
   };
 
-  // Add banner to list
-  const handleAddBanner = () => {
-    if (!bannerFile || !bannerUrl) {
-      alert("Please select an image and enter URL");
-      return;
-    }
-
-    if (formData.banners.length >= 3) {
-      alert("Maximum 3 banners allowed.");
-      return;
-    }
-
-    const newBanner = {
-      file: bannerFile,
-      url: bannerUrl,
-      preview: URL.createObjectURL(bannerFile),
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      banners: [...prev.banners, newBanner],
-    }));
-
-    // Reset fields
-    setBannerFile(null);
-    setBannerUrl("");
-  };
-
-  // Remove banner
-  const handleRemoveBanner = (index) => {
-    setFormData((prev) => {
-      const updated = [...prev.banners];
-      updated.splice(index, 1);
-      return { ...prev, banners: updated };
-    });
-  };
-
-  // Submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Final submitted data:", formData);
-    alert("Ad banners saved successfully!");
-    navigate("/business-listing");
+
+    if (!bannerFile && !id && !formData.image) {
+      alert("Please select an image before saving!");
+      return;
+    }
+
+    const formToSend = new FormData();
+    formToSend.append("category", formData.category);
+    formToSend.append("city", formData.city);
+    formToSend.append("position", formData.position);
+    formToSend.append("url", formData.url);
+
+    if (bannerFile) formToSend.append("image", bannerFile);
+
+    const method = id ? "PATCH" : "POST";
+    const endpoint = id
+      ? `${API_BASE}/api/ads/${id}`
+      : `${API_BASE}/api/ads`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method,
+        body: formToSend,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert(id ? "Ad updated successfully!" : "Ad added successfully!");
+        navigate("/ad-listing");
+      } else {
+        alert(data.message || "Failed to save ad.");
+      }
+    } catch (error) {
+      console.error("Error saving ad:", error);
+      alert("Server error, please try again.");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner animation="border" />
+        <p>Loading categories & cities...</p>
+      </div>
+    );
+  }
 
   return (
     <Container className="mt-4">
       <div className="pl-3 pr-3">
-        <Row className="mb-3 justify-content-end align-items-center">
+        <Row className="mb-3 justify-content-between align-items-center">
           <Col>
-            <h2 className="main-title mb-0">Ad Management</h2>
-          </Col>
-          <Col xs={"auto"}>
+            <h2 className="main-title mb-0">
+              {id ? "Edit Ad" : "Add New Ad"}
+            </h2>
             <Breadcrumb className="top-breadcrumb">
               <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>Ad Management</Breadcrumb.Item>
             </Breadcrumb>
+          </Col>
+          <Col xs="auto">
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+              Go Back
+            </Button>
           </Col>
         </Row>
 
@@ -115,39 +172,61 @@ const AdManagemnent = () => {
             <Form.Group className="mb-3">
               <Form.Label>Category</Form.Label>
               <Select
-              isMulti
-              options={categoryList.map((c) => ({ value: c, label: c }))}
-              value={(formData.categories || []).map((c) => ({ value: c, label: c }))}
-              onChange={(selected) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  categories: selected.map((s) => s.value),
-                }))
-              }
-            />
+                name="category"
+                options={categoryList.map((c) => ({
+                  value: c._id,
+                  label: c.categoryName,
+                }))}
+                value={
+                  formData.category
+                    ? {
+                        value: formData.category,
+                        label:
+                          categoryList.find((x) => x._id === formData.category)
+                            ?.categoryName || "Select Category",
+                      }
+                    : null
+                }
+                onChange={(selected) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    category: selected ? selected.value : "",
+                  }))
+                }
+              />
             </Form.Group>
 
             {/* City */}
             <Form.Group className="mb-3">
               <Form.Label>City</Form.Label>
-              <Form.Select
+              <Select
                 name="city"
-                value={formData.city}
-                onChange={handleChange}
-                required
-              >
-                <option value="">-- Select City --</option>
-                {cityList.map((element, index) => (
-                  <option key={index} value={element}>
-                    {element}
-                  </option>
-                ))}
-              </Form.Select>
+                options={cityList.map((c) => ({
+                  value: c._id,
+                  label: c.city,
+                }))}
+                value={
+                  formData.city
+                    ? {
+                        value: formData.city,
+                        label:
+                          cityList.find((x) => x._id === formData.city)?.city ||
+                          "Select City",
+                      }
+                    : null
+                }
+                onChange={(selected) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    city: selected ? selected.value : "",
+                  }))
+                }
+              />
             </Form.Group>
 
-            {/* Ad Position */}
+            {/* Position */}
             <Form.Group className="mb-3">
-              <Form.Label>Ad Position</Form.Label>
+              <Form.Label>Position</Form.Label>
               <Form.Select
                 name="position"
                 value={formData.position}
@@ -161,37 +240,40 @@ const AdManagemnent = () => {
               </Form.Select>
             </Form.Group>
 
-            
+            {/* URL */}
+            <Form.Group className="mb-3">
+              <Form.Label>Ad URL</Form.Label>
+              <Form.Control
+                type="text"
+                name="url"
+                value={formData.url}
+                onChange={handleChange}
+                placeholder="https://example.com"
+              />
+            </Form.Group>
 
-            {/* Banner Upload */}
-            <Row className="mb-3">
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Banner Image</Form.Label>
-                  <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={handleBannerFile}
+            {/* Banner Image */}
+            <Form.Group className="mb-4">
+              <Form.Label>Banner Image</Form.Label>
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={handleBannerFile}
+              />
+              {formData.image && !bannerFile && (
+                <div className="mt-2 text-center">
+                  <Image
+                    src={formData.image}
+                    thumbnail
+                    style={{ width: "200px", height: "120px", objectFit: "cover" }}
                   />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Banner URL</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="https://example.com"
-                    value={bannerUrl}
-                    onChange={(e) => setBannerUrl(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-              
-            </Row>
+                  <p className="small text-muted mt-1">Current Image</p>
+                </div>
+              )}
+            </Form.Group>
 
-            
-            <Button variant="primary" type="submit">
-              Save
+            <Button type="submit" variant="primary">
+              {id ? "Update Ad" : "Save Ad"}
             </Button>
           </Form>
         </div>
@@ -200,4 +282,4 @@ const AdManagemnent = () => {
   );
 };
 
-export default AdManagemnent;
+export default AdManagement;

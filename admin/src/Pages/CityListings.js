@@ -134,14 +134,14 @@ const fetchCities = async () => {
                 <td>{listing.city}</td>
                 <td>
                   
-                  <Button
+                  {/* <Button
                     variant="success"
                     size="sm"
                     className="me-2"
                     onClick={() => handleView(listing)}
                   >
                     View
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="primary"
                     size="sm"

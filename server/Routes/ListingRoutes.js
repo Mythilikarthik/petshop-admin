@@ -169,6 +169,15 @@ router.get("/", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+router.get("/pending", async (req, res) => {
+  try {
+    const listings = await Listing.find({status : "pending"}).sort({ created_at: -1 }).lean();
+    res.json({ success: true, listings });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 // READ (one)
 router.get("/:id", async (req, res) => {

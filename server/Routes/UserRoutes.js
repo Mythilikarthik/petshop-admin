@@ -18,4 +18,13 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+router.get("/", async (req, res) => {
+  try {
+    const users = await User.find().sort({ created_at: -1 }).lean();
+    res.json({ success: true, users });
+  } catch (err) {
+    console.error("Error : ", err)
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+})
 module.exports = router;

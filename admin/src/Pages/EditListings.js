@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Image, Breadcrumb } from 'react-bootstrap';
 import Select from "react-select";
+import useUnsavedChanges from "../Hooks/useUnsavedChanges";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -38,6 +39,8 @@ const EditListing = () => {
     metaDescription: '',
     status: false,
   });
+  const { confirmLeave, markAsSaved, resetInitialSnapshot } = 
+  useUnsavedChanges(formData, { excludeKeys: ['photos', 'existingPhotos'] });
 
   // ✅ Fetch categories and pet categories
   useEffect(() => {
@@ -116,6 +119,9 @@ const EditListing = () => {
             metaDescription: data.listing.metaDescription || '',
             status: data.listing.status === 'approved'
           });
+          // ✅ After formData is updated with fetched listing
+
+
         } else {
           alert('Failed to fetch listing');
           navigate('/business-listing');
@@ -131,7 +137,11 @@ const EditListing = () => {
 
     fetchListing();
   }, [id, navigate]);
-
+useEffect(() => {
+  if (!loading && listing) {
+    resetInitialSnapshot();
+  }
+}, [loading, listing]);
   if (!id) {
     return <p className="text-danger text-center mt-4">No listing ID provided.</p>;
   }
@@ -236,6 +246,8 @@ const EditListing = () => {
       const result = await res.json();
       if (res.ok && result.success) {
         alert("Listing updated successfully!");
+
+        markAsSaved();
         navigate("/business-listing");
       } else {
         alert(result.message || "Failed to update listing");
@@ -245,7 +257,10 @@ const EditListing = () => {
       alert("Error updating listing");
     }
   };
-
+const handleGoBack = () => {
+    if (!confirmLeave()) return;
+    navigate(-1);
+  };
   // ✅ Render form
   return (
     <Container className="mt-4">
@@ -259,7 +274,7 @@ const EditListing = () => {
             </Breadcrumb>
           </Col>
           <Col xs="auto">
-            <Button variant="secondary" onClick={() => navigate(-1)}>
+            <Button variant="secondary" onClick={handleGoBack}>
               Go Back
             </Button>
           </Col>
@@ -286,6 +301,7 @@ const EditListing = () => {
                 options={categoryList.map(c => ({ value: c, label: c }))}
                 value={(formData.categories || []).map(c => ({ value: c, label: c }))}
                 onChange={handleCategoryChange}
+                required
               />
             </Form.Group>
 
@@ -297,6 +313,7 @@ const EditListing = () => {
                 options={petCategoryList.map(c => ({ value: c, label: c }))}
                 value={(formData.petCategories || []).map(c => ({ value: c, label: c }))}
                 onChange={handlePetCategoryChange}
+                required
               />
             </Form.Group>
 
@@ -307,7 +324,7 @@ const EditListing = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+              <Form.Label>Email</Form.Label>
               <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
             </Form.Group>
 

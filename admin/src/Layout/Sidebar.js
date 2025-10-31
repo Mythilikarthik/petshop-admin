@@ -9,7 +9,7 @@ import {
   MdPets
 } from 'react-icons/md';
 import { GiJumpingDog , GiDogHouse, GiNestBirds , GiRabbit, GiDogBowl } from "react-icons/gi";
-import { FaChevronDown, FaChevronUp, FaNewspaper, FaQuestionCircle } from 'react-icons/fa';
+import { FaChartArea, FaChevronDown, FaChevronUp, FaDeskpro, FaDesktop, FaNewspaper, FaPage4, FaPagelines, FaQuestionCircle } from 'react-icons/fa';
 import './Sidebar.css';
 
 const menuItems = [
@@ -23,21 +23,27 @@ const menuItems = [
       // { name: "Add Listing", path: "/add-listing", icon: <GiRabbit /> },
       { name: "Category Listing", path: "/category-listing", icon: <GiDogBowl /> },
       // { name: "Add Category", path: "/add-category", icon: <GiJumpingDog  /> },
-      { name: "Pet Category Listing", path: "/pet-category-listing", icon: <GiDogBowl /> },
+      { name: "Pet Type Listing", path: "/pet-category-listing", icon: <GiDogBowl /> },
       // { name: "Add Pet Category", path: "/add-pet-category", icon: <GiJumpingDog  /> },
       { name: "City Listing", path: "/city-listing", icon: <MdPlace/> },
       // { name: "Add City", path: "/add-city", icon: <MdLocationCity /> },
       { name: "Blog Listing", path: "/blog-listing", icon: <FaNewspaper  /> },
       { name: "FAQ", path: "/faq-listing", icon: <FaQuestionCircle /> },
+      { name: "Review Management", path: "/review-management", icon: <MdCampaign /> },
     ]
   },
   // { name: "User Management", path: "/user-management", icon: <MdPeople /> },
-  { name: "Page Management", path: "/page-management", icon: <MdOutlinePages /> },
+  { name: "Page Management", path: "/page-management", icon: <MdOutlinePages />, 
+    children: [
+      { name: "Custom Pages", path: "/custom-pages", icon: <FaPagelines /> },
+      { name: "Home Page", path: "/home-page", icon: <FaDesktop  /> },
+      { name: "Category Pages", path: "/category-pages", icon: <FaDesktop  /> },
+    ]
+   },
   { name: "Ad Management", path: "/ad-management", icon: <MdCampaign />, 
     children : [
       { name: "Custom Ad", path: "/custom-ad", icon: <GiDogBowl /> },
       { name: "Ad Listing", path: "/ad-listing", icon: <GiNestBirds  /> },
-      { name: "Add Ad", path: "/ad-management", icon: <GiRabbit /> },
     ]
    },
   { name: "Revenue Tracking", path: "/revenue-tracking", icon: <MdAttachMoney /> },

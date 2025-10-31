@@ -84,7 +84,7 @@ const ViewPetCategory = () => {
         <Col>
           <h2 className='main-title mb-0'>View Pet Category</h2>
           <Breadcrumb className='top-breadcrumb'>
-            <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+            <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
             <Breadcrumb.Item active>View Pet Category</Breadcrumb.Item>
           </Breadcrumb>
         </Col>

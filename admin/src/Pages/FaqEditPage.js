@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Form, Container, Spinner, Alert } from "react-bootstrap";
+import { Button, Form, Container, Spinner, Alert, Breadcrumb, Row, Col } from "react-bootstrap";
 import ParaEditor from "../Layout/ParaEditor";
 
 const API_BASE =
@@ -116,27 +116,24 @@ const FaqEditPage = () => {
 
   return (
     <Container className="mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3>{!id || id === "new" ? "Create FAQ" : "Edit FAQ"}</h3>
-        <div>
-          <Button variant="secondary" className="me-2" onClick={() => navigate(-1)}>
-            Back
-          </Button>
-          <Button variant="primary" onClick={handleSubmit} disabled={saving}>
-            {saving ? (
-              <>
-                <Spinner as="span" animation="border" size="sm" /> Saving...
-              </>
-            ) : (
-              "Save"
-            )}
-          </Button>
-        </div>
-      </div>
+            <div className='pl-3 pr-3'>
+        <Row className='mb-3 justify-content-end align-items-center'>
+          <Col>
+              <h2 className='main-title mb-0'>{!id || id === "new" ? "Create FAQ" : "Edit FAQ"}</h2>
+              <Breadcrumb className='top-breadcrumb'>
+              <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+              <Breadcrumb.Item active>{!id || id === "new" ? "Create FAQ" : "Edit FAQ"}</Breadcrumb.Item>
+              </Breadcrumb>
+          </Col>
+          <Col xs={'auto'}>
+              <Button variant='secondary' onClick={() => navigate(-1)}>Go Back</Button>
+          </Col>
+          </Row>
 
       {error && <Alert variant="danger">{error}</Alert>}
 
-      <Form onSubmit={handleSubmit}>
+      <div className="form-container">
+        <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3" controlId="faqQuestion">
           <Form.Label>Question</Form.Label>
           <Form.Control
@@ -157,11 +154,13 @@ const FaqEditPage = () => {
           <Button variant="primary" type="submit" disabled={saving}>
             {saving ? "Saving..." : "Save FAQ"}
           </Button>{" "}
-          <Button variant="outline-secondary" onClick={() => navigate("/faqs")}>
-            Cancel
-          </Button>
+          
         </div>
       </Form>
+      </div>
+      
+        
+      </div>
     </Container>
   );
 };

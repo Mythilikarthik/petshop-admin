@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Breadcrumb, Form } from 'react-bootstrap';
 import Select from "react-select";
+import {
+  
+  
+  AiOutlineEye,
+  
+  AiOutlineDollar
+} from 'react-icons/ai';
 import {
   MdAttachMoney,
   MdCalendarMonth,
@@ -30,6 +37,51 @@ import "./RevenueTracking.css";
 
 
 export default function RevenueTracking() {
+  const [loadingAds, setLoadingAds] = useState(true);
+    const [adTotals, setAdTotals] = useState({
+      impressions: 0,
+      clicks: 0,
+      earnings: 0,
+      count: 0,
+    });
+  
+    useEffect(() => {
+      const fetchAds = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/ads`);
+          const data = await res.json();
+  
+          // ✅ Handle multiple response shapes
+          let adsArray = [];
+          if (Array.isArray(data)) adsArray = data;
+          else if (Array.isArray(data.ads)) adsArray = data.ads;
+          else {
+            console.warn('Unexpected ads response:', data);
+            adsArray = [];
+          }
+  
+          // ✅ Calculate totals
+          const totals = adsArray.reduce(
+            (acc, ad) => {
+              acc.impressions += Number(ad.impressions) || 0;
+              acc.clicks += Number(ad.clicks) || 0;
+              acc.earnings += Number(ad.earnings) || 0;
+              acc.count += 1;
+              return acc;
+            },
+            { impressions: 0, clicks: 0, earnings: 0, count: 0 }
+          );
+  
+          setAdTotals(totals);
+        } catch (err) {
+          console.error('Error fetching ads:', err);
+        } finally {
+          setLoadingAds(false);
+        }
+      };
+  
+      fetchAds();
+    }, []);
   // Sample revenue chart data
 const revenueData = [
   { month: 'Jan', revenue: 1200 },
@@ -61,7 +113,10 @@ const [searchTerm, setSearchTerm] = useState("");
 const [selectedSources, setSelectedSources] = useState([]);
 
 // Filter data
-
+const API_BASE =
+  process.env.NODE_ENV === 'production'
+    ? 'https://petshop-admin.onrender.com/api'
+    : 'http://localhost:5000/api';
 
 const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
   const [showCalendar, setShowCalendar] = useState(false);
@@ -169,12 +224,42 @@ const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
               <Col xs={4}><MdOutlineAdsClick size={60} /></Col>
               <Col xs={8}>
                 <h6>Ads</h6>
-                <h4>₹3,200</h4>
+                <h4>₹{(adTotals.earnings || 0).toFixed(2)}</h4>
               </Col>
             </Row>
           </Card>
         </Col>
       </Row>
+      {/* <h5 class="d-flex gap-1 align-items-center mb-3 font-magenta"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path fill="none" d="M0 0h24v24H0z"></path><path d="m3.5 18.49 6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"></path></svg> Ad Overview</h5> */}
+      <Row className="mb-4">
+              {loadingAds ? (
+                <Col className="text-center"><p>Loading Ad Stats...</p></Col>
+              ) : (
+                <>
+                  <Col lg={6} md={6}>
+                    <Card className="bg-info text-white p-3">
+                      <h6><AiOutlineEye /> Total Impressions</h6>
+                      <h3>{adTotals.impressions}</h3>
+                      <small>{adTotals.count} ad(s) tracked</small>
+                    </Card>
+                  </Col>
+                  <Col lg={6} md={6}>
+                    <Card className="bg-success text-white p-3">
+                      <h6> Total Clicks</h6>
+                      <h3>{adTotals.clicks}</h3>
+                      <small>{adTotals.count} ad(s) tracked</small>
+                    </Card>
+                  </Col>
+                  {/* <Col lg={4} md={6}>
+                    <Card className="bg-warning text-white p-3">
+                      <h6><AiOutlineDollar /> Total Earnings</h6>
+                      <h3>₹{(adTotals.earnings || 0).toFixed(2)}</h3>
+                      <small>{adTotals.count} ad(s) tracked</small>
+                    </Card>
+                  </Col> */}
+                </>
+              )}
+            </Row>
 
       {/* Charts */}
       <Row className="mb-4">

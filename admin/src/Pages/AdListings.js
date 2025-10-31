@@ -1,160 +1,251 @@
-import React, { useState } from 'react';
-import { Table, Button, Form, Row, Col, Breadcrumb } from 'react-bootstrap';
-import ReactPaginate from 'react-paginate';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  Button,
+  Form,
+  Row,
+  Col,
+  Breadcrumb,
+  Spinner,
+} from "react-bootstrap";
+import ReactPaginate from "react-paginate";
+import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 
-const AdListings = () => {
-  const initialListings = [
-  { id: 1, city: 'Erode', email: 'john@example.com', categories: ["Pet Shop", "Services"] },
-  { id: 2, city: 'Salem', email: 'jane@example.com', categories: ["Pet Food"] },
-  { id: 3, city: 'Chennai', email: 'michael@dundermifflin.com', categories: ["Pet Shop"] },
-];
-const categoryList = ["Pet Shop", "Pet Food", "Services", "Pet Insurance"];
-const [selectedCategories, setSelectedCategories] = useState([]);
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
 
-  const [listings, setListings] = useState(initialListings);
-  const [searchTerm, setSearchTerm] = useState('');
+const AdListings = () => {
+  const [ads, setAds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedCity, setSelectedCity] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 5;
 
   const navigate = useNavigate();
 
-  const filteredListings = listings.filter((l) => {
+  // 🔹 Fetch ads from backend
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/ads`);
+        const data = await res.json();
+        if (data.success) {
+          setAds(data.ads || []);
+          console.log("ADs" + ads);
+        }
+      } catch (err) {
+        console.error("Error fetching ads:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAds();
+  }, []);
+
+  // 🔹 Filter logic
+  const filteredAds = ads.filter((ad) => {
+    const cityName = ad.city?.city?.toLowerCase() || "";
+    const categoryName = ad.category?.categoryName?.toLowerCase() || "";
     const matchesSearch =
-      l.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      l.email.toLowerCase().includes(searchTerm.toLowerCase());
+      cityName.includes(searchTerm.toLowerCase()) ||
+      categoryName.includes(searchTerm.toLowerCase());
 
     const matchesCategory =
       selectedCategories.length === 0 ||
-      selectedCategories.some((cat) => l.categories.includes(cat));
+      selectedCategories.includes(ad.category?.categoryName);
 
-    return matchesSearch && matchesCategory;
+    const matchesCity = !selectedCity || ad.city?.city === selectedCity;
+
+    return matchesSearch && matchesCategory && matchesCity;
   });
 
-
-  const pageCount = Math.ceil(filteredListings.length / itemsPerPage);
-  const displayedListings = filteredListings.slice(
+  const pageCount = Math.ceil(filteredAds.length / itemsPerPage);
+  const displayedAds = filteredAds.slice(
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
   );
 
   const handlePageClick = ({ selected }) => setCurrentPage(selected);
 
-//   const handleEdit = (listing) => {
-//     console.log('Navigating to edit:', listing);
-//     navigate('/edit-listing', { state: { listing } });
-//   };
+  // 🔹 Delete Ad
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this Ad?")) return;
 
-//   const handleView = (listing) => {
-//     console.log('Navigating to view:', listing);
-//     navigate('/view-listing', { state: { listing } });
-//   };
-  const handleDelete = (id) => {
-  if (window.confirm("Are you sure you want to delete this listing?")) {
-    setListings((prevListings) => prevListings.filter(l => l.id !== id));
-  }
-};
+    try {
+      const res = await fetch(`${API_BASE}/api/ads/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Ad deleted successfully!");
+        setAds((prev) => prev.filter((ad) => ad._id !== id));
+      } else {
+        alert(data.message || "Failed to delete Ad");
+      }
+    } catch (err) {
+      console.error("Error deleting Ad:", err);
+    }
+  };
+
+  
+
+
+  // 🔹 Extract unique categories & cities for filters
+  const categoryOptions = Array.from(
+    new Set(ads.map((ad) => ad.category?.categoryName).filter(Boolean))
+  );
+  const cityOptions = Array.from(
+    new Set(ads.map((ad) => ad.city?.cityName).filter(Boolean))
+  );
 
   return (
     <div className="container mt-4">
-      <div className='pl-3 pr-3'>
-        <Row className='mb-3 justify-content-end align-items-center'>
+      <div className="pl-3 pr-3">
+        {/* Header */}
+        <Row className="mb-3 justify-content-between align-items-center">
           <Col>
-            <h2 className='main-title mb-0'>Ad Listing</h2>
+            <h2 className="main-title mb-0">Ad Listing</h2>
           </Col>
-          <Col xs={'auto'}>
-            <Breadcrumb className='top-breadcrumb'>
+          <Col xs="auto">
+            <Breadcrumb className="top-breadcrumb">
               <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>Ad Listing</Breadcrumb.Item>
             </Breadcrumb>
           </Col>
         </Row>
-        <Row>
-          <Col>
-            <Form.Group className="mb-3">
-              <Form.Control
-                type="text"
-                placeholder="Search by city"
-                className="mb-3"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(0);
-                }}
-              />
-            </Form.Group>
+
+        {/* Filters */}
+        <Row className="align-items-center mb-3">
+          <Col md={3}>
+            <Form.Control
+              type="text"
+              placeholder="Search by city or category"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(0);
+              }}
+            />
           </Col>
-          <Col>
-              <Form.Group className="mb-3">
-                <Select
-                  isMulti
-                  options={categoryList.map((c) => ({ value: c, label: c }))}
-                  value={selectedCategories.map((c) => ({ value: c, label: c }))}
-                  onChange={(selected) => {
-                    setSelectedCategories(selected ? selected.map((s) => s.value) : []);
-                    setCurrentPage(0);
-                  }}
-                  placeholder="Select by Categories"
-                />
-              </Form.Group>
+
+          <Col md={3}>
+            <Select
+              isMulti
+              options={categoryOptions.map((c) => ({ value: c, label: c }))}
+              value={selectedCategories.map((c) => ({ value: c, label: c }))}
+              onChange={(selected) =>
+                setSelectedCategories(selected ? selected.map((s) => s.value) : [])
+              }
+              placeholder="Filter by Category"
+            />
+          </Col>
+
+          <Col md={3}>
+            <Form.Select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+            >
+              <option value="">All Cities</option>
+              {cityOptions.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </Form.Select>
+          </Col>
+          <Col md={3} className="d-flex justify-content-end">
+              <Button variant="primary" onClick={() => navigate('/ad-management')}>+ Add New</Button>
           </Col>
         </Row>
 
-
         {/* Table */}
-        <Table bordered hover responsive>
-          <thead className="">
-            <tr>
-              <th>S.No</th>
-              <th>City</th>
-              <th>Category</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayedListings.map((listing, index) => (
-              <tr key={listing.id}>
-                <td>{currentPage * itemsPerPage + index + 1}</td>
-                <td>{listing.city}</td>
-                <td>{listing.categories ? listing.categories.join(", ") : ""}</td>
-                <td>
-                  
-                  <Button
-                    variant="success"
-                    size="sm"
-                    className="me-2"
-                    // onClick={() => handleView(listing)}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="me-2"
-                    // onClick={() => handleEdit(listing)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleDelete(listing.id)}
-                  >
-                    Delete
-                  </Button>
-                </td>
+        {loading ? (
+          <div className="text-center py-5">
+            <Spinner animation="border" />
+            <p>Loading Ads...</p>
+          </div>
+        ) : (
+          <Table bordered hover responsive>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Image</th>
+                <th>City</th>
+                <th>Category</th>
+                <th>Position</th>
+                <th>URL</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {console.log(displayedAds)}
+              {displayedAds.length > 0 ? (
+                displayedAds.map((ad, index) => (
+                  <tr key={ad._id}>
+                    <td>{currentPage * itemsPerPage + index + 1}</td>
+                    <td>
+                      <img
+                        src={ad.image}
+                        alt="Ad"
+                        style={{
+                          width: "70px",
+                          height: "50px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                        }}
+                      />
+                    </td>
+                    <td>{ad.city?.city || "-"}</td>
+                    <td>{ad.category?.categoryName || "-"}</td>
+                    <td>{ad.position}</td>
+                    <td>
+                      {ad.url ? (
+                        <a href={ad.url} target="_blank" rel="noopener noreferrer">
+                          Visit
+                        </a>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td>                      
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="me-2"
+                        onClick={() => navigate("/ad-management/edit", { state: { id: ad._id } })}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(ad._id)}
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="text-center">
+                    No ads found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        )}
 
         {/* Pagination */}
         {pageCount > 1 && (
           <ReactPaginate
             pageCount={pageCount}
-            pageRangeDisplayed={2}
-            marginPagesDisplayed={1}
             onPageChange={handlePageClick}
             containerClassName="pagination justify-content-center"
             pageClassName="page-item"
