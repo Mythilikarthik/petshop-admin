@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Review = require('../Models/Review');
+const Listing = require("../Models/Listing");
+const { verifyToken } = require('../middleware/authMiddleware');
 
 // POST /api/reviews
 router.post("/", async (req, res) => {
@@ -56,9 +58,9 @@ router.patch("/:id/status", async (req, res) => {
       );
     }
 
-    res.json({ message: `Review ${status}.`, review });
+    res.json({ success: true, message: `Review ${status}.`, review });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 // GET /api/reviews/listing/:listingId
@@ -106,6 +108,30 @@ router.get("/single/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.get("/user/user-listings", verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId; // obtained from verifyToken middleware
+
+    // 1. Find all listings owned by this user
+    const listings = await Listing.find({ user_id: userId }, "_id");
+    if (!listings.length) {
+      return res.json([]);
+    }
+
+    const listingIds = listings.map((l) => l._id);
+
+    // 2. Find all reviews for these listings
+    const reviews = await Review.find({ listingId: { $in: listingIds } })
+      .populate("listingId", "shopName city")
+      .populate("userId", "name email");
+
+    res.json({reviews});
+  } catch (err) {
+    console.error("Error fetching reviews for user listings:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
 
 
 module.exports = router;

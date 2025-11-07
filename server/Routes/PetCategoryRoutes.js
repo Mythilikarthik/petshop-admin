@@ -35,6 +35,14 @@ router.get('/', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+router.get('/show', async (req, res) => {
+  try {
+    const petCategories = await PetCategory.find({ show : true }).sort({ created_at: -1 });
+    res.json({ success: true, petCategories });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 router.put('/:id', async (req, res) => {
   try {
     const { categoryName, description, metaTitle, metaKeyword, metaDescription } = req.body;
@@ -64,9 +72,24 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ success: true, message: 'Category deleted successfully' });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(400).json({ success: false, message: err.message });
   }
 });
+router.patch("/:id/toggle", async (req,res) => {
+  try {
+    const petCategories = await PetCategory.findById(req.params.id);
+    if(!petCategories) {
+      return res.status(404).json({ success: false, message: "Pet Type not found" });
+      
+    }
+    petCategories.show = !petCategories.show;
+    await petCategories.save();
+    res.json({ success: true, message: "Pet Type visibility updated", show: petCategories.show });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ success : false, message: "Server error"});
+  }
+})
 
 
 module.exports = router;

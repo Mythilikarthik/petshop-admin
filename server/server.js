@@ -17,6 +17,13 @@ const HomePageRoutes = require('./Routes/HomePageRoutes')
 const categoryPageRoutes = require("./Routes/CategoryPageRoutes");
 const AdRoutes = require("./Routes/AdRoutes");
 const ChartRoutes = require("./Routes/ChartRoutes");
+const MessageRoutes = require('./Routes/MessageRoutes');
+const contactAdminRoutes = require("./Routes/ContactAdminRoutes");
+
+
+const http = require("http");
+const { Server } = require("socket.io");
+
 
 dotenv.config();
 const app = express();
@@ -35,7 +42,7 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 .then(() => console.log('MongoDB connected'))
 .catch(err => console.error('MongoDB error:', err));
-
+const paymentRoutes = require("./Routes/paymentRoutes");
 app.use("/api/", AdminRoutes);
 
 app.use("/api/user", UserRoutes);
@@ -52,8 +59,41 @@ app.use('/api/home-page', HomePageRoutes);
 app.use("/api/categorypage", categoryPageRoutes);
 app.use("/api/ads", AdRoutes);
 app.use("/api/stats", ChartRoutes);
+app.use("/api/messages", MessageRoutes);
+app.use("/api/contact-admin", contactAdminRoutes);
+app.use("/api/payments", paymentRoutes);
+
+
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // or your frontend URL
+    methods: ["GET", "POST"],
+  },
+});
+io.on("connection", (socket) => {
+  console.log("⚡ User connected:", socket.id);
+
+  socket.on("join", (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their room`);
+  });
+
+  socket.on("message_read", ({ userId }) => {
+    console.log(`📩 Message read by ${userId}`);
+    // Broadcast instantly to that user's own room
+    io.to(userId).emit("message_read_update");
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ User disconnected:", socket.id);
+  });
+});
+  
+
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

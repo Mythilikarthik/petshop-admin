@@ -18,20 +18,21 @@ const EditListing = () => {
   const [listing, setListing] = useState(null);
   const [categoryList, setCategoryList] = useState([]);
   const [petCategoryList, setPetCategoryList] = useState([]);
+  const [cityList, setCityList] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const [newKeyword, setNewKeyword] = useState("");
-  const [cityList, setCityList] = useState([]);
+
   const [formData, setFormData] = useState({
     shopName: '',
     email: '',
     phone: '',
     address: '',
-    city: '',
+    city: '',          // 🧩 will hold city _id
     country: '',
     mapUrl: '',
     description: '',
-    categories: [],
-    petCategories: [],
+    categories: [],     // 🧩 will hold category _ids
+    petCategories: [],  // 🧩 will hold petCategory _ids
     photos: [],
     existingPhotos: [],
     metaTitle: '',
@@ -39,16 +40,22 @@ const EditListing = () => {
     metaDescription: '',
     status: false,
   });
-  const { confirmLeave, markAsSaved, resetInitialSnapshot } = 
-  useUnsavedChanges(formData, { excludeKeys: ['photos', 'existingPhotos'] });
 
-  // ✅ Fetch categories and pet categories
+  const { confirmLeave, markAsSaved, resetInitialSnapshot } =
+    useUnsavedChanges(formData, { excludeKeys: ['photos', 'existingPhotos'] });
+
+  // ✅ Fetch categories, pet categories, and cities (ID + Name)
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/category`);
+        const res = await fetch(`${API_BASE}/api/category/show`);
         const data = await res.json();
-        if (data.success) setCategoryList(data.categories.map(c => c.categoryName));
+        if (data.success) {
+          // 🧩 Keep both id + name
+          setCategoryList(
+            data.categories.map(c => ({ value: c._id, label: c.categoryName }))
+          );
+        }
       } catch (err) {
         console.error("Error fetching categories:", err);
       }
@@ -56,22 +63,26 @@ const EditListing = () => {
 
     const fetchPetCategories = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/pet-category`);
+        const res = await fetch(`${API_BASE}/api/pet-category/show`);
         const data = await res.json();
-        if (data.success) setPetCategoryList(data.petCategories.map(c => c.categoryName));
+        if (data.success) {
+          setPetCategoryList(
+            data.petCategories.map(c => ({ value: c._id, label: c.categoryName }))
+          );
+        }
       } catch (err) {
         console.error("Error fetching pet categories:", err);
       }
     };
+
     const fetchCityList = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/city`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }); 
+        const res = await fetch(`${API_BASE}/api/city/show`);
         const data = await res.json();
         if (data.success) {
-          setCityList(data.cities.map(c => c.city));
+          setCityList(
+            data.cities.map(c => ({ value: c._id, label: c.city }))
+          );
         }
       } catch (err) {
         console.error("Error fetching cities:", err);
@@ -100,28 +111,30 @@ const EditListing = () => {
             email: data.listing.email || '',
             phone: data.listing.phone || '',
             address: data.listing.address || '',
-            city: data.listing.city || '',
+            city: data.listing.city?._id || data.listing.city || '',
             country: data.listing.country || '',
             mapUrl: data.listing.mapUrl || '',
             description: data.listing.description || '',
-            categories: data.listing.categories || [],
-            petCategories: data.listing.petCategories || [],
+            categories: data.listing.categories?.map(c => c._id || c) || [],
+            petCategories: data.listing.petCategories?.map(c => c._id || c) || [],
             photos: [],
             existingPhotos: data.listing.photos || [],
             metaTitle: data.listing.metaTitle || '',
             metaKeyword: data.listing.metaKeyword
-              ? (
-                  Array.isArray(data.listing.metaKeyword)
-                    ? data.listing.metaKeyword.flatMap(k => k.split(',').map(x => x.trim()))
-                    : data.listing.metaKeyword.split(',').map(k => k.trim())
-                )
-              : [],
+            ? (
+                Array.isArray(data.listing.metaKeyword)
+                  ? data.listing.metaKeyword
+                      .flatMap(k => k.split(',').map(x => x.trim()))
+                      .filter(k => k) 
+                  : data.listing.metaKeyword
+                      .split(',')
+                      .map(k => k.trim())
+                      .filter(k => k)
+              )
+            : [],
             metaDescription: data.listing.metaDescription || '',
-            status: data.listing.status === 'approved'
+            status: data.listing.status === 'approved',
           });
-          // ✅ After formData is updated with fetched listing
-
-
         } else {
           alert('Failed to fetch listing');
           navigate('/business-listing');
@@ -137,30 +150,17 @@ const EditListing = () => {
 
     fetchListing();
   }, [id, navigate]);
-useEffect(() => {
-  if (!loading && listing) {
-    resetInitialSnapshot();
-  }
-}, [loading, listing]);
-  if (!id) {
-    return <p className="text-danger text-center mt-4">No listing ID provided.</p>;
-  }
 
-  if (loading) {
-    return <p className="text-center mt-4">Loading listing details...</p>;
-  }
-
-  if (!listing) {
-    return <p className="text-danger text-center mt-4">Listing not found.</p>;
-  }
+  useEffect(() => {
+    if (!loading && listing) {
+      resetInitialSnapshot();
+    }
+  }, [loading, listing]);
 
   // ✅ Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleCategoryChange = (selected) => {
@@ -177,24 +177,23 @@ useEffect(() => {
     }));
   };
 
-  const handlePhotoChange = (e) => {
-    const files = Array.from(e.target.files);
+  const handleCityChange = (selected) => {
     setFormData(prev => ({
       ...prev,
-      photos: files
+      city: selected ? selected.value : ''
     }));
-    const urls = files.map(file => URL.createObjectURL(file));
-    setPreviewUrls(urls);
+  };
+
+  const handlePhotoChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData(prev => ({ ...prev, photos: files }));
+    setPreviewUrls(files.map(file => URL.createObjectURL(file)));
   };
 
   const handleStatusToggle = () => {
-    setFormData(prev => ({
-      ...prev,
-      status: !prev.status
-    }));
+    setFormData(prev => ({ ...prev, status: !prev.status }));
   };
 
-  // ✅ Keyword Handlers
   const handleAddKeyword = (e) => {
     e.preventDefault();
     if (newKeyword.trim() && !formData.metaKeyword.includes(newKeyword.trim())) {
@@ -216,25 +215,25 @@ useEffect(() => {
   // ✅ Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append('shopName', formData.shopName);
-      formDataToSend.append('email', formData.email);
-      formDataToSend.append('phone', formData.phone);
-      formDataToSend.append('address', formData.address);
-      formDataToSend.append('city', formData.city);
-      formDataToSend.append('country', formData.country);
-      formDataToSend.append('mapUrl', formData.mapUrl);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('metaTitle', formData.metaTitle);
-      formDataToSend.append('metaKeyword', formData.metaKeyword.join(','));
-      formDataToSend.append('metaDescription', formData.metaDescription);
-      formDataToSend.append('status', formData.status ? 'approved' : 'pending');
+      Object.entries({
+        shopName: formData.shopName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        country: formData.country,
+        mapUrl: formData.mapUrl,
+        description: formData.description,
+        metaTitle: formData.metaTitle,
+        metaKeyword: formData.metaKeyword.join(','),
+        metaDescription: formData.metaDescription,
+        status: formData.status ? 'approved' : 'pending'
+      }).forEach(([key, val]) => formDataToSend.append(key, val));
 
       formData.categories.forEach(cat => formDataToSend.append('categories[]', cat));
       formData.petCategories.forEach(cat => formDataToSend.append('petCategories[]', cat));
-
       formData.photos.forEach(photo => formDataToSend.append('photos', photo));
       formData.existingPhotos.forEach(photo => formDataToSend.append('existingPhotos[]', photo));
 
@@ -246,7 +245,6 @@ useEffect(() => {
       const result = await res.json();
       if (res.ok && result.success) {
         alert("Listing updated successfully!");
-
         markAsSaved();
         navigate("/business-listing");
       } else {
@@ -257,11 +255,15 @@ useEffect(() => {
       alert("Error updating listing");
     }
   };
-const handleGoBack = () => {
+
+  const handleGoBack = () => {
     if (!confirmLeave()) return;
     navigate(-1);
   };
-  // ✅ Render form
+
+  if (!id) return <p className="text-danger text-center mt-4">No listing ID provided.</p>;
+  if (loading) return <p className="text-center mt-4">Loading listing details...</p>;
+  if (!listing) return <p className="text-danger text-center mt-4">Listing not found.</p>;
   return (
     <Container className="mt-4">
       <div className='pl-3 pr-3'>
@@ -296,12 +298,11 @@ const handleGoBack = () => {
             {/* Category Select */}
             <Form.Group className="mb-3">
               <Form.Label>Category <span className="text-danger">*</span></Form.Label>
-              <Select
+               <Select
                 isMulti
-                options={categoryList.map(c => ({ value: c, label: c }))}
-                value={(formData.categories || []).map(c => ({ value: c, label: c }))}
+                options={categoryList}
+                value={categoryList.filter(c => formData.categories.includes(c.value))}
                 onChange={handleCategoryChange}
-                required
               />
             </Form.Group>
 
@@ -310,22 +311,21 @@ const handleGoBack = () => {
               <Form.Label>Type <span className="text-danger">*</span></Form.Label>
               <Select
                 isMulti
-                options={petCategoryList.map(c => ({ value: c, label: c }))}
-                value={(formData.petCategories || []).map(c => ({ value: c, label: c }))}
+                options={petCategoryList}
+                value={petCategoryList.filter(c => formData.petCategories.includes(c.value))}
                 onChange={handlePetCategoryChange}
-                required
               />
             </Form.Group>
 
             {/* Basic Fields */}
             <Form.Group className="mb-3">
               <Form.Label>Shop Name <span className="text-danger">*</span></Form.Label>
-              <Form.Control type="text" name="shopName" value={formData.shopName} onChange={handleChange} required />
+              <Form.Control type="text" name="shopName" value={formData.shopName} onChange={handleChange} required disabled />
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
+              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required disabled />
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -340,12 +340,12 @@ const handleGoBack = () => {
 
             <Form.Group className="mb-3">
               <Form.Label>City</Form.Label>
-              <Form.Control as="select" name="city" value={formData.city} onChange={handleChange}>
-                <option value="">--Select City--</option>
-                {cityList.map((city, index) => (
-                  <option key={index} value={city}>{city}</option>
-                ))}
-              </Form.Control>
+              <Select
+                options={cityList}
+                value={cityList.find(c => c.value === formData.city) || null}
+                onChange={handleCityChange}
+                placeholder="Select City"
+              />
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -354,7 +354,7 @@ const handleGoBack = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Location Map URL</Form.Label>
+              <Form.Label>Website URL</Form.Label>
               <Form.Control type="url" name="mapUrl" value={formData.mapUrl} onChange={handleChange} />
             </Form.Group>
 
@@ -381,6 +381,9 @@ const handleGoBack = () => {
             <Form.Group className="mb-4">
               <Form.Label>Upload New Photos</Form.Label>
               <Form.Control type="file" name="photos" multiple accept="image/*" onChange={handlePhotoChange} />
+              <Form.Text className="text-muted">
+                              Note : You can upload multiple images (JPG, PNG, WEBP) up to 2MB each.
+                            </Form.Text>
             </Form.Group>
 
             {/* Existing Photo Previews */}

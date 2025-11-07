@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FaPaw } from "react-icons/fa";
 import "./GoPremium.css";
-const API_BASE =
-  process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
-    : "http://localhost:5000";
+
 const GoPremium = () => {
   const [billingCycle, setBillingCycle] = useState("monthly");
 
@@ -23,76 +20,47 @@ const GoPremium = () => {
     },
   };
 
-  const handlePayment = async () => {
-  const token = localStorage.getItem("token");
-  const plan = billingCycle;
-
-  const res = await fetch(`${API_BASE}/api/payments/create-order`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ plan }),
-  });
-
-  const data = await res.json();
-  if (!data.success) return alert("Order creation failed");
-
-  const { order } = data;
-
-  const options = {
-    key: "rzp_test_1234567890", // Replace with your Razorpay Key ID
-    amount: order.amount,
-    currency: order.currency,
-    name: "PetShop Premium",
-    description: `Premium Plan - ${plan}`,
-    order_id: order.id,
-    handler: async (response) => {
-      const verifyRes = await fetch(`${API_BASE}/api/payments/verify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...response,
-          plan,
-          amount: order.amount / 100,
-        }),
-      });
-
-      const verifyData = await verifyRes.json();
-      if (verifyData.success) {
-        alert("Payment Successful! 🎉");
-      } else {
-        alert("Payment verification failed.");
-      }
-    },
-    theme: { color: "#4CAF50" },
+  const handlePayment = (method) => {
+    alert(`Redirecting to ${method} payment gateway...`);
+    // TODO: integrate Razorpay or Stripe SDK here
   };
-
-  const rzp = new window.Razorpay(options);
-  rzp.open();
-};
-
-
   const intlFormat = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   })
-  useEffect(() => {
-  const script = document.createElement("script");
-  script.src = "https://checkout.razorpay.com/v1/checkout.js";
-  script.async = true;
-  document.body.appendChild(script);
-}, []);
 
   return (
     <div className="container py-5">
       <h1 className="text-center mb-4">Go Premium</h1>
 
       {/* Toggle Billing Cycle */}
-      
+      <div className="d-flex justify-content-center mb-4">
+        <div className="btn-group" role="group">
+          <button
+            type="button"
+            className={`btn ${billingCycle === "monthly" ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setBillingCycle("monthly")}
+          >
+            Plan 1
+          </button>
+          <button
+            type="button"
+            className={`btn ${billingCycle === "yearly" ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setBillingCycle("yearly")}
+          >
+            Plan 2
+          </button>
+          <button
+            type="button"
+            className={`btn ${billingCycle === "lifelong" ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setBillingCycle("lifelong")}
+          >
+            Plan 3
+          </button>
+        </div>
+      </div>
 
       {/* Pricing Card */}
       <div className="row justify-content-center">
@@ -124,9 +92,9 @@ const GoPremium = () => {
                 </button> */}
                 <button
                   className="btn btn-primary"
-                  onClick={handlePayment}
+                  onClick={() => handlePayment("gpay")}
                 >
-                    Pay with Razorpay
+                  Pay with Gpay
                 </button>
               </div>
             </div>

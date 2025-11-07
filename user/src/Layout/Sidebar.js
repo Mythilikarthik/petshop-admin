@@ -8,19 +8,20 @@ import {
   MdOutlineMenuBook ,
   MdPets
 } from 'react-icons/md';
-import { GiNestBirds  } from "react-icons/gi";
+import { GiNestBirds, GiNodular  } from "react-icons/gi";
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import './Sidebar.css';
 
 const menuItems = [
   { name: "Dashboard", path: "/dashboard", icon: <MdPets /> },
   { name: "Edit Listing", path: "/edit-listing", icon: <GiNestBirds /> },
+  { name: "Reviews", path: "/review", icon: <GiNodular /> },
   { 
     name: "Message", 
     path: "/business-listing", 
     icon: <MdMessage  />,
     children: [
-      { name: "Message List", path: "/view-message", icon: <MdOutlineMenuBook   /> },
+      { name: "Message List", path: "/messages", icon: <MdOutlineMenuBook   /> },
       { name: "Send Message", path: "/send-message", icon: <MdOutlineSend  /> },
     ]
   },

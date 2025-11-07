@@ -3,6 +3,8 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const Listing = require("../Models/Listing");
+const Message = require("../Models/Message");
+const Review = require("../Models/Review");
 const { verifyToken } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -35,6 +37,7 @@ router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
   try {
     const { shopName, email, phone, address, city, country, mapUrl, description, categories, petCategories, metaTitle, metaKeyword, metaDescription } = req.body;
     const status = req.userType === "admin" ? "approved" : "pending";
+    const user_id = req.userType === "user" ? req.userId : null;
 
     const newListing = new Listing({
       shopName,
@@ -54,6 +57,7 @@ router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
       metaKeyword,
       metaDescription,
       status,
+      user_id,
     });
 
     await newListing.save();
@@ -78,66 +82,164 @@ router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
   }
 });
 
-
-// ...existing code...
-router.post("/bulk", verifyToken, upload.array("photos", 100), async (req, res) => {
+router.post("/bulk", verifyToken, async (req, res) => {
   try {
-    let listings = req.body.listings;
+    const { listings } = req.body;
+    const userId = req.userId;
+    const userType = req.userType;
+    const status = userType === "admin" ? "approved" : "pending";
 
-    if (!listings) return res.status(400).json({ success: false, message: "No listings provided" });
-    if (typeof listings === "string") listings = JSON.parse(listings);
-    if (!Array.isArray(listings) || listings.length === 0)
-      return res.status(400).json({ success: false, message: "No listings provided" });
+    if (!userId || !userType) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: missing user info"
+      });
+    }
 
-    const files = req.files || [];
-    const fileMap = new Map(files.map((f) => [f.originalname, `/uploads/listings/${f.filename}`]));
+    // 🧹 Clean _id + inject user info
+    const cleanListings = listings.map(({ _id, ...rest }, idx) => ({
+      ...rest,
+      __row: idx + 2, // Excel row (assuming headers in row 1)
+      created_by_id: userId,
+      created_by_type: userType,
+      status
+    }));
 
-    const docs = listings.map((item) => {
-      const shopName = (item.shopName || item.shopname || "").trim();
-      const email = (item.email || "").trim();
+    // ✅ Validate schema before proceeding
+    for (const listing of cleanListings) {
+      const doc = new Listing(listing);
+      const error = doc.validateSync();
+      if (error) {
+        return res.status(400).json({
+          success: false,
+          message: `Row ${listing.__row}: Listing "${listing.shopName}" failed validation → ${error.message}`
+        });
+      }
+    }
 
-      const categories = Array.isArray(item.categories)
-        ? item.categories
-        : typeof item.categories === "string"
-        ? item.categories.split(/[,;|]/).map((s) => s.trim()).filter(Boolean)
-        : [];
+    // 🧩 Check duplicates *within* uploaded file
+    const seenKeys = new Map();
+    const internalDupes = [];
 
-      const petCategories = Array.isArray(item.petCategories)
-        ? item.petCategories
-        : typeof item.petCategories === "string"
-        ? item.petCategories.split(/[,;|]/).map((s) => s.trim()).filter(Boolean)
-        : [];
+    for (const l of cleanListings) {
+      const key = `${l.shopName.trim().toLowerCase()}|${l.email.trim().toLowerCase()}|${l.city}`;
+      if (seenKeys.has(key)) {
+        internalDupes.push(
+          `Row ${l.__row}: "${l.shopName}" (${l.email}) matches Row ${seenKeys.get(key)}`
+        );
+      } else {
+        seenKeys.set(key, l.__row);
+      }
+    }
 
-      const photos = [];
-      const imageFilename = (item.imageFilename || "").trim();
-      if (fileMap.has(imageFilename)) photos.push(fileMap.get(imageFilename));
-      if (item.imageUrl) photos.push(item.imageUrl);
+    if (internalDupes.length) {
+      return res.status(400).json({
+        success: false,
+        message: `Duplicate entries found within uploaded file:\n${internalDupes.map(d => "• " + d).join("\n")}\nPlease correct and re-upload.`
+      });
+    }
+    const duplicateErrors = [];
 
-      return {
-        shopName,
-        email,
-        phone: item.phone || "",
-        address: item.address || "",
-        categories,
-        petCategories,
-        photos,
-        status: req.userType === "admin" ? "approved" : "pending",
-        created_by_type: req.userType,
-        created_by_id: req.userId,
-      };
-    });
+    for (const listing of cleanListings) {
+      const existing = await Listing.findOne({
+        shopName: { $regex: new RegExp(`^${listing.shopName.trim()}$`, "i") },
+        email: { $regex: new RegExp(`^${listing.email.trim()}$`, "i") },
+        city: listing.city
+      }).populate("city", "city");
 
-    const created = await Listing.insertMany(docs);
+      if (existing) {
+        duplicateErrors.push(
+          `Row ${listing.__row}: "${listing.shopName}" (${listing.email}) already exists in ${existing.city?.city || "this city"}`
+        );
+      }
+    }
+
+    if (duplicateErrors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Duplicate listings found in database:\n${duplicateErrors.map(d => "• " + d).join("\n")}\nImport stopped.`
+      });
+    }
+
+    // ✅ Insert all if clean
+    const created = await Listing.insertMany(cleanListings);
     res.json({ success: true, created });
+
   } catch (err) {
-    console.error("Bulk insert error details:", err);
-    res.status(500).json({
-      success: false,
-      message: "Server error during bulk import",
-      error: err.message || err,
-    });
+    console.error("Bulk insert error:", err);
+
+    if (err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Duplicate record detected during insertion. Please re-check your data."
+      });
+    }
+
+    res.status(500).json({ success: false, message: "Bulk insert failed" });
   }
 });
+
+
+
+
+// router.post("/bulk", verifyToken, upload.array("photos", 100), async (req, res) => {
+//   try {
+//     let listings = req.body.listings;
+
+//     if (!listings) return res.status(400).json({ success: false, message: "No listings provided" });
+//     if (typeof listings === "string") listings = JSON.parse(listings);
+//     if (!Array.isArray(listings) || listings.length === 0)
+//       return res.status(400).json({ success: false, message: "No listings provided" });
+
+//     const files = req.files || [];
+//     const fileMap = new Map(files.map((f) => [f.originalname, `/uploads/listings/${f.filename}`]));
+
+//     const docs = listings.map((item) => {
+//       const shopName = (item.shopName || item.shopname || "").trim();
+//       const email = (item.email || "").trim();
+
+//       const categories = Array.isArray(item.categories)
+//         ? item.categories
+//         : typeof item.categories === "string"
+//         ? item.categories.split(/[,;|]/).map((s) => s.trim()).filter(Boolean)
+//         : [];
+
+//       const petCategories = Array.isArray(item.petCategories)
+//         ? item.petCategories
+//         : typeof item.petCategories === "string"
+//         ? item.petCategories.split(/[,;|]/).map((s) => s.trim()).filter(Boolean)
+//         : [];
+
+//       const photos = [];
+//       const imageFilename = (item.imageFilename || "").trim();
+//       if (fileMap.has(imageFilename)) photos.push(fileMap.get(imageFilename));
+//       if (item.imageUrl) photos.push(item.imageUrl);
+
+//       return {
+//         shopName,
+//         email,
+//         phone: item.phone || "",
+//         address: item.address || "",
+//         categories,
+//         petCategories,
+//         photos,
+//         status: req.userType === "admin" ? "approved" : "pending",
+//         created_by_type: req.userType,
+//         created_by_id: req.userId,
+//       };
+//     });
+
+//     const created = await Listing.insertMany(docs);
+//     res.json({ success: true, created });
+//   } catch (err) {
+//     console.error("Bulk insert error details:", err);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error during bulk import",
+//       error: err.message || err,
+//     });
+//   }
+// });
 
 // ...existing code...
 router.post("/image", upload.array("image", 10), (req, res) => {
@@ -162,8 +264,61 @@ router.post("/image", upload.array("image", 10), (req, res) => {
 // READ (all)
 router.get("/", async (req, res) => {
   try {
-    const listings = await Listing.find().sort({ created_at: -1 }).lean(); // <-- add lean()
+    const listings = await Listing.find()
+    .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("city", "city").sort({ created_at: -1 }); // <-- add lean()
     res.json({ success: true, listings });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+router.get("/counts", verifyToken, async (req, res) => {
+  try {
+    const user_id = req.userId;
+    const listings = await Listing.find({user_id, status: "approved" })
+      .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("city", "city")
+      .populate("user_id", "name email")
+      .sort({ created_at: -1 }); // lean for plain JS objects
+      if(listings.length === 0) {
+        return res.json({
+        success: true,        
+        counts: {
+          views: 0,
+          messages: 0,
+          reviews: 0,
+        },
+      });
+      }
+const listing_id = listings[0]._id;
+    const messageCount = await Message.countDocuments({ receiverId: user_id });
+
+    // Get review count where this user is reviewed
+    const reviewCount = await Review.countDocuments({ listingId: listing_id, status : "approved" });
+
+    res.json({ success: true, counts: {
+        views: listings[0].views,
+        messages: messageCount,
+        reviews: reviewCount,
+      }, });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.get("/user/:id", async (req, res) => {
+  try {
+    const listing = await Listing.findOne({user_id : req.params.id})
+    .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("city", "city").sort({ created_at: -1 }); 
+    res.json({ success: true, listing });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -171,7 +326,10 @@ router.get("/", async (req, res) => {
 });
 router.get("/pending", async (req, res) => {
   try {
-    const listings = await Listing.find({status : "pending"}).sort({ created_at: -1 }).lean();
+    const listings = await Listing.find({status : "pending"})
+    .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("city", "city").sort({ created_at: -1 });
     res.json({ success: true, listings });
   } catch (err) {
     console.error(err);
@@ -182,7 +340,10 @@ router.get("/pending", async (req, res) => {
 // READ (one)
 router.get("/:id", async (req, res) => {
   try {
-    const listing = await Listing.findById(req.params.id).lean();
+    const listing = await Listing.findById(req.params.id)
+    .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("city", "city");
     if (!listing) return res.status(404).json({ success: false, message: "Not found" });
     res.json({ success: true, listing });
   } catch (err) {
@@ -232,6 +393,68 @@ router.put("/:id", upload.array("photos", 10), async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Update failed" });
+  }
+});
+router.put("/user/:id", verifyToken, upload.array("photos", 10), async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const data = req.body;
+    const status = req.userType === "admin" ? "approved" : "pending";
+
+    console.log("Update or create listing for user:", userId, data);
+
+    // Parse categories properly
+    if (data["categories[]"]) {
+      data.categories = Array.isArray(data["categories[]"])
+        ? data["categories[]"]
+        : [data["categories[]"]];
+    }
+
+    if (data["petCategories[]"]) {
+      data.petCategories = Array.isArray(data["petCategories[]"])
+        ? data["petCategories[]"]
+        : [data["petCategories[]"]];
+    }
+
+    // Existing photos
+    let existingPhotos = [];
+    if (data["existingPhotos[]"]) {
+      existingPhotos = Array.isArray(data["existingPhotos[]"])
+        ? data["existingPhotos[]"]
+        : [data["existingPhotos[]"]];
+    }
+
+    // Uploaded photos
+    const uploadedPhotos = req.files.map(f => `/uploads/listings/${f.filename}`);
+
+    // If nothing sent, preserve old photos (if listing exists)
+    const currentListing = await Listing.findOne({ user_id: userId });
+    if (!uploadedPhotos.length && !existingPhotos.length && currentListing) {
+      existingPhotos = currentListing.photos || [];
+    }
+
+    // Merge photos
+    data.photos = [...existingPhotos, ...uploadedPhotos];
+
+    // --- Find and Update ---
+    let listing = await Listing.findOneAndUpdate(
+      { user_id: userId },
+      {
+        ...data,
+        status,
+        user_id: userId,
+        created_by_id: req.userId,
+        created_by_type: req.userType,
+      },
+      { new: true }
+    );
+
+await listing.save();
+    // --- If found and updated ---
+    return res.json({ success: true, message: "Listing updated successfully", listing });
+  } catch (err) {
+    console.error("Error in listing update/create:", err);
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 });
 

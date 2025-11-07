@@ -51,8 +51,10 @@ import CategoryPages from "./Pages/CategoryPages"
 import AddCategoryPage from './Pages/AddCategoryPage';
 import EditProfile from './Pages/EditProfile';
 import ChangePassword from './Pages/ChangePassword';
+import SessionTimeoutHandler from './Hooks/SessionTimeoutHandler'; 
 
 function App() {
+  
   const [loading, setLoading] = useState(true);
   useEffect(()=> {
     const timer = setTimeout(() => {
@@ -66,6 +68,7 @@ function App() {
   }
   return (
     <Router>
+      <SessionTimeoutHandler />
       <Routes>
         {/* Login route shown first */}
         <Route path="/login" element={<PublicAuth><Login /></PublicAuth>} />

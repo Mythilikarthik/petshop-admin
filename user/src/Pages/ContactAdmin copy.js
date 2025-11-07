@@ -1,80 +1,57 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
-import { useEffect } from 'react';
+import emailjs from '@emailjs/browser';
 
-const API_BASE =
-  process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
-    : "http://localhost:5000";
 const ContactAdmin = () => {
-  
+  const { state } = useLocation();
   const navigate = useNavigate();
 
-  
+  const { listing } = state || {};
 
-  const [listing, setListing] = useState({});
-const [formData, setFormData] = useState({
-    shopName: '',
-    email: '',
+  const [formData, setFormData] = useState({
+    sendTo: "Admin",
+    shopName: listing?.name || '',
+    email: listing?.email || '',
     description: '',
   });
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API_BASE}/api/contact-admin`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify(formData),
-    });
+    const templateParams = {
+      from_name: formData.shopName,
+      from_email: formData.email,
+      message: formData.description,
+      to_email: "scotwebtech2025@gmail.com",
+    };
 
-    const data = await res.json();
-    if (data.success) {
-      alert("Your message has been sent to the admin!");
-      navigate("/contact-admin");
-    } else {
-      alert(data.message || "Failed to send message.");
-    }
-  } catch (err) {
-    console.error("Error sending message:", err);
-    alert("Something went wrong. Try again later.");
-  }
-};
-useEffect(() => {
-  const id = localStorage.getItem("userId");
-  //console.log(id);
-  const fetchListing = async () => {
-    const res = await fetch(`${API_BASE}/api/listing/user/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json", 
-      },
-    })
-    const data = await res.json();
-    if(data.success && data.listing) {
-      setListing(data.listing);
-     //console.log(listing);
-      setFormData((prev) => ({
-        ...prev,
-        shopName: data.listing.shopName || "",
-        email: data.listing.email || "",
-      }));
-     // console.log(formData);
-    }
-  }
-fetchListing();
-}, [])
+    emailjs
+      .send(
+        "service_7zd4kun",     // 👉 replace with your EmailJS Service ID
+        "template_iayhhai",    // 👉 replace with your Template ID
+        templateParams,
+        "m-WXEnRKnH-x6Qanm"      // 👉 replace with your Public Key
+      )
+      .then(
+        (response) => {
+          console.log('SUCCESS!', response.status, response.text);
+          alert('Message sent to Admin successfully!');
+          navigate('/business-listing');
+        },
+        (err) => {
+          console.error('FAILED...', err);
+          alert('Failed to send message. Please try again.');
+        }
+      );
+  };
 
+  const sendTo = ["scotwebtech2025@gmail.com"];
 
   return (
     <Container className="mt-4">
@@ -93,31 +70,40 @@ fetchListing();
 
         <div className='form-container'>
           <Form onSubmit={handleSubmit}>
-            
+            <Form.Group className="mb-3">
+              <Form.Label>Send To</Form.Label>
+              <Form.Select
+                name="sendTo"
+                value={formData.sendTo}
+                onChange={handleChange}
+                required
+              >
+                <option value="">-- Send To --</option>
+                {sendTo.map((element, index) => (
+                  <option key={index} value={element}>{element}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Shop Name</Form.Label>
+              <Form.Label>Your Name / Shop Name</Form.Label>
               <Form.Control
                 type="text"
                 name="shopName"
                 value={formData.shopName}
                 onChange={handleChange}
                 required
-                disabled
-                readOnly
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
+              <Form.Label>Your Email</Form.Label>
               <Form.Control
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                disabled
-                readOnly
               />
             </Form.Group>
 

@@ -80,55 +80,50 @@ useEffect(() => {
 }, [formData.categories, categoryList]);
   // fetch categories
   const getCategories = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/api/category`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Network response was not ok");
-      const data = await response.json();
-      const categories = data.categories || [];
-      // return categories.map((cat) => cat.categoryName);
-
-      return categories;
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      return [];
-    }
-  };
-  const getCities = async () => {
   try {
-    const response = await fetch(`${API_BASE}/api/city`, {
+    const response = await fetch(`${API_BASE}/api/category/show`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
     if (!response.ok) throw new Error("Network response was not ok");
     const data = await response.json();
-    const cities = data.cities || [];
-    // Use 'city' instead of 'cityName'
-    return cities.map((c) => c.city);
+    return data.categories || []; // [{_id, categoryName, petCategories}]
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+};
+
+  const getCities = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/api/city/show`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) throw new Error("Network response was not ok");
+    const data = await response.json();
+    return data.cities || []; // [{_id, city, show}]
   } catch (error) {
     console.error("Error fetching cities:", error);
     return [];
   }
 };
+
 const getTypes = async () => {
   try {
-    const response = await fetch(`${API_BASE}/api/pet-category`, {
+    const response = await fetch(`${API_BASE}/api/pet-category/show`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
     if (!response.ok) throw new Error("Network response was not ok");
     const data = await response.json();
-    const types = data.petCategories || [];
-    return types.map((t) => t.categoryName); // ✅ correct key from model
+    return data.petCategories || []; // [{_id, categoryName}]
   } catch (error) {
-    console.error("Error fetching types:", error);
+    console.error("Error fetching pet categories:", error);
     return [];
   }
 };
+
 
 
  useEffect(() => {
@@ -139,6 +134,7 @@ const getTypes = async () => {
     setCategoryList(categories);
     setCityList(cities);
     setPetCategory(petCategory);
+    //console.log(petCategory);
   };
   fetchData();
 }, []);
@@ -158,7 +154,7 @@ const getTypes = async () => {
       formDataToSend.append("email", formData.email);
       formDataToSend.append("phone", formData.phone);
       formDataToSend.append("address", formData.address);
-      formDataToSend.append("city", formData.city);
+      // formDataToSend.append("city", formData.city);
       formDataToSend.append("country", formData.country);
       formDataToSend.append("mapUrl", formData.mapUrl);
       formDataToSend.append("description", formData.description);
@@ -168,13 +164,14 @@ const getTypes = async () => {
 
       console.log(formData.categories);
       // append selected categories
-      formData.categories.forEach((cat) => {
-        formDataToSend.append("categories[]", cat);
+      formData.categories.forEach((catId) => {
+        formDataToSend.append("categories[]", catId);
       });
-      formData.petCategories.forEach((type) => {
-        formDataToSend.append("petCategories[]", type);
-      }
-      );
+      formData.petCategories.forEach((petId) => {
+        formDataToSend.append("petCategories[]", petId);
+      });
+      formDataToSend.append("city", formData.city);
+
 console.log(formDataToSend.getAll("categories[]"));
       // append image files
       formData.photos.forEach((photo) => {
@@ -263,17 +260,24 @@ const handleRemoveKeyword = (keywordToRemove) => {
               /> */}
               <Select
   isMulti
-  options={categoryList.map(c => ({ value: c.categoryName, label: c.categoryName }))}
-  value={(formData.categories || []).map(c => ({ value: c, label: c }))}
+  options={categoryList.map(c => ({
+    value: c._id,
+    label: c.categoryName
+  }))}
+  value={categoryList
+    .filter(c => formData.categories.includes(c._id))
+    .map(c => ({ value: c._id, label: c.categoryName }))
+  }
   onChange={(selected) =>
     setFormData(prev => ({
       ...prev,
       categories: selected.map(s => s.value),
-      petCategories: [] // clear pet types when category changes
+      petCategories: [] // clear pet categories when category changes
     }))
   }
   required
 />
+
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Type <span className="text-danger">*</span></Form.Label>
@@ -292,20 +296,21 @@ const handleRemoveKeyword = (keywordToRemove) => {
                 }
               /> */}
               <Select
-                isMulti
-                options={filteredPetCategories}
-                value={(formData.petCategories || []).map(c => ({
-                  value: c,
-                  label: c
-                }))}
-                onChange={(selected) =>
-                  setFormData(prev => ({
-                    ...prev,
-                    petCategories: selected.map(s => s.value)
-                  }))
-                }
-                required
-              />
+  isMulti
+  options={petCategory.map(c => ({ value: c._id, label: c.categoryName }))}
+  value={petCategory
+    .filter(p => formData.petCategories.includes(p._id))
+    .map(p => ({ value: p._id, label: p.categoryName }))
+  }
+  onChange={(selected) =>
+    setFormData(prev => ({
+      ...prev,
+      petCategories: selected.map(s => s.value)
+    }))
+  }
+  required
+/>
+
             </Form.Group>
 
 
@@ -356,18 +361,19 @@ const handleRemoveKeyword = (keywordToRemove) => {
             <Form.Group className="mb-3">
               <Form.Label>City</Form.Label>
               <Form.Select
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              
-            >
-              <option value="">--Select City--</option>
-              {cityList.map((element, index) => (
-                <option key={index} value={element}>
-                  {element}
-                </option>
-              ))}
-            </Form.Select>
+  name="city"
+  value={formData.city}
+  onChange={handleChange}
+  required
+>
+  <option value="">--Select City--</option>
+  {cityList.map((c) => (
+    <option key={c._id} value={c._id}>
+      {c.city}
+    </option>
+  ))}
+</Form.Select>
+
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -382,7 +388,7 @@ const handleRemoveKeyword = (keywordToRemove) => {
 
             {/* Map */}
             <Form.Group className="mb-3">
-              <Form.Label>Location Map URL</Form.Label>
+              <Form.Label>Website URL</Form.Label>
               <Form.Control
                 type="url"
                 name="mapUrl"

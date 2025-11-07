@@ -40,6 +40,14 @@ router.get('/', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+router.get('/show', async (req, res) => {
+  try {
+    const categories = await Category.find({show : true}).populate('petCategories', 'categoryName').sort({ created_at: -1 });
+    res.json({ success: true, categories });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 router.put('/:id', async (req, res) => {
   try {
     const { categoryName, description, metaTitle, metaKeyword, metaDescription, petCategories } = req.body;
@@ -72,7 +80,21 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ success: true, message: 'Category deleted successfully' });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+router.patch('/:id/toggle', async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) return res.status(404).json({ success: false, message: "Category not found" });
+
+    category.show = !category.show; 
+    await category.save();
+
+    res.json({ success: true, message: "Category visibility updated", show: category.show });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 

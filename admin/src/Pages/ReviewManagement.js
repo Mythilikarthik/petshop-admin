@@ -70,7 +70,8 @@ const ReviewManagement = () => {
         body: JSON.stringify({ status: newStatus, adminId: localStorage.getItem("userId") }), // replace with real admin id if available
       });
       const data = await res.json();
-      if (res.ok) {
+      console.log("Status update response:", data);
+      if (data.success) {
         setReviews((prev) =>
           prev.map((r) => (r._id === id ? { ...r, status: newStatus } : r))
         );

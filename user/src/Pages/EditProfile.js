@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 const API_BASE = process.env.NODE_ENV === "production"
-  ? "https://petshop-admin.onrender.com"
+  ? "https://petshop-user.onrender.com/"
   : "http://localhost:5000";
 
 const EditProfile = () => {
@@ -15,12 +15,12 @@ const EditProfile = () => {
   // Fetch current profile data
   useEffect(() => {
     const fetchProfile = async () => {
-      const res = await fetch(`${API_BASE}/api/auth/admin/profile/${id}`);
+      const res = await fetch(`${API_BASE}/api/auth/user/profile/${id}`);
       const data = await res.json();
       if (data.success) setFormData({
-        name: data.admin.name || '',
-        email: data.admin.email || '',
-        phone: data.admin.phone || ''
+        name: data.user.name || '',
+        email: data.user.email || '',
+        phone: data.user.phone || ''
       });
     };
     fetchProfile();
@@ -30,7 +30,7 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch(`${API_BASE}/api/auth/admin/profile/${id}`, {
+    const res = await fetch(`${API_BASE}/api/auth/user/profile/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),

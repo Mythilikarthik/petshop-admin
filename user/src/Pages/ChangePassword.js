@@ -3,7 +3,7 @@ import { Form, Button, Col, Container, Breadcrumb, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 const API_BASE = process.env.NODE_ENV === "production"
-  ? "https://petshop-admin.onrender.com"
+  ? "https://petshop-user.onrender.com/"
   : "http://localhost:5000";
 
 const ChangePassword = () => {
@@ -24,7 +24,7 @@ const ChangePassword = () => {
       return;
     }
 
-    const res = await fetch(`${API_BASE}/api/auth/admin/change-password/${id}`, {
+    const res = await fetch(`${API_BASE}/api/auth/user/change-password/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

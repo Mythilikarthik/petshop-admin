@@ -1,10 +1,17 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
-  id: Number,
   username: String,
+  email: String,
+  phone: String,
+  name: String,
   password: String,
-  created_at: { type: Date, default: Date.now }
+  isPremium: { type: Boolean, default: false },
+  premiumPlan: { type: String, default: null },
+  premiumStartDate: { type: Date, default: null },
+  premiumEndDate: { type: Date, default: null },
+  paymentId: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
+  created_at: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('User', UserSchema, 'user');
+module.exports = mongoose.model("User", UserSchema, "user");

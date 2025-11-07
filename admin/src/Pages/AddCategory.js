@@ -108,7 +108,7 @@ const AddCategory = () => {
       </Row>
 
       <div className='form-container'>
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}> 
           <Form.Group className="mb-3">
             <Form.Label>Select Pet Categories</Form.Label>
             <Select

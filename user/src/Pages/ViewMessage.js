@@ -1,134 +1,106 @@
-import React, { useState } from 'react';
-import { Table, Button, Form, Row, Col, Breadcrumb } from 'react-bootstrap';
-import ReactPaginate from 'react-paginate';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Container, Row, Col, Button, Breadcrumb, Card } from "react-bootstrap";
+import { io } from "socket.io-client";
+
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-user.onrender.com"
+    : "http://localhost:5000";
+    const socket = io(API_BASE, { transports: ["websocket"] });
 
 const ViewMessage = () => {
-  const initialListings = [
-    { id: 1, name: 'John Doe', message: 'Hello, ....' },
-    { id: 2, name: 'Jane Smith', message: 'Hi,....' },
-    { id: 3, name: 'Michael Scott', message: 'Greetings,....' },
-  ];
-
-  const [listings, setListings] = useState(initialListings);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 5;
-
+  const { id } = useParams();
+  const [message, setMessage] = useState(null);
   const navigate = useNavigate();
 
-  const filteredListings = listings.filter(l =>
-    l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchMessage = async () => {
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You must be logged in");
+        return;
+      }
 
-  const pageCount = Math.ceil(filteredListings.length / itemsPerPage);
-  const displayedListings = filteredListings.slice(
-    currentPage * itemsPerPage,
-    (currentPage + 1) * itemsPerPage
-  );
+      try {
+        const res = await fetch(`${API_BASE}/api/messages/${id}`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
 
-  const handlePageClick = ({ selected }) => setCurrentPage(selected);
+        if (data.success) {
+          setMessage(data.message);
 
-  
+          // Mark as read if receiver
+          if (data.message.receiverId?._id === userId && !data.message.read) {
+            const markRead = await fetch(`${API_BASE}/api/messages/${id}/read`, {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            });
+            const result = await markRead.json();
 
-  const handleView = (listing) => {
-    console.log('Navigating to view:', listing);
-    navigate('/view-listing', { state: { listing } });
-  };
-  const handleDelete = (id) => {
-  if (window.confirm("Are you sure you want to delete this listing?")) {
-    setListings((prevListings) => prevListings.filter(l => l.id !== id));
-  }
-};
+            if (result.success) {
+              // ✅ Notify other tabs/components to update unread count
+              socket.emit("message_read", { userId });
+            }
+          }
+        } else {
+          alert(data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching message:", err);
+      }
+    };
+
+    fetchMessage();
+    return () => {
+      socket.disconnect();
+    };
+  }, [id]);
+
+  if (!message) return <p className="text-center mt-5">Loading message...</p>;
 
   return (
-    <div className="container mt-4">
-      <div className='pl-3 pr-3'>
-        <Row className='mb-3 justify-content-end align-items-center'>
+    <Container className="mt-4">
+      <div className="pl-3 pr-3">
+        <Row className="mb-3 justify-content-end align-items-center">
           <Col>
-            <h2 className='main-title mb-0'>View Message</h2>
-          </Col>
-          <Col xs={'auto'}>
-            <Breadcrumb className='top-breadcrumb'>
-              <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
-              <Breadcrumb.Item active>View Message</Breadcrumb.Item>
+            <h2 className="main-title mb-0">Message Details</h2>
+            <Breadcrumb className="top-breadcrumb">
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+              <Breadcrumb.Item active>Message Details</Breadcrumb.Item>
             </Breadcrumb>
+          </Col>
+
+          <Col xs={"auto"}>
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+              Go Back
+            </Button>
           </Col>
         </Row>
 
-        {/* Search Input */}
-        <Form.Control
-          type="text"
-          placeholder="Search by name or message"
-          className="mb-3"
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(0); // reset to first page
-          }}
-        />
-
-        {/* Table */}
-        <Table bordered hover responsive>
-          <thead className="">
-            <tr>
-              <th>S.No</th>
-              <th>Name</th>
-              <th>Message</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayedListings.map((listing, index) => (
-              <tr key={listing.id}>
-                <td>{currentPage * itemsPerPage + index + 1}</td>
-                <td>{listing.name}</td>
-                <td>{listing.message}</td>
-                <td>
-                  
-                  <Button
-                    variant="success"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleView(listing)}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleDelete(listing.id)}
-                  >
-                    Delete
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-
-        {/* Pagination */}
-        {pageCount > 1 && (
-          <ReactPaginate
-            pageCount={pageCount}
-            pageRangeDisplayed={2}
-            marginPagesDisplayed={1}
-            onPageChange={handlePageClick}
-            containerClassName="pagination justify-content-center"
-            pageClassName="page-item"
-            pageLinkClassName="page-link"
-            previousLabel="«"
-            nextLabel="»"
-            previousClassName="page-item"
-            nextClassName="page-item"
-            previousLinkClassName="page-link"
-            nextLinkClassName="page-link"
-            activeClassName="active"
-          />
-        )}
+        <Card className="p-4 shadow-sm">
+          <p>
+            <strong>Sender:</strong> {message.senderId?.name || "N/A"}
+          </p>
+          <p>
+            <strong>Receiver:</strong> {message.receiverId?.name || "N/A"}
+          </p>
+          <p>
+            <strong>Date:</strong> {new Date(message.createdAt).toLocaleString()}
+          </p>
+          <p>
+            <strong>Message:</strong>
+          </p>
+          <p className="border p-3 rounded bg-light">{message.message}</p>
+        </Card>
       </div>
-    </div>
+    </Container>
   );
 };
 

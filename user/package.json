@@ -11,6 +11,9 @@
   "dependencies": {
   
     
+  "@emailjs/browser": "^4.4.1",
+  
+    
   "@reduxjs/toolkit": "^2.8.2",
   
     
@@ -33,6 +36,12 @@
   
     
   "bootstrap": "^5.3.7",
+  
+    
+  "nodemailer": "^7.0.10",
+  
+    
+  "razorpay": "^2.9.6",
   
     
   "react": "^19.1.1",
@@ -63,6 +72,9 @@
   
     
   "recharts": "^3.1.2",
+  
+    
+  "socket.io-client": "^4.8.1",
   
     
   "web-vitals": "^2.1.4"

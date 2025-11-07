@@ -78,6 +78,40 @@ const fetchCities = async () => {
       alert("Server error");
     }
   };
+  const handleToggle = async (id) => {
+  // Immediately update UI
+  setListings(prev =>
+    prev.map(cat =>
+      cat._id === id ? { ...cat, show: !cat.show } : cat
+    )
+  );
+
+  try {
+    const res = await fetch(`${API_BASE}/api/city/${id}/toggle`, {
+      method: 'PATCH'
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      // If backend fails, revert change
+      setListings(prev =>
+        prev.map(cat =>
+          cat._id === id ? { ...cat, show: !cat.show } : cat
+        )
+      );
+      alert(data.message || "Toggle failed");
+    }
+  } catch (err) {
+    console.error(err);
+    // Revert change on error
+    setListings(prev =>
+      prev.map(cat =>
+        cat._id === id ? { ...cat, show: !cat.show } : cat
+      )
+    );
+    alert("Server error while toggling");
+  }
+};
 
   return (
     <div className="container mt-4">
@@ -124,6 +158,7 @@ const fetchCities = async () => {
             <tr>
               <th>S.No</th>
               <th>City</th>
+              <th>visibile</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -132,6 +167,15 @@ const fetchCities = async () => {
               <tr key={listing.id}>
                 <td>{currentPage * itemsPerPage + index + 1}</td>
                 <td>{listing.city}</td>
+                <td>
+                  <Form.Check 
+                    type="switch"
+                    id={`show-switch-${listing._id}`}
+                    checked={listing.show}
+                    onChange={() => handleToggle(listing._id)}
+                    disabled={loading}
+                  />
+                </td>
                 <td>
                   
                   {/* <Button

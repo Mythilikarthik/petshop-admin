@@ -16,12 +16,10 @@ const CategoryListings = () => {
 
   const navigate = useNavigate();
 
-  // Fetch categories from backend
   const fetchCategories = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/category`);
       const data = await res.json();
-
       if (res.ok) {
         setListings(data.categories || []);
       } else {
@@ -38,7 +36,6 @@ const CategoryListings = () => {
     fetchCategories();
   }, []);
 
-  // Filter listings based on search
   const filteredListings = listings.filter(l =>
     l.categoryName.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -55,19 +52,11 @@ const CategoryListings = () => {
     navigate('/edit-category', { state: { listing } });
   };
 
-  const handleView = (listing) => {
-    navigate('/view-category', { state: { listing } });
-  };
-
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this category?")) return;
-
     try {
-      const res = await fetch(`${API_BASE}/api/category/${id}`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(`${API_BASE}/api/category/${id}`, { method: 'DELETE' });
       const data = await res.json();
-
       if (res.ok) {
         setListings(prev => prev.filter(l => l._id !== id));
       } else {
@@ -79,26 +68,61 @@ const CategoryListings = () => {
     }
   };
 
+  // ✅ Toggle visibility (Show/Hide)
+  const handleToggle = async (id) => {
+  // Immediately update UI
+  setListings(prev =>
+    prev.map(cat =>
+      cat._id === id ? { ...cat, show: !cat.show } : cat
+    )
+  );
+
+  try {
+    const res = await fetch(`${API_BASE}/api/category/${id}/toggle`, {
+      method: 'PATCH'
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      // If backend fails, revert change
+      setListings(prev =>
+        prev.map(cat =>
+          cat._id === id ? { ...cat, show: !cat.show } : cat
+        )
+      );
+      alert(data.message || "Toggle failed");
+    }
+  } catch (err) {
+    console.error(err);
+    // Revert change on error
+    setListings(prev =>
+      prev.map(cat =>
+        cat._id === id ? { ...cat, show: !cat.show } : cat
+      )
+    );
+    alert("Server error while toggling");
+  }
+};
+
+
   return (
     <div className="container mt-4">
       <div className='pl-3 pr-3'>
         <Row className='mb-3 justify-content-end align-items-center'>
           <Col>
             <h2 className='main-title mb-0'>Category Listing</h2>
-            
           </Col>
           <Col xs={'auto'}>
             <Breadcrumb className='top-breadcrumb'>
               <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>Category Listing</Breadcrumb.Item>
             </Breadcrumb>
-            
-            
           </Col>
         </Row>
+
         <Row className='mb-3'>
           <Col md={8} xs={12}>
-              <Form.Control
+            <Form.Control
               type="text"
               placeholder="Search by category"
               className="mb-3"
@@ -110,11 +134,9 @@ const CategoryListings = () => {
             />
           </Col>
           <Col md={4} xs={12} className="text-end">
-              <Button variant="primary" onClick={() => navigate('/add-category')}>+ Add New</Button>
+            <Button variant="primary" onClick={() => navigate('/add-category')}>+ Add New</Button>
           </Col>
         </Row>
-
-        
 
         {loading ? (
           <p>Loading categories...</p>
@@ -125,6 +147,7 @@ const CategoryListings = () => {
                 <tr>
                   <th>S.No</th>
                   <th>Category</th>
+                  <th>Visible</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -134,14 +157,15 @@ const CategoryListings = () => {
                     <td>{currentPage * itemsPerPage + index + 1}</td>
                     <td>{listing.categoryName}</td>
                     <td>
-                      {/* <Button
-                        variant="success"
-                        size="sm"
-                        className="me-2"
-                        onClick={() => handleView(listing)}
-                      >
-                        View
-                      </Button> */}
+                      <Form.Check 
+                        type="switch"
+                        id={`show-switch-${listing._id}`}
+                        checked={listing.show}
+                        onChange={() => handleToggle(listing._id)}
+                        disabled={loading}
+                      />
+                    </td>
+                    <td>
                       <Button
                         variant="primary"
                         size="sm"

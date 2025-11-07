@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Image, Button, Spinner, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Image, Button, Spinner, Alert, Breadcrumb } from 'react-bootstrap';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -69,7 +69,21 @@ const ViewListing = () => {
 
   return (
     <Container className="mt-4">
-      <h2 className="mb-4">View Listing</h2>
+      <Row className="mb-5 justify-content-end align-items-center">
+          <Col>
+            <h2 className="main-title mb-0">View Listing</h2>
+            <Breadcrumb className="top-breadcrumb">
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+              <Breadcrumb.Item active>View Listing</Breadcrumb.Item>
+            </Breadcrumb>
+          </Col>
+          <Col xs="auto">
+            
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+        Go Back
+      </Button>
+          </Col>
+        </Row>
 
       <Row className="mb-3">
         <Col md={6}><strong>Category:</strong></Col>
@@ -112,7 +126,7 @@ const ViewListing = () => {
       </Row>
 
       <Row className="mb-3">
-        <Col md={6}><strong>Location:</strong></Col>
+        <Col md={6}><strong>Website:</strong></Col>
         <Col md={6}>{listing.mapUrl || '—'}</Col>
       </Row>
 
@@ -177,9 +191,7 @@ const ViewListing = () => {
         </div>
       )}
 
-      <Button variant="secondary" onClick={() => navigate(-1)}>
-        Go Back
-      </Button>
+      
     </Container>
   );
 };

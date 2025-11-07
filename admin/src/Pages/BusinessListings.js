@@ -39,10 +39,8 @@ const BusinessListings = () => {
           shopName: item.shopName || item.shopname || item.name || '',
           email: item.email || '',
           phone: item.phone || '',
-          categories: Array.isArray(item.categories)
-            ? item.categories
-            : (item.categories ? String(item.categories).split(/[,;|]/).map(s => s.trim()).filter(Boolean) : []),
-          petCategories: Array.isArray(item.petCategories) ? item.petCategories : [],
+          categories: item.categories?.map(c => c.categoryName) || [],
+          petCategories: item.petCategories?.map(p => p.categoryName) || [],
           status: item.status || 'pending',
           created_by_type : item.created_by_type,
         }));
@@ -157,60 +155,176 @@ const BusinessListings = () => {
 
   /** Bulk import logic */
   const addListingsFromRows = async (rows = []) => {
-    const timestamp = Date.now();
-    const mapped = rows.map((row, idx) => {
-      const shopName = (row.shopname || row.shopName || row.Shopname || row.SHOPNAME || row.name || '').toString().trim();
-      const email = (row.email || row.Email || '').toString().trim();
-      const phone = (row.phone || row.Phone || '').toString().trim();
-      const categoriesRaw = (row.categories || row.Categories || row.CATEGORY || '').toString();
-      const petCategoriesRaw = (row.petCategories || row.petCATEGORY || '').toString();
+  const timestamp = Date.now();
 
-      return {
-        _id: `tmp-${timestamp}-${idx}`,
-        shopName,
-        email,
-        phone,
-        categories: categoriesRaw ? categoriesRaw.split(/[,;|]/).map(s => s.trim()).filter(Boolean) : [],
-        petCategories: petCategoriesRaw ? petCategoriesRaw.split(/[,;|]/).map(s => s.trim()).filter(Boolean) : [],
-        imageFilename: (row.imageFilename || row.image || '').toString().trim(),
-        imageUrl: (row.imageUrl || row.imageURL || '').toString().trim()
-      };
-    }).filter(r => r.shopName);
+  // Fetch mapping data for categories, petcategories, cities
+  const [catRes, petCatRes, cityRes] = await Promise.all([
+    fetch(`${API_BASE}/api/category`),
+    fetch(`${API_BASE}/api/pet-category`),
+    fetch(`${API_BASE}/api/city`)
+  ]);
 
-    if (mapped.length === 0) {
-      setUploadError('No valid rows found. Ensure "shopName" exists.');
-      return;
+  const [catData, petCatData, cityData] = await Promise.all([
+    catRes.json(),
+    petCatRes.json(),
+    cityRes.json()
+  ]);
+
+  const categoryMap = Object.fromEntries(
+    catData.categories.map(c => [c.categoryName.toLowerCase(), c._id])
+  );
+
+  const petCategoryMap = Object.fromEntries(
+    petCatData.petCategories.map(p => [p.categoryName.toLowerCase(), p._id])
+  );
+
+  const cityMap = Object.fromEntries(
+    cityData.cities.map(city => [city.city.toLowerCase(), city._id])
+  );
+
+  // const mapped = rows.map((row, idx) => {
+  //   const safe = (v) => (v == null ? '' : String(v).trim());
+  //   const shopName = String(row.shopname || row.shopName || '').trim();
+  //   const email = String(row.email || '').trim();
+  //   const phone = safe(row.phone);
+  //   const address = (row.address || '').trim();
+  //   const cityName = (row.city || '').trim().toLowerCase();
+
+  //   const categoriesRaw = (row.categories || '').split(/[,;|]/).map(s => s.trim().toLowerCase()).filter(Boolean);
+  //   const petCategoriesRaw = (row.petCategories || '').split(/[,;|]/).map(s => s.trim().toLowerCase()).filter(Boolean);
+
+  //   // Convert names → ObjectIds using map
+  //   const categoryIds = categoriesRaw.map(name => categoryMap[name]).filter(Boolean);
+  //   const petCategoryIds = petCategoriesRaw.map(name => petCategoryMap[name]).filter(Boolean);
+  //   const cityId = cityMap[cityName] || null;
+
+  //   return {
+  //     _id: `tmp-${timestamp}-${idx}`,
+  //     shopName,
+  //     email,
+  //     phone,
+  //     address,
+  //     city: cityId,
+  //     categories: categoryIds,
+  //     petCategories: petCategoryIds,
+  //     description: (row.description || '').trim(),
+  //     mapUrl: (row.mapUrl || '').trim(),
+  //     metaTitle: (row.metaTitle || '').trim(),
+  //     metaDescription: (row.metaDescription || '').trim(),
+  //     metaKeyword: (row.metaKeyword || '').trim(),
+  //     status: (row.status || 'pending').trim().toLowerCase()
+  //   };
+  // }).filter(r => r.shopName);
+  const mapped = [];
+const missingCities = new Set();
+const missingCategories = new Set();
+const missingPetCategories = new Set();
+
+for (let idx = 0; idx < rows.length; idx++) {
+  const row = rows[idx];
+  const safe = (v) => (v == null ? '' : String(v).trim());
+  const shopName = safe(row.shopname || row.shopName);
+  const email = safe(row.email);
+  const phone = safe(row.phone);
+  const address = safe(row.address);
+  const cityName = safe(row.city).toLowerCase();
+
+  const categoriesRaw = safe(row.categories)
+    .split(/[,;|]/)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const petCategoriesRaw = safe(row.petCategories)
+    .split(/[,;|]/)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+
+  // --- CITY CHECK ---
+  const cityId = cityMap[cityName] || null;
+  if (!cityId && cityName) missingCities.add(row.city);
+
+  // --- CATEGORY CHECK ---
+  const categoryIds = categoriesRaw.map((name) => categoryMap[name]).filter(Boolean);
+  if (categoryIds.length !== categoriesRaw.length) {
+    const missing = categoriesRaw.filter((name) => !categoryMap[name]);
+    missing.forEach((m) => missingCategories.add(m));
+  }
+
+  // --- PET CATEGORY CHECK ---
+  const petCategoryIds = petCategoriesRaw.map((name) => petCategoryMap[name]).filter(Boolean);
+  if (petCategoryIds.length !== petCategoriesRaw.length) {
+    const missing = petCategoriesRaw.filter((name) => !petCategoryMap[name]);
+    missing.forEach((m) => missingPetCategories.add(m));
+  }
+
+  mapped.push({
+    _id: `tmp-${timestamp}-${idx}`,
+    shopName,
+    email,
+    phone,
+    address,
+    city: cityId,
+    categories: categoryIds,
+    petCategories: petCategoryIds,
+    description: safe(row.description),
+    mapUrl: safe(row.mapUrl),
+    metaTitle: safe(row.metaTitle),
+    metaDescription: safe(row.metaDescription),
+    metaKeyword: safe(row.metaKeyword),
+    status: safe(row.status || 'pending').toLowerCase(),
+  });
+}
+
+// --- Final check ---
+if (missingCities.size || missingCategories.size || missingPetCategories.size) {
+  let message = "Import stopped due to missing values:\n\n";
+
+  if (missingCities.size)
+    message += `Missing Cities: ${Array.from(missingCities).join(", ")}\n`;
+  if (missingCategories.size)
+    message += `Missing Categories: ${Array.from(missingCategories).join(", ")}\n`;
+  if (missingPetCategories.size)
+    message += `Missing Pet Categories: ${Array.from(missingPetCategories).join(", ")}\n`;
+
+  message += "\nPlease correct these and retry.";
+  alert(message);
+  return; // stop everything
+}
+
+if (!mapped.length) {
+  alert("No valid rows found. Import stopped.");
+  return;
+}
+
+
+  if (mapped.length === 0) {
+    setUploadError('No valid rows found. Ensure "shopName" exists.');
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  try {
+    const bulkRes = await fetch(`${API_BASE}/api/listing/bulk`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ listings: mapped }),
+    });
+
+    const data = await bulkRes.json();
+    if (data.success) {
+      alert(`${data.created.length} listing(s) saved successfully!`);
+      fetchListings();
+    } else {
+      setUploadError(data.message || "Failed to save listings.");
     }
+  } catch (err) {
+    console.error("Bulk import error:", err);
+    setUploadError("Server error during bulk upload.");
+  }
+};
 
-    setUploadError(null);
-
-    const token = localStorage.getItem("token");
-
-    try {
-      const bulkRes = await fetch(`${API_BASE}/api/listing/bulk`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          listings: mapped.map(({ _id, imageFilename, imageUrl, ...rest }) => rest),
-        }),
-      });
-
-      const data = await bulkRes.json();
-      if (data.success) {
-        alert(`${data.created.length} listing(s) saved to server`);
-        await fetchListings(); // REFRESH state from server
-        setCurrentPage(0);
-      } else {
-        setUploadError(data.message || "Failed to save listings");
-      }
-    } catch (err) {
-      console.error("Error saving listings:", err);
-      setUploadError("Server error while saving listings.");
-    }
-  };
 
   return (
     <div className="container mt-4">
@@ -218,12 +332,26 @@ const BusinessListings = () => {
         <Row className='mb-3 justify-content-between align-items-center'>
           <Col>
             <h2 className='main-title mb-0'>Business Listing</h2>
-          </Col>
-          <Col xs={'auto'}>
             <Breadcrumb className='top-breadcrumb'>
               <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>Business Listing</Breadcrumb.Item>
             </Breadcrumb>
+          </Col>
+          <Col xs={'auto'}>
+          <Button variant="primary" onClick={() => navigate('/add-listing')}>+ Add New</Button>
+            
+          </Col>
+        </Row>
+        <Row className='d-flex justify-content-center mb-5'>
+          <Col md={6} >
+            {uploadError && (
+            <div
+              className="text-danger mt-1"
+              style={{ whiteSpace: "pre-line" }}
+            >
+              {uploadError}
+            </div>
+          )}
           </Col>
         </Row>
 
@@ -249,7 +377,7 @@ const BusinessListings = () => {
               placeholder="Filter by Categories"
             />
           </Col>
-          <Col md={4}>
+          <Col md={3}>
             <ButtonGroup className='w-100'>
               <ToggleButton
                 id="approved"
@@ -271,8 +399,19 @@ const BusinessListings = () => {
               </ToggleButton>
             </ButtonGroup>
           </Col>
-          <Col md={2} xs={12} className="text-end mt-3 mt-md-0">
-            <Button variant="primary" onClick={() => navigate('/add-listing')}>+ Add New</Button>
+          <Col md={3}>
+            <Form.Group className="mb-3">
+              <Form.Control
+                type="file"
+                accept=".csv, .xlsx, .xls"
+                onChange={handleFileChange}
+                ref={listFileInputRef}
+              />
+              
+              <div className="text-muted mt-2" style={{ fontSize: '0.85rem' }}>
+                Upload CSV / Excel files
+              </div>
+            </Form.Group>
           </Col>
         </Row>
 
@@ -307,7 +446,7 @@ const BusinessListings = () => {
                   />
                 </td>
                 <td>
-                  <Button size="sm" variant="success" onClick={() => handleView(listing)}>View</Button>{' '}
+                  {/* <Button size="sm" variant="success" onClick={() => handleView(listing)}>View</Button>{' '} */}
                   <Button size="sm" variant="primary" onClick={() => handleEdit(listing)}>Edit</Button>{' '}
                   <Button size="sm" variant="danger" onClick={() => handleDelete(listing._id)}>Delete</Button>
                   {/* <Button
@@ -345,7 +484,7 @@ const BusinessListings = () => {
         )}
 
         {/* Bulk import */}
-        <Row>
+        {/* <Row>
           <Col xs="auto">
             <h2 className='main-title mb-3 mt-3'>Import your Listing Files Here</h2>
             <Form.Group className="mb-3">
@@ -361,7 +500,7 @@ const BusinessListings = () => {
               </div>
             </Form.Group>
           </Col>
-        </Row>
+        </Row> */}
       </div>
     </div>
   );

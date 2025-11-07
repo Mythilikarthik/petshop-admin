@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './Pages/Dashboard';
 import ViewMessage from './Pages/ViewMessage';
-import ViewListings from './Pages/ViewListings';
 import EditListings from './Pages/EditListings';
 import SendMessage from './Pages/SendMessage';
 import GoPremium from './Pages/GoPremium';
@@ -18,6 +17,11 @@ import PublicAuth from './PublicAuth';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import Loader from './Layout/Loader';
+import EditProfile from './Pages/EditProfile';
+import ChangePassword from './Pages/ChangePassword';
+import Messages from './Pages/Messages';
+import Review from './Pages/Review';
+import SessionTimeoutHandler from './Hooks/SessionTimeoutHandler'; 
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -33,6 +37,7 @@ function App() {
     }
   return (
     <Router>
+      <SessionTimeoutHandler />
       <Routes>
         {/* Login route shown first */}
         <Route path="/login" element={<PublicAuth><Login /></PublicAuth>} />
@@ -42,11 +47,16 @@ function App() {
           <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="go-premium" element={<GoPremium />} />
-          <Route path="view-message" element={<ViewMessage />} />
+          <Route path="messages/:id" element={<ViewMessage />} />
+          <Route path="messages" element={<Messages />} />
           <Route path="send-message" element={<SendMessage />} />
           <Route path="contact-admin" element={<ContactAdmin />} />
-          <Route path="view-listing" element={<ViewListings />} />
           <Route path="edit-listing" element={<EditListings />} />
+          <Route path="edit-profile" element={<EditProfile />} />
+          <Route path="change-password" element={<ChangePassword />} />
+          <Route path="review" element={<Review />} />
+          {/* <Route path="add-listing" element={<AddListing />} /> */}
+
           <Route path="logout" element={<Logout />} />
         </Route>
         

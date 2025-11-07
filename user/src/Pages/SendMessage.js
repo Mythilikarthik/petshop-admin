@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Breadcrumb } from 'react-bootstrap';
+
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-user.onrender.com"
+    : "http://localhost:5000";
 
 const SendMessage = () => {
   const { state } = useLocation();
@@ -9,96 +14,138 @@ const SendMessage = () => {
   const { listing } = state || {};
 
   const [formData, setFormData] = useState({
-    shopName: listing?.name || '',
-    email: listing?.email || '',
-    address: listing?.address || '',
-    city: listing?.city || '',
-    country: listing?.country || '',
-    mapUrl: listing?.mapUrl || '',
-    description: listing?.description || '',
-    photos: [] // array of File objects
+    sendTo: "",
+    message: "",
   });
 
+  const [users, setUsers] = useState([]); // store all users
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+    alert("You must be logged in");
+    return;
+  }
+  //console.log(localStorage.getItem("userId"));
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/user/all`, {
+          method: "GET",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+           },
+        });
+        const data = await res.json();
+        if (data.success) {
+          setUsers(data.users);
+          console.log(data.users);
+        } else {
+          console.error("Failed to fetch users:", data);
+        }
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("You must be logged in to send messages.");
+    return;
+  }
 
-    // Simulate sending data
-    console.log('Submitted data:', formData);
-
-    // If uploading to backend:
-    // const formDataToSend = new FormData();
-    // formDataToSend.append('shopName', formData.shopName);
-    // formDataToSend.append('email', formData.email);
-    // ...
-    // formData.photos.forEach((photo, index) => {
-    //   formDataToSend.append(`photos[${index}]`, photo);
-    // });
-
-    alert('Changes saved successfully!');
-    navigate('/business-listing');
+  const payload = {
+    senderId: localStorage.getItem("userId"),
+    receiverId: formData.sendTo, // must store actual user _id from dropdown
+    message: formData.message,
   };
-  const sendTo = ["Jhon Doe", "Jane Smith", "Michael Scott"];
-  
+  console.log(formData);
+console.log(payload);
+  try {
+    const res = await fetch(`${API_BASE}/api/messages/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Message sent successfully!");
+      navigate("/view-message");
+    } else {
+      alert(data.message || "Failed to send message");
+    }
+  } catch (error) {
+    console.error("Error sending message:", error);
+    alert("Something went wrong.");
+  }
+};
+
+
   return (
     <Container className="mt-4">
-      <div className='pl-3 pr-3'>
-        <Row className='mb-3 justify-content-end align-items-center'>
+      <div className="pl-3 pr-3">
+        <Row className="mb-3 justify-content-end align-items-center">
           <Col>
-            <h2 className='main-title mb-0'>Send Message</h2>
-          </Col>
-          <Col xs={'auto'}>
-            <Breadcrumb className='top-breadcrumb'>
-              <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
+            <h2 className="main-title mb-0">Send Message</h2>
+            <Breadcrumb className="top-breadcrumb">
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>Send Message</Breadcrumb.Item>
             </Breadcrumb>
           </Col>
         </Row>
-        
-        <div className='form-container'>
-          <Form onSubmit={handleSubmit}>            
+
+        <div className="form-container">
+          <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-            <Form.Label>Send To</Form.Label>
-            <Form.Select
-                name="sendto"
+              <Form.Label>Send To</Form.Label>
+              <Form.Select
+                name="sendTo"
                 value={formData.sendTo}
-                placeholder='Send To'
                 onChange={handleChange}
                 required
-            >
-              <option value="">
-                -- Send To --
-              </option>
-              {sendTo.map((element, index) => (
-                <option key={index} value={element}>{element}</option>
-              ))}
-            </Form.Select>
+              >
+                <option value="">-- Select User --</option>
+                {users.map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.name}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
-            
-            <Form.Group className='mb-4'>
-                <Form.Label>Message</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    rows={3}
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                />
+
+            <Form.Group className="mb-4">
+              <Form.Label>Message</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+              />
             </Form.Group>
 
             <Button variant="primary" type="submit">
-            Send
+              Send
             </Button>
-        </Form>
+          </Form>
         </div>
       </div>
     </Container>
