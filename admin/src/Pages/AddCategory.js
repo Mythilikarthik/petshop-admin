@@ -117,7 +117,7 @@ const AddCategory = () => {
               value={petCategoryList.filter(opt => formData.petCategories.includes(opt.value))}
               onChange={handlePetCategoryChange}
               placeholder="Choose related pet categories..."
-            />
+            /> 
           </Form.Group>
 
           <Form.Group className="mb-3">
