@@ -14,7 +14,7 @@ import Select from "react-select";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
-    ? "https://your-server.com"
+    ? "https://petshop-admin.onrender.com"
     : "http://localhost:5000";
 
 const AdManagement = () => {
@@ -47,7 +47,7 @@ const AdManagement = () => {
 
         const catData = await catRes.json();
         const cityData = await cityRes.json();
-
+console.log(catData);
         if (catData.success && cityData.success) {
           setCategoryList(catData.categories || []);
           setCityList(cityData.cities || []);
