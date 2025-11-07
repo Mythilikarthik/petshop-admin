@@ -154,7 +154,7 @@ router.post("/user/login", async (req, res) => {
     //   await user.save();
     //   console.log(`⚠️ Premium expired for user: ${user.email}`);
     // }
-
+ 
     const token = generateToken(user._id, "user");
 
     return res.json({
