@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Button, Container, Form, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {loginUser} from "../features/authSlice"
-
+import { loginUser } from "../features/authSlice";
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -11,20 +10,25 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    
+
     const result = await dispatch(loginUser({ username, password }));
+
     if (loginUser.fulfilled.match(result) && result.payload.success) {
-      console.log("Token:", result.payload.token);
-      localStorage.setItem("isPublicAuth", "true");
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem("token", result.payload.token);
-      localStorage.setItem("role", result.payload.role);
-      localStorage.setItem("userId", result.payload.id);
-      navigate("/dashboard"); // Redirect to dashboard
-      // console.log(username)
+      const userData = result.payload;
+
+      // ✅ Save data for persistence
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", userData.token);
+      localStorage.setItem("role", userData.role);
+      localStorage.setItem("userId", userData.id);
+
+      // ✅ Redirect
+      navigate("/dashboard");
+    } else {
+      alert(result.payload || "Login failed. Please check your credentials.");
     }
   };
 
@@ -37,27 +41,30 @@ const Login = () => {
           <Form.Group className="mb-3">
             <Form.Label>Username</Form.Label>
             <Form.Control 
-              type="text" 
+              type="text"
               placeholder="Enter username"
               value={username}
               onChange={(e) => setUsername(e.target.value)} 
               required
             />
           </Form.Group>
+
           <Form.Group className="mb-3">
             <Form.Label>Password</Form.Label>
             <Form.Control 
-              type="password" 
+              type="password"
               placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)} 
               required
             />
           </Form.Group>
+
           <Button variant="primary" type="submit" className="w-100" disabled={loading}>
-            {loading ? "Loading in ..." :  "Login"}
+            {loading ? "Logging in..." : "Login"}
           </Button>
-          {error && <p style={{"color" : "red"}}>{error}</p>}
+
+          {error && <p className="text-danger mt-2">{error}</p>}
         </Form>
       </Card>
     </Container>

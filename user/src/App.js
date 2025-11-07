@@ -22,8 +22,19 @@ import ChangePassword from './Pages/ChangePassword';
 import Messages from './Pages/Messages';
 import Review from './Pages/Review';
 import SessionTimeoutHandler from './Hooks/SessionTimeoutHandler'; 
+import { useDispatch } from "react-redux";
+import { loginUser } from "./features/authSlice";
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      dispatch({ type: loginUser.fulfilled.type, payload: user });
+    }
+  }, [dispatch]);
   const [loading, setLoading] = useState(true);
     useEffect(()=> {
       const timer = setTimeout(() => {
