@@ -122,7 +122,7 @@ router.put("/admin/change-password/:id", async (req, res) => {
 
 // ------------------ User Login ------------------
 router.post("/user/login", async (req, res) => {
-  console.log("User login attempt:", req.body);
+    console.log("User login attempt:", req.body);
   try {
     const { username, password } = req.body;
     const user = await User.findOne({
@@ -135,37 +135,19 @@ router.post("/user/login", async (req, res) => {
 
     const passwordMatch =
       (user.password.startsWith("$2") && (await bcrypt.compare(password, user.password))) ||
-      password === user.password;
+      password === user.password; // fallback if not hashed yet
 
     if (!passwordMatch) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
-    // ✅ Check and update premium if expired
-    // if (
-    //   user.isPremium &&
-    //   user.premiumEndDate &&
-    //   new Date() > new Date(user.premiumEndDate)
-    // ) {
-    //   user.isPremium = false;
-    //   user.premiumPlan = null;
-    //   user.premiumStartDate = null;
-    //   user.premiumEndDate = null;
-    //   await user.save();
-    //   console.log(`⚠️ Premium expired for user: ${user.email}`);
-    // }
- 
     const token = generateToken(user._id, "user");
-
     return res.json({
       success: true,
       token,
       role: "user",
       id: user._id,
       message: "User login successful",
-      isPremium: user.isPremium,
-      premiumPlan: user.premiumPlan,
-      premiumEndDate: user.premiumEndDate,
     });
   } catch (err) {
     console.error("User login error:", err);
