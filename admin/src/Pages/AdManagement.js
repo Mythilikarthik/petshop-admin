@@ -41,8 +41,8 @@ const AdManagement = () => {
     const fetchData = async () => {
       try {
         const [catRes, cityRes] = await Promise.all([
-          fetch(`${API_BASE}/api/category`),
-          fetch(`${API_BASE}/api/city`),
+          fetch(`${API_BASE}/api/category/show`),
+          fetch(`${API_BASE}/api/city/show`),
         ]);
 
         const catData = await catRes.json();
