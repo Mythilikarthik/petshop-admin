@@ -15,7 +15,7 @@ import Select from "react-select";
 const API_BASE =
   process.env.NODE_ENV === "production"
     ? "https://petshop-admin.onrender.com"
-    : "http://localhost:5000";
+    : "http://localhost:5000"; 
 
 const AdManagement = () => {
   const { state } = useLocation();
