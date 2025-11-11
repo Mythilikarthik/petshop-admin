@@ -72,24 +72,24 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
-io.on("connection", (socket) => {
-  console.log("⚡ User connected:", socket.id);
+// io.on("connection", (socket) => {
+//   console.log("⚡ User connected:", socket.id);
 
-  socket.on("join", (userId) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined their room`);
-  });
+//   socket.on("join", (userId) => {
+//     socket.join(userId);
+//     console.log(`User ${userId} joined their room`);
+//   });
 
-  socket.on("message_read", ({ userId }) => {
-    console.log(`📩 Message read by ${userId}`);
-    // Broadcast instantly to that user's own room
-    io.to(userId).emit("message_read_update");
-  });
+//   socket.on("message_read", ({ userId }) => {
+//     console.log(`📩 Message read by ${userId}`);
+//     // Broadcast instantly to that user's own room
+//     io.to(userId).emit("message_read_update");
+//   });
 
-  socket.on("disconnect", () => {
-    console.log("❌ User disconnected:", socket.id);
-  });
-});
+//   socket.on("disconnect", () => {
+//     console.log("❌ User disconnected:", socket.id);
+//   });
+// });
   
 
 
