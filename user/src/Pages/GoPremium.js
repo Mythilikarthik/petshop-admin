@@ -3,7 +3,7 @@ import { FaPaw } from "react-icons/fa";
 import "./GoPremium.css";
 const API_BASE =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
+    ? "https://petshop-admin.onrender.com"
     : "http://localhost:5000";
 const GoPremium = () => {
   const [billingCycle, setBillingCycle] = useState("monthly");

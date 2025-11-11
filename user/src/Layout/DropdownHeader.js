@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
+    ? "https://petshop-admin.onrender.com"
     : "http://localhost:5000";
 
 const handleExpand = async () => {

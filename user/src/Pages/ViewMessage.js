@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
+    ? "https://petshop-admin.onrender.com"
     : "http://localhost:5000";
     const socket = io(API_BASE, { transports: ["websocket"] });
 
