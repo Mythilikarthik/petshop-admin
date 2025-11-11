@@ -13,6 +13,7 @@ export const loginUser = createAsyncThunk(
                 body : JSON.stringify({username, password})
             })
             const data = await res.json()
+            console.log(data);
             if(!res.ok) {
                 return rejectWithValue(data.message)
             }
