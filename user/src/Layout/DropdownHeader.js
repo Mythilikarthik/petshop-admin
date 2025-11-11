@@ -71,7 +71,7 @@ const DashboardHeader = ({ onToggleMenu }) => {
     window.addEventListener("focus", handleFocus);
 
     return () => {
-      socket.disconnect();
+      // socket.disconnect();
       window.removeEventListener("focus", handleFocus);
     };
   }, []);
