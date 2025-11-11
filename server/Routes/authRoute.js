@@ -142,18 +142,18 @@ router.post("/user/login", async (req, res) => {
     }
 
     // ✅ Check and update premium if expired
-    if (
-      user.isPremium &&
-      user.premiumEndDate &&
-      new Date() > new Date(user.premiumEndDate)
-    ) {
-      user.isPremium = false;
-      user.premiumPlan = null;
-      user.premiumStartDate = null;
-      user.premiumEndDate = null;
-      await user.save();
-      console.log(`⚠️ Premium expired for user: ${user.email}`);
-    }
+    // if (
+    //   user.isPremium &&
+    //   user.premiumEndDate &&
+    //   new Date() > new Date(user.premiumEndDate)
+    // ) {
+    //   user.isPremium = false;
+    //   user.premiumPlan = null;
+    //   user.premiumStartDate = null;
+    //   user.premiumEndDate = null;
+    //   await user.save();
+    //   console.log(`⚠️ Premium expired for user: ${user.email}`);
+    // }
 
     const token = generateToken(user._id, "user");
 
