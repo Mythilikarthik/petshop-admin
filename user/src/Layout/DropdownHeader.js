@@ -54,17 +54,17 @@ const DashboardHeader = ({ onToggleMenu }) => {
     fetchUnreadCount();
 
     // --- Setup Socket.io ---
-    const socket = io(API_BASE, { transports: ["websocket"] });
-    socket.emit("join", userId);
+    // const socket = io(API_BASE, { transports: ["websocket"] });
+    // socket.emit("join", userId);
 
-    socket.on("new_message", () => {
-      setUnreadCount((prev) => prev + 1);
-    });
+    // socket.on("new_message", () => {
+    //   setUnreadCount((prev) => prev + 1);
+    // });
 
-    socket.on("message_read_update", () => {
-      setUnreadCount((prev) => Math.max(prev - 1, 0));
-      fetchUnreadCount();
-    });
+    // socket.on("message_read_update", () => {
+    //   setUnreadCount((prev) => Math.max(prev - 1, 0));
+    //   fetchUnreadCount();
+    // });
 
     
     const handleFocus = () => fetchUnreadCount();
