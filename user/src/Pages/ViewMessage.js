@@ -7,7 +7,7 @@ const API_BASE =
   process.env.NODE_ENV === "production"
     ? "https://petshop-user.onrender.com"
     : "http://localhost:5000";
-    // const socket = io(API_BASE, { transports: ["websocket"] });
+    const socket = io(API_BASE, { transports: ["websocket"] });
 
 const ViewMessage = () => {
   const { id } = useParams();
@@ -46,7 +46,7 @@ const ViewMessage = () => {
 
             if (result.success) {
               // ✅ Notify other tabs/components to update unread count
-              // socket.emit("message_read", { userId });
+              socket.emit("message_read", { userId });
             }
           }
         } else {
@@ -59,7 +59,7 @@ const ViewMessage = () => {
 
     fetchMessage();
     return () => {
-      // socket.disconnect();
+      socket.disconnect();
     };
   }, [id]);
 
