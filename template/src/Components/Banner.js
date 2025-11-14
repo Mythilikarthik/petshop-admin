@@ -1,50 +1,128 @@
-import React, {useState} from 'react'
-import { Row, Col, Form, Button } from 'react-bootstrap'
-import backgroundImage from './Image/bg-image.svg';
-import './Css/Banner.css'
+import React, { useEffect, useState } from "react";
+import { Row, Col, Form, Button, Container } from "react-bootstrap";
+import backgroundImage from "./Image/bg-image.svg";
+import "./Css/Banner.css";
+import { useLocation, useNavigate } from "react-router-dom";
 
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
 
+const Banner = ({home}) => {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [type, setType] = useState("");
+  const [city, setCity] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [types, setTypes] = useState([]);
+  const [cities, setCities] = useState([]);
 
-const categories = [
-  { value: "all", label: "All" },
-  { value: "veterinarians", label: "Veterinarians" },
-  { value: "grooming", label: "Pet Grooming" },
-  { value: "boarding", label: "Pet Boarding" }
-];
+  // ✅ Fetch all default data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [typeRes, categoryRes, cityRes, homeRes] = await Promise.all([
+          fetch(`${API_BASE}/api/pet-category/show`),
+          fetch(`${API_BASE}/api/category/show`),
+          fetch(`${API_BASE}/api/city/show`),
+        ]);
 
-const cities = [
-  { value: "mumbai", label: "Mumbai" },
-  { value: "delhi", label: "Delhi" },
-  { value: "bangalore", label: "Bangalore" }
-];
+        const typeData = await typeRes.json();
+        const categoryData = await categoryRes.json();
+        const cityData = await cityRes.json();
 
-const Banner = () => {
-    const [search, setSearch] = useState("");
-    const [category, setCategory] = useState("");
-    const [city, setCity] = useState("");
-    const handleSubmit = (e) => {
-    e.preventDefault();   
-        // Handle the search logic here
-        console.log("Search:", search);
-        console.log("Category:", category);
-        console.log("City:", city);
+        if (typeData.success) setTypes(typeData.petCategories);
+        if (categoryData.success) setCategories(categoryData.categories);
+        if (cityData.success) setCities(cityData.cities);
+        //console.log("Homedata", homeData.home);
+      } catch (err) {
+        console.error("Error fetching initial data:", err);
+      }
     };
+
+    fetchData();
+  }, []);
+
+  // ✅ When type changes, fetch categories related to it
+  useEffect(() => {
+    if (!type) {
+      // if no type selected, reset to all categories
+      fetch(`${API_BASE}/api/category/show`)
+        .then((res) => res.json())
+        .then((data) => setCategories(data.categories || []))
+        .catch((err) => console.error("Error resetting categories:", err));
+      return;
+    }
+
+    const fetchFilteredCategories = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/category/byPetCategories`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ petCategories: [type] }), 
+        });
+
+        const data = await res.json();
+        console.log("Filtered categories:", data);
+
+        if (data.success && Array.isArray(data.categories)) {
+          setCategories(data.categories);
+        } else {
+          setCategories([]);
+        }
+      } catch (err) {
+        console.error("Error fetching filtered categories:", err);
+        setCategories([]);
+      }
+    };
+
+    fetchFilteredCategories();
+  }, [type]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Search:", search);
+    console.log("Category:", category);
+    console.log("Type:", type);
+    console.log("City:", city);
+  };
+
   return (
     <div className="banner">
       <div className="inner-banner">
-          <div className='bg-image' style={{"background-image": `url(${backgroundImage})`}}>
-            <div className=" pl-5 pr-5">
-              <Row className='d-flex align-items-center pt-5 pb-5'>
-                <Col>
-                  <h1>Find Perfect <span className='highlight'>Pet Services</span> Near You</h1>
-                  <p>Discover the best pet services, health tips, and pet-friendly places across India with our comprehensive directory.</p>
-                  <div className='d-flex gap-3'>
-                      <button className='orange-btn py-2 px-4 border-2 border-orange-500 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition duration-300'>Get Started</button>
-                      <button className='border-btn py-2 px-4 border-2 border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition duration-300'>Learn More</button>
-                  </div>
-                </Col>
-                <Col>
-                  <div className="image-container d-flex justify-content-center align-items-center">
+        <div
+          className="bg-image"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+        >
+          <Container>
+            <Row className="d-flex align-items-center pt-5 pb-5">
+              <Col>
+                <h1>
+                  {home && home.bannerTitle ? home.bannerTitle : ""}
+                </h1>
+                <p>
+                  {home && home.bannerSubtitle ? home.bannerSubtitle : ""}
+                </p>
+                <div className="d-flex gap-3">
+                  <button
+                    className="orange-btn py-2 px-4 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition duration-300"
+                    onClick={() => navigate('/directory')}
+                  >
+                    Get Started
+                  </button>
+                  <button className="border-btn py-2 px-4 border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition duration-300"
+                    onClick={() => navigate('/about')}
+                  >
+
+                    Learn More
+                  </button>
+                </div>
+              </Col>
+
+              <Col>
+                <div className="image-container d-flex justify-content-center align-items-center">
                     <div className='round-image'>
                       <svg class="w-64 h-64 md:w-80 md:h-80 relative z-10" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                           <path fill="#FF9F1C" d="M47.7,-57.2C59.9,-45.8,66.8,-28.5,68.8,-11.1C70.8,6.3,67.8,23.8,58.4,36.9C48.9,50,32.9,58.7,15.4,63.9C-2.1,69.1,-21.2,70.8,-36.4,63.5C-51.7,56.2,-63.1,39.9,-68.8,21.8C-74.5,3.7,-74.5,-16.2,-66.1,-31.4C-57.7,-46.6,-40.9,-57.1,-24.3,-65.3C-7.7,-73.5,8.8,-79.4,24.4,-75.1C40,-70.8,54.7,-56.3,47.7,-57.2Z" transform="translate(100 100)"></path>
@@ -57,62 +135,74 @@ const Banner = () => {
                     </div>
                   </div>
                 </Col>
-              </Row>
-            </div>
+            </Row>
+          </Container>
+        </div>
+
+        {/* ✅ Filter Form */}
+        <div className="form-section">
+          <div className="form-container">
+            <Form onSubmit={handleSubmit}>
+              <div className="d-flex flex-column flex-md-row align-items-center gap-2">
+                {/* Type */}
+                <Form.Select
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  aria-label="All types"
+                  className="me-md-2"
+                  style={{ width: 200, flex: "0 0 200px" }}
+                >
+                  <option value="">All Types</option>
+                  {types.map((t) => (
+                    <option key={t._id} value={t._id}>
+                      {t.categoryName}
+                    </option>
+                  ))}
+                </Form.Select>
+
+                {/* Category */}
+                <Form.Select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  aria-label="All categories"
+                  className="me-md-2"
+                  style={{ width: 200, flex: "0 0 200px" }}
+                >
+                  <option value="">All Categories</option>
+                  {categories.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.categoryName}
+                    </option>
+                  ))}
+                </Form.Select>
+
+                {/* City */}
+                <Form.Select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  aria-label="All cities"
+                  className="me-md-2"
+                  style={{ width: 180, flex: "0 0 180px" }}
+                >
+                  <option value="">All Cities</option>
+                  {cities.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.city}
+                    </option>
+                  ))}
+                </Form.Select>
+
+                {/* Search Button */}
+                <Button type="submit" className="mt-2 mt-md-0">
+                  Search
+                </Button>
+              </div>
+            </Form>
           </div>
-          <div className='form-section'>
-            <div className='form-container'>
-                <Form onSubmit={handleSubmit}>
-                    <div className="d-flex flex-column flex-md-row align-items-center gap-2">
-                        <Form.Control
-                            type="text"
-                            placeholder="Search..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="me-md-2"
-                            style={{ flex: "1 1 300px", minWidth: 0 }}
-                        />
-
-                        <Form.Select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            aria-label="All categories"
-                            className="me-md-2"
-                            style={{ width: 200, flex: "0 0 200px" }}
-                        >
-                            <option value="">All category</option>
-                            {categories.map((c) => (
-                            <option key={c.value} value={c.value}>
-                                {c.label}
-                            </option>
-                            ))}
-                        </Form.Select>
-
-                        <Form.Select
-                            value={city}
-                            onChange={(e) => setCity(e.target.value)}
-                            aria-label="All cities"
-                            className="me-md-2"
-                            style={{ width: 180, flex: "0 0 180px" }}
-                        >
-                            <option value="">All city</option>
-                            {cities.map((c) => (
-                            <option key={c.value} value={c.value}>
-                                {c.label}
-                            </option>
-                            ))}
-                        </Form.Select>
-
-                        <Button type="submit" className="mt-2 mt-md-0" style={{ whiteSpace: "nowrap" }}>
-                            Search
-                        </Button>
-                    </div>
-                </Form>
-            </div>'
-          </div>
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Banner
+export default Banner;

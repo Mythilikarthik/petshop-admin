@@ -7,7 +7,9 @@ router.post('/add', async (req, res) => {
   try {
     const { categoryName, description, metaTitle, metaKeyword, metaDescription, petCategories } = req.body;
 
-    const existing = await Category.findOne({ categoryName });
+    const existing = await Category.findOne({ 
+      categoryName: { $regex: `^${categoryName}$`, $options: 'i' }
+     });
     if (existing) {
       return res.status(400).json({ success: false, message: 'Category already exists' });
     }
@@ -32,6 +34,21 @@ router.post('/add', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+router.post("/byPetCategories", async (req, res) => {
+  try {
+    const { petCategories } = req.body; // array of petCategory IDs
+    if (!Array.isArray(petCategories) || petCategories.length === 0) {
+      return res.json({ success: true, categories: [] });
+    }
+
+    const categories = await Category.find({ petCategories: { $in: petCategories }, show: true });
+    res.json({ success: true, categories });
+  } catch (err) {
+    console.error("Category fetch error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const categories = await Category.find().populate('petCategories', 'categoryName').sort({ created_at: -1 });
@@ -51,6 +68,16 @@ router.get('/show', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { categoryName, description, metaTitle, metaKeyword, metaDescription, petCategories } = req.body;
+    
+    const existing = await Category.findOne({
+      _id: { $ne: req.params.id },
+      categoryName: { $regex: `^${categoryName}$`, $options: 'i' }
+    });
+
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Category already exists' });
+    }
+
     const category = await Category.findByIdAndUpdate(
       req.params.id,
       { categoryName, description, metaTitle, metaKeyword, metaDescription, petCategories },

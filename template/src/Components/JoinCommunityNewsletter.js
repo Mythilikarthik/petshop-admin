@@ -4,7 +4,7 @@ import { Row, Col, Container } from 'react-bootstrap';
 
 const JoinCommunityNewsletter = () => (
   <section className="join-newsletter-section">
-    <Container fluid>
+    <Container>
         <div className="">
             <Row className='d-flex align-items-stretch'>
                 <Col xs={6} className="text-center mb-4 d-flex">

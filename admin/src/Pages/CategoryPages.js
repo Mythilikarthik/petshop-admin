@@ -26,6 +26,7 @@ const CategoryPages = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const navigate = useNavigate();
+  
 
   // ✅ Fetch category pages
   const fetchPages = async () => {
@@ -125,7 +126,7 @@ const CategoryPages = () => {
         <Col md={5}>
           <Form.Control
             type="text"
-            placeholder="Search by name, category, or meta..."
+            placeholder="Search ..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -148,9 +149,9 @@ const CategoryPages = () => {
           />
         </Col>
         <Col md={2} className="d-flex justify-content-end">
-          <Button variant="primary" onClick={() => navigate("/category-pages/add")}>
+          {/* <Button variant="primary" onClick={() => navigate("/category-pages/add")}>
             + Add New
-          </Button>
+          </Button> */}
         </Col>
       </Row>
 

@@ -4,6 +4,7 @@
   },
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\" \"npm run user\"",
+    "front" : "concurrently \"npm run server\" \"npm run template\" ",
     "server": "cd server && npm run dev",
     "client": "cd admin && npm start",
     "user": "cd user && npm start",

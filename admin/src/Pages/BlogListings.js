@@ -139,7 +139,11 @@ const BlogListings = () => {
                 <td>{currentPage * itemsPerPage + i + 1}</td>
                 <td>{b.title}</td>
                 <td>{b.author}</td>
-                <td>{b.category}</td>
+                <td>
+                  {Array.isArray(b.category) && b.category.length > 0
+                    ? b.category.map(cat => cat.categoryName).join(', ')
+                    : '-'}
+                </td>
                 <td>{b.date ? new Date(b.date).toISOString().slice(0,10) : ''}</td>
                 <td>
                   {/* <Button size="sm" variant="success" className="me-2" onClick={() => openView(b)}>View</Button> */}

@@ -10,7 +10,7 @@ const Header = () => {
   return (
     <div className='header'>
         <Navbar expand="lg" className="bg-white shadow-sm p-3 bg-body sticky-top">
-            <Container fluid>
+            <Container>
                 <Row className='justify-content-between align-items-center w-100'>
                     <Col className='d-flex align-items-center justify-content-start gap-2'>
                         <Navbar.Brand href="/" >

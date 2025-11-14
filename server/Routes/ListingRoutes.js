@@ -38,6 +38,12 @@ router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
     const { shopName, email, phone, address, city, country, mapUrl, description, categories, petCategories, metaTitle, metaKeyword, metaDescription } = req.body;
     const status = req.userType === "admin" ? "approved" : "pending";
     const user_id = req.userType === "user" ? req.userId : null;
+    const existing = await Listing.findOne(
+      { shopName, email, city }
+    ).collation({ locale: "en", strength: 2 });
+    if (existing) {
+      return res.status(400).json({ success: false, message: "Listing already exists" });
+    }
 
     const newListing = new Listing({
       shopName,
@@ -81,6 +87,65 @@ router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 });
+router.post("/city", verifyToken, async (req, res) => {
+  try {
+    const {city} = req.body;
+    const listings = await Listing.countDocuments({ city : { $in : [city]}});
+    res.json({ success: true, listings });
+  } catch (err) {
+    console.error("Error fetching listings by city:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+})
+// GET Featured Pet Services
+router.get("/featured-services", async (req, res) => {
+  try {
+    const listings = await Listing.find({ status: "approved" })
+      .populate("city", "city")
+      .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .limit(3) // only 3 featured
+      .lean();
+
+    // Get rating for each listing
+    const listingIds = listings.map(l => l._id);
+
+    const reviews = await Review.aggregate([
+      { $match: { listingId: { $in: listingIds }, status: "approved" } },
+      {
+        $group: {
+          _id: "$listingId",
+          averageRating: { $avg: "$rating" },
+        }
+      }
+    ]);
+
+    // Map ratings
+    const ratingMap = {};
+    reviews.forEach(r => {
+      ratingMap[r._id.toString()] = Number(r.averageRating.toFixed(1));
+    });
+
+    // Combine listing + rating
+    const result = listings.map(listing => ({
+      id: listing._id,
+      title: listing.shopName,
+      category: listing.categories.map(p => p.categoryName),
+      description: listing.description,
+      location: listing.city?.city || "Unknown",
+      rating: ratingMap[listing._id.toString()] || 0,
+      tags: listing.petCategories.map(p => p.categoryName),
+      image: listing.photos?.[0] || null
+    }));
+
+    res.json({ success: true, services: result });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
+
 
 router.post("/bulk", verifyToken, async (req, res) => {
   try {
@@ -141,11 +206,16 @@ router.post("/bulk", verifyToken, async (req, res) => {
     const duplicateErrors = [];
 
     for (const listing of cleanListings) {
+      // const existing = await Listing.findOne({
+      //   shopName: { $regex: new RegExp(`^${listing.shopName.trim()}$`, "i") },
+      //   email: { $regex: new RegExp(`^${listing.email.trim()}$`, "i") },
+      //   city: listing.city
+      // }).populate("city", "city");
       const existing = await Listing.findOne({
-        shopName: { $regex: new RegExp(`^${listing.shopName.trim()}$`, "i") },
-        email: { $regex: new RegExp(`^${listing.email.trim()}$`, "i") },
-        city: listing.city
-      }).populate("city", "city");
+        shopName: listing.shopName, 
+        email: listing.email,
+        city: listing.city,
+      }).populate("city", "city").collation({ locale: "en", strength: 2 });
 
       if (existing) {
         duplicateErrors.push(

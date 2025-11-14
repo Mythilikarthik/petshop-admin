@@ -94,16 +94,9 @@ const FeaturedPetServicesSection = () => {
                 {services.map(service => (
                     <Col key={service.id} md={4} className="mb-4">
                         <Card className={`service-card w-100`}>
-                            <Card.Header className="card-top-rated">
-                                {service.tags.map(tag => (
-                                        <span key={tag} className="badge badge-top-rated">{tag}</span>
-                                    ))}
-                                
-                                    
-                                
-                                <div className="service-icon">
-                                    <BsTagFill size={100} color="#ff8800" />
-                                </div>
+                            <Card.Header className={`${categoryBg[service.category]}`}>
+                                <Badge type={service.category} />
+                                <div className="service-icon">{service.icon}</div>
                                 
                             </Card.Header>
                             <Card.Body className='pos-rel'>
@@ -113,8 +106,8 @@ const FeaturedPetServicesSection = () => {
                                     <span role="img" aria-label="location"> <BsGeoAltFill />  </span> {service.location}
                                 </div>
                                 <div className="service-tags">
-                                    {service.category.map((categrory) => (
-                                        <span class="service-tag tag-orange">{categrory}</span>
+                                    {service.tags.map(tag => (
+                                        <span key={tag} className={`service-tag ${tagColors[tag]}`}>{tag}</span>
                                     ))}
                                 </div>
                                 <div className="service-rating align-item-center d-flex gap-2">
@@ -122,7 +115,11 @@ const FeaturedPetServicesSection = () => {
                                     <span className='d-block'>{service.rating}</span>
                                 </div>
                                 <Button
-                                    variant={"primary"}
+                                    variant={
+                                        service.category === 'Top Rated' ? 'warning'
+                                        : service.category === 'Popular' ? 'primary'
+                                        : 'success'
+                                    }
                                     className="details-btn"
                                 >
                                     View Details

@@ -24,7 +24,7 @@ const [newKeyword, setNewKeyword] = useState("");
     phone: listing?.phone || "",
     address: listing?.address || "",
     city: listing?.city || "",
-    country: listing?.country || "",
+    country: listing?.country || "India",
     mapUrl: listing?.mapUrl || "",
     petCategories: listing?.petCategories || [],
     description: listing?.description || "",
@@ -220,6 +220,37 @@ const handleRemoveKeyword = (keywordToRemove) => {
     if (!confirmLeave()) return; // user canceled
     navigate(-1);
   };
+useEffect(() => {
+  // If no petCategories selected, clear category list
+  if (!formData.petCategories || formData.petCategories.length === 0) {
+    setCategoryList([]);
+    return;
+  }
+
+  // Fetch categories based on selected pet categories
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/category/byPetCategories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ petCategories: formData.petCategories }),
+      });
+      const data = await res.json();
+      console.log(data);
+      if (data.success && Array.isArray(data.categories)) {
+        setCategoryList(data.categories);
+      } else {
+        setCategoryList([]);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setCategoryList([]);
+    }
+  };
+
+  fetchCategories();
+}, [formData.petCategories]);
+
   return (
     <Container className="mt-4">
       <div className="pl-3 pr-3">
@@ -242,6 +273,40 @@ const handleRemoveKeyword = (keywordToRemove) => {
         <div className="form-container">
           <Form onSubmit={handleSubmit}>
             {/* Category */}
+            <Form.Group className="mb-3">
+              <Form.Label>Type <span className="text-danger">*</span></Form.Label>
+              {/* <Select
+                isMulti
+                options={petCategory.map((c) => ({ value: c, label: c }))}
+                value={(formData.petCategories || []).map((c) => ({
+                  value: c,
+                  label: c
+                }))}
+                onChange={(selected) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    petCategories: selected.map((s) => s.value)
+                  }))
+                }
+              /> */}
+              <Select
+  isMulti
+  options={petCategory.map(c => ({ value: c._id, label: c.categoryName }))}
+  value={petCategory
+    .filter(p => formData.petCategories.includes(p._id))
+    .map(p => ({ value: p._id, label: p.categoryName }))
+  }
+  onChange={(selected) =>
+    
+    setFormData(prev => ({
+      ...prev,
+      petCategories: selected.map(s => s.value)
+    }))
+  }
+  required
+/>
+
+            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Category <span className="text-danger">*</span></Form.Label>
               {/* <Select
@@ -272,46 +337,13 @@ const handleRemoveKeyword = (keywordToRemove) => {
     setFormData(prev => ({
       ...prev,
       categories: selected.map(s => s.value),
-      petCategories: [] // clear pet categories when category changes
     }))
   }
   required
 />
 
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Type <span className="text-danger">*</span></Form.Label>
-              {/* <Select
-                isMulti
-                options={petCategory.map((c) => ({ value: c, label: c }))}
-                value={(formData.petCategories || []).map((c) => ({
-                  value: c,
-                  label: c
-                }))}
-                onChange={(selected) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    petCategories: selected.map((s) => s.value)
-                  }))
-                }
-              /> */}
-              <Select
-  isMulti
-  options={petCategory.map(c => ({ value: c._id, label: c.categoryName }))}
-  value={petCategory
-    .filter(p => formData.petCategories.includes(p._id))
-    .map(p => ({ value: p._id, label: p.categoryName }))
-  }
-  onChange={(selected) =>
-    setFormData(prev => ({
-      ...prev,
-      petCategories: selected.map(s => s.value)
-    }))
-  }
-  required
-/>
-
-            </Form.Group>
+            
 
 
             {/* Basic Fields */}
@@ -327,7 +359,7 @@ const handleRemoveKeyword = (keywordToRemove) => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
+              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 type="email"
                 name="email"
@@ -359,7 +391,7 @@ const handleRemoveKeyword = (keywordToRemove) => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>City</Form.Label>
+              <Form.Label>City <span className="text-danger">*</span></Form.Label>
               <Form.Select
   name="city"
   value={formData.city}
@@ -383,6 +415,8 @@ const handleRemoveKeyword = (keywordToRemove) => {
                 name="country"
                 value={formData.country}
                 onChange={handleChange}
+                disabled
+                readOnly
               />
             </Form.Group>
 

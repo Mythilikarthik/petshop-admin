@@ -10,7 +10,7 @@ const Footer = () => {
   return (
     <div className='footer'>
         <footer className="bg-gray-900 text-white ">
-            <Container fluid>
+            <Container>
                 <div className="top-footer d-flex justify-content-between align-items-center mb-3">
                     <Row>
                         <Col>

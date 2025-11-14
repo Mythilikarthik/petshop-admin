@@ -27,6 +27,12 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const newFaq = new Faq(req.body);
+    const existing = await Faq.findOne({
+      question: { $regex: `^${req.body.question}$`, $options: 'i' }
+    });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'FAQ question already exists' });
+    }
     const savedFaq = await newFaq.save();
     res.status(201).json({success: true, faq: savedFaq});
   } catch (error) {
@@ -36,6 +42,13 @@ router.post('/', async (req, res) => {
 // Update FAQ by ID
 router.put('/:id', async (req, res) => {
   try {
+    const existing = await Faq.findOne({
+      _id: { $ne: req.params.id },
+      question: { $regex: `^${req.body.question}$`, $options: 'i' }
+    });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'FAQ question already exists' });
+    }
     const updatedFaq = await Faq.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedFaq) {
       return res.status(404).json({ message: 'FAQ not found' });

@@ -14,6 +14,8 @@ const categoryPageSchema = new mongoose.Schema(
       required: true,
       unique: true
     },
+    icon: String,
+  color: String,
 
     displayName: { type: String, required: true },
     description: { type: String },

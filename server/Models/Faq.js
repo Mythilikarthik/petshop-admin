@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const FaqSchema = new Schema({
-  question: { type: String, required: true },
+  question: { type: String, required: true, unique: true },
   answer: { type: String, required: true },
   created_at: { type: Date, default: Date.now },
 });

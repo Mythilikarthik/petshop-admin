@@ -7,9 +7,11 @@ router.post('/add', async (req, res) => {
   try {
     const { categoryName, description, metaTitle, metaKeyword, metaDescription } = req.body;
 
-    const existing = await PetCategory.findOne({ categoryName });
+    const existing = await PetCategory.findOne({ 
+      categoryName: { $regex: `^${categoryName}$`, $options: 'i' }
+     });
     if (existing) {
-      return res.status(400).json({ success: false, message: 'Category already exists' });
+      return res.status(400).json({ success: false, message: 'Pet Type already exists' });
     }
 
     const newCategory = new PetCategory({
@@ -46,6 +48,15 @@ router.get('/show', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { categoryName, description, metaTitle, metaKeyword, metaDescription } = req.body;
+    
+    const existing = await PetCategory.findOne({
+      _id: { $ne: req.params.id },
+      categoryName: { $regex: `^${categoryName}$`, $options: 'i' }
+    });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Pet Type already exists' });
+    }
+
     const category = await PetCategory.findByIdAndUpdate(
       req.params.id,
       { categoryName, description, metaTitle, metaKeyword, metaDescription },

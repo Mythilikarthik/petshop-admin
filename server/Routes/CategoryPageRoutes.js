@@ -54,6 +54,8 @@ router.post("/", upload.single("image"), async (req, res) => {
       metaTitle,
       metaDescription,
       metaKeywords,
+      icon,
+      color,
     } = req.body;
 
     const services = req.body.services ? JSON.parse(req.body.services) : [];
@@ -64,6 +66,8 @@ router.post("/", upload.single("image"), async (req, res) => {
       displayName,
       description,
       image,
+      icon,
+      color,
       services,
       metaTitle,
       metaDescription,
@@ -71,21 +75,51 @@ router.post("/", upload.single("image"), async (req, res) => {
     };
 
     const existing = await CategoryPage.findOne({ category });
-    let saved;
-
-    if (existing) {
-      saved = await CategoryPage.findByIdAndUpdate(existing._id, data, { new: true });
-    } else {
-      const newPage = new CategoryPage(data);
-      saved = await newPage.save();
-    }
+    const saved = existing
+      ? await CategoryPage.findByIdAndUpdate(existing._id, data, { new: true })
+      : await new CategoryPage(data).save();
 
     res.json({ success: true, page: saved });
   } catch (err) {
     console.error("Error saving category page:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.patch("/:id", upload.single("image"), async (req, res) => {
+  try {
+    const {
+      displayName,
+      description,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
+      icon,
+      color,
+    } = req.body;
+
+    const services = req.body.services ? JSON.parse(req.body.services) : [];
+    const updateData = {
+      displayName,
+      description,
+      icon,
+      color,
+      services,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
+    };
+
+    if (req.file) updateData.image = `/uploads/categorypages/${req.file.filename}`;
+
+    const updated = await CategoryPage.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    res.json({ success: true, page: updated });
+  } catch (err) {
+    console.error("Error updating category page:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 // ✅ Delete a category page
 router.delete("/:id", async (req, res) => {

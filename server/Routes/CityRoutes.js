@@ -7,7 +7,9 @@ const Listing = require('../Models/Listing');
 router.post('/add', async (req, res) => {
   try {
     const {city} = req.body;
-    const existing = await City.findOne({ city });
+    const existing = await City.findOne({ 
+      city: { $regex: `^${city}$`, $options: 'i' }
+     });
     if (existing) {
         return res.status(400).json({ success: false, message: 'City already exists' });
     }
@@ -56,22 +58,47 @@ router.get('/:id', async (req, res) => {
 // Update a city by ID
 router.patch('/:id', async (req, res) => {
   try {
+    const { city } = req.body;
+
+    if (!city || !city.trim()) {
+      return res.status(400).json({ success: false, message: 'City name is required' });
+    }
+
+    // Case-insensitive duplicate check (exclude current city ID)
+    const existing = await City.findOne({
+      _id: { $ne: req.params.id },
+      city: { $regex: `^${city}$`, $options: 'i' }
+    });
+
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'City already exists' });
+    }
+
+    // Proceed to update
     const updated = await City.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { city },
       { new: true, runValidators: true }
     );
-    if (!updated) return res.status(404).json({ error: "City not found" });
 
-    res.status(200).json({ message: "City updated successfully", city: updated });
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'City not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'City updated successfully',
+      city: updated
+    });
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({ error: "City name already exists" });
+      return res.status(400).json({ success: false, message: 'City name already exists' });
     }
     console.error(error);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 
 // Delete a city by ID

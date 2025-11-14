@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Select from "react-select";
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
+import { FaUpload } from "react-icons/fa";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -16,7 +17,9 @@ const itemsPerPage = 5;
 const BusinessListings = () => {
   const [listings, setListings] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
+  const [typeList, setTypeList] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
   const [uploadError, setUploadError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
@@ -41,6 +44,7 @@ const BusinessListings = () => {
           phone: item.phone || '',
           categories: item.categories?.map(c => c.categoryName) || [],
           petCategories: item.petCategories?.map(p => p.categoryName) || [],
+          city: item.city || null,
           status: item.status || 'pending',
           created_by_type : item.created_by_type,
         }));
@@ -54,7 +58,7 @@ const BusinessListings = () => {
   /** Fetch categories from server */
   const fetchCategories = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/category`);
+      const res = await fetch(`${API_BASE}/api/category/show`);
       const data = await res.json();
       if (data.success && Array.isArray(data.categories)) {
         setCategoryList(data.categories.map(c => c.categoryName));
@@ -63,19 +67,32 @@ const BusinessListings = () => {
       console.error("Error fetching categories:", err);
     }
   };
+  const fetchTypes = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/pet-category/show`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.petCategories)) {
+        setTypeList(data.petCategories.map(t => t.categoryName));
+      }
+    } catch (err) {
+      console.error("Error fetching types:", err);
+    }
+  };
 
   useEffect(() => {
     fetchListings();
     fetchCategories();
+    fetchTypes();
   }, []);
 
   /** Pagination & filtering */
   const filteredListings = listings.filter(l => {
     const term = searchTerm.toLowerCase();
-    const matchesSearch = !term || (l.shopName || '').toLowerCase().includes(term) || (l.email || '').toLowerCase().includes(term);
+    const matchesSearch = !term || (l.shopName || '').toLowerCase().includes(term) || (l.city?.city || '').toLowerCase().includes(term);
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(cat => l.categories?.includes(cat));
+    const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => l.petCategories?.includes(type));
     const matchesStatus = l.status === statusFilter;
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesCategory && matchesStatus && matchesType;
   });
 
   const pageCount = Math.ceil(filteredListings.length / itemsPerPage);
@@ -159,9 +176,9 @@ const BusinessListings = () => {
 
   // Fetch mapping data for categories, petcategories, cities
   const [catRes, petCatRes, cityRes] = await Promise.all([
-    fetch(`${API_BASE}/api/category`),
-    fetch(`${API_BASE}/api/pet-category`),
-    fetch(`${API_BASE}/api/city`)
+    fetch(`${API_BASE}/api/category/show`),
+    fetch(`${API_BASE}/api/pet-category/show`),
+    fetch(`${API_BASE}/api/city/show`)
   ]);
 
   const [catData, petCatData, cityData] = await Promise.all([
@@ -341,6 +358,35 @@ if (!mapped.length) {
           <Button variant="primary" onClick={() => navigate('/add-listing')}>+ Add New</Button>
             
           </Col>
+          <Col xs={'auto'} className="d-flex align-items-center justify-content-center">
+            <Form.Group className="text-center">
+              {/* Hidden file input */}
+              <Form.Control
+                type="file"
+                accept=".csv, .xlsx, .xls"
+                onChange={handleFileChange}
+                ref={listFileInputRef}
+                style={{ display: "none" }}
+                id="file-upload-input"
+              />
+
+              {/* Label acts as the visible button */}
+              <label
+                htmlFor="file-upload-input"
+                className="btn btn-primary d-flex flex-column align-items-center justify-content-center circular-button"
+                style={{ cursor: "pointer", padding: "12px", borderRadius: "100%" }}
+              >
+                <FaUpload size={20} />
+                {/* <span style={{ fontSize: "0.85rem", marginTop: "5px" }}>
+                  Upload File
+                </span> */}
+              </label>
+
+              {/* <div className="text-muted mt-2" style={{ fontSize: "0.8rem" }}>
+               [ CSV / Excel only ]
+              </div> */}
+            </Form.Group>
+          </Col>
         </Row>
         <Row className='d-flex justify-content-center mb-5'>
           <Col md={6} >
@@ -360,7 +406,7 @@ if (!mapped.length) {
           <Col md={3}>
             <Form.Control
               type="text"
-              placeholder="Search by name/email"
+              placeholder="Search by name/city"
               value={searchTerm}
               onChange={e => { setSearchTerm(e.target.value); setCurrentPage(0); }}
             />
@@ -375,6 +421,18 @@ if (!mapped.length) {
                 setCurrentPage(0);
               }}
               placeholder="Filter by Categories"
+            />
+          </Col>
+          <Col md={3}>
+            <Select
+              isMulti
+              options={typeList.map(c => ({ value: c, label: c }))}
+              value={selectedTypes.map(c => ({ value: c, label: c }))}
+              onChange={selected => { 
+                setSelectedTypes(selected ? selected.map(s => s.value) : []); 
+                setCurrentPage(0);
+              }}
+              placeholder="Filter by Types"
             />
           </Col>
           <Col md={3}>
@@ -399,7 +457,7 @@ if (!mapped.length) {
               </ToggleButton>
             </ButtonGroup>
           </Col>
-          <Col md={3}>
+          {/* <Col md={2}>
             <Form.Group className="mb-3">
               <Form.Control
                 type="file"
@@ -412,7 +470,8 @@ if (!mapped.length) {
                 Upload CSV / Excel files
               </div>
             </Form.Group>
-          </Col>
+          </Col> */}
+          
         </Row>
 
         {/* Table */}
@@ -423,7 +482,8 @@ if (!mapped.length) {
               <th>Name</th>
               <th>Type</th>
               <th>Category</th>
-              <th>Created B y</th>
+              <th>City</th>
+              <th>Created By</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -435,6 +495,7 @@ if (!mapped.length) {
                 <td>{listing.shopName}</td>
                 <td>{listing.petCategories?.join(",")}</td>
                 <td>{listing.categories?.join(", ")}</td>
+                <td>{listing.city?.city}</td>
                 <td>{listing.created_by_type.charAt(0).toUpperCase() + listing.created_by_type.slice(1)}</td>
                 <td>
                   <Form.Check

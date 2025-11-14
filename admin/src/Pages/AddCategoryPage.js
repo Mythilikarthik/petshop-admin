@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, Container, Row, Col, Breadcrumb, Image } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IoIosCloseCircle } from "react-icons/io";
+import { GiHollowCat, GiJumpingDog, GiHummingbird, GiTropicalFish, GiPawHeart, GiPhrygianCap } from "react-icons/gi";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -20,6 +21,8 @@ const CategoryPageForm = () => {
     description: "",
     image: null,
     imagePreview: "",
+    icon: "GiPawHeart",
+    color: "#ff9800",
     services: [],
     metaTitle: "",
     metaDescription: "",
@@ -29,11 +32,19 @@ const CategoryPageForm = () => {
   const [serviceInput, setServiceInput] = useState({ title: "", description: "" });
   const navigate = useNavigate();
 
+  const iconOptions = [
+    { value: "GiJumpingDog", label: <GiJumpingDog /> },
+    { value: "GiHollowCat", label: <GiHollowCat /> },
+    { value: "GiHummingbird", label: <GiHummingbird /> },
+    { value: "GiTropicalFish", label: <GiTropicalFish /> },
+    { value: "GiPawHeart", label: <GiPawHeart /> },
+    { value: "GiPhrygianCap", label: <GiPhrygianCap /> },
+  ];
   // 🟩 Load categories list
   useEffect(() => {
     fetch(`${API_BASE}/api/pet-category`, {
       method: "GET",
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     })
       .then((res) => res.json())
       .then((data) => setCategories(data.petCategories || []))
@@ -49,11 +60,13 @@ const CategoryPageForm = () => {
           if (data.success && data.page) {
             const p = data.page;
             setFormData({
-              category: p.category?._id || "", // ✅ use ID here
+              category: p.category?._id || "",
               displayName: p.displayName || "",
               description: p.description || "",
               image: null,
               imagePreview: p.image ? `${API_BASE}${p.image}` : "",
+              icon: p.icon || "",
+              color: p.color || "#000000",
               services: p.services || [],
               metaTitle: p.metaTitle || "",
               metaDescription: p.metaDescription || "",
@@ -104,6 +117,8 @@ const CategoryPageForm = () => {
     data.append("category", formData.category);
     data.append("displayName", formData.displayName);
     data.append("description", formData.description);
+    data.append("icon", formData.icon);
+    data.append("color", formData.color);
     if (formData.image) data.append("image", formData.image);
     data.append("metaTitle", formData.metaTitle);
     data.append("metaDescription", formData.metaDescription);
@@ -115,12 +130,9 @@ const CategoryPageForm = () => {
       ? `${API_BASE}/api/categorypage/${id}`
       : `${API_BASE}/api/categorypage`;
 
-    const res = await fetch(url, {
-      method,
-      body: data,
-    });
-
+    const res = await fetch(url, { method, body: data });
     const result = await res.json();
+
     if (result.success) {
       alert(`Category Page ${isEdit ? "updated" : "added"} successfully!`);
       navigate("/category-pages");
@@ -154,12 +166,15 @@ const CategoryPageForm = () => {
         <div className="form-container">
           <Form onSubmit={handleSubmit} encType="multipart/form-data">
             <Form.Group className="mb-3">
-              <Form.Label>Category</Form.Label>
+              <Form.Label>
+                Category <span className="text-danger">*</span>
+              </Form.Label>
               <Form.Select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                disabled={isEdit} // optional: lock category after creation
+                disabled={isEdit}
+                required
               >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -171,12 +186,15 @@ const CategoryPageForm = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Display Name</Form.Label>
+              <Form.Label>
+                Display Name <span className="text-danger">*</span>
+              </Form.Label>
               <Form.Control
                 type="text"
                 name="displayName"
                 value={formData.displayName}
                 onChange={handleChange}
+                required
               />
             </Form.Group>
 
@@ -188,6 +206,37 @@ const CategoryPageForm = () => {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
+              />
+            </Form.Group>
+
+            {/* 🆕 Icon Input */}
+            <Form.Group className="mb-3">
+              <Form.Label>Choose Icon</Form.Label>
+              <div className="d-flex gap-3 flex-wrap">
+                {iconOptions.map((icon) => (
+                  <div
+                    key={icon.value}
+                    className={`icon-option p-2 border rounded ${
+                      formData.icon === icon.value ? "bg-primary text-white" : ""
+                    }`}
+                    style={{ cursor: "pointer", fontSize: "24px" }}
+                    onClick={() => setFormData((prev) => ({ ...prev, icon: icon.value }))}
+                  >
+                    {icon.label}
+                  </div>
+                ))}
+              </div>
+            </Form.Group>
+
+            {/* 🆕 Color Picker */}
+            <Form.Group className="mb-3">
+              <Form.Label>Theme Color</Form.Label>
+              <Form.Control
+                type="color"
+                name="color"
+                value={formData.color}
+                onChange={handleChange}
+                style={{ width: "80px", height: "40px", cursor: "pointer" }}
               />
             </Form.Group>
 

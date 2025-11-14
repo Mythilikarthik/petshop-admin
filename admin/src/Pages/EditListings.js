@@ -324,7 +324,7 @@ const EditListing = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
+              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
               <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required disabled />
             </Form.Group>
 
@@ -339,7 +339,7 @@ const EditListing = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>City</Form.Label>
+              <Form.Label>City <span className="text-danger">*</span></Form.Label>
               <Select
                 options={cityList}
                 value={cityList.find(c => c.value === formData.city) || null}
@@ -350,7 +350,7 @@ const EditListing = () => {
 
             <Form.Group className="mb-3">
               <Form.Label>Country</Form.Label>
-              <Form.Control type="text" name="country" value={formData.country} onChange={handleChange} />
+              <Form.Control type="text" name="country" value={formData.country} onChange={handleChange} disabled readOnly />
             </Form.Group>
 
             <Form.Group className="mb-3">

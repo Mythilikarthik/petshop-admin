@@ -52,7 +52,7 @@ const categoryBg = {
 
 const PetHealthTips = () => (
     <div className="featured-section bg-image"  style={{"background-image": `url(${backgroundImage})`}}>
-        <Container fluid>
+        <Container>
             <div className='title text-center'>
                 <h2>
                     Pet Health <span className="highlight">Tips & Articles</span>
