@@ -228,6 +228,7 @@ const CategoryPage = () => {
               <Button 
                 className="cta-button" 
                 style={{ backgroundColor: currentCategory.color, borderColor: currentCategory.color }}
+                onClick={() => navigate("/directory")}
               >
                 Find Services Near You
               </Button>
