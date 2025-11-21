@@ -19,9 +19,7 @@ const JoinCommunityNewsletter = ({home}) => {
                         <div className="community-actions">
                         <button className="login-btn"
                           onClick={() => {
-                            (process.env.Node_ENV === "production") ? 
-                            window.open("https://petshop-user.onrender.com", "_blank") :
-                            window.open("http://localhost:3001", "_blank");
+                           window.open("https://petshop-user.onrender.com", "_blank");
                           } }
                         >
                             Login
