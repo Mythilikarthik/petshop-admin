@@ -1,7 +1,7 @@
 
 import './App.css';
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './Pages/Home';
 import Directory from './Pages/Directory';
 import PetHealth from './Pages/PetHealth';
@@ -22,11 +22,21 @@ import Blog from './Pages/Blog';
 import Register from './Pages/Register';
 import ClaimListing from './Pages/ClaimListing';
 import BlogDetail from './Pages/BlogDetail';
+import { FaArrowUp } from "react-icons/fa";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
     ? "https://petshop-admin.onrender.com"
     : "http://localhost:5000";
+    function ScrollToTopOnNavigate() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [pathname]);
+
+  return null; // nothing to render
+}
 function App() {
   const [home, setHome] = useState([]);
   const [categoryPage, setCategoryPage] = useState([]);
@@ -56,10 +66,30 @@ function App() {
       fetchHomeData();
       fetchCategoryData();
     }, []);
+    const [showScroll, setShowScroll] = useState(false);
+
+  // Show button when scroll > 300px
+  useEffect(() => {
+    const onScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScroll(true);
+      } else {
+        setShowScroll(false);
+      }
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Scroll to top behavior
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   return (
     <div className="App">
       
       <BrowserRouter>
+      <ScrollToTopOnNavigate />
         <Header home={home} />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -83,6 +113,11 @@ function App() {
           <Route path="/directory/:city?/:category?/:pet?" element={<Directory />} />
         </Routes>        
         <Footer home={home} categoryPage={categoryPage} />
+         {showScroll && (
+            <div className="scroll-to-top" onClick={scrollToTop}>
+              <FaArrowUp />
+            </div>
+          )}
       </BrowserRouter>
     </div>
   );
