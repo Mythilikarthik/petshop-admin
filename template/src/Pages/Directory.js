@@ -209,6 +209,12 @@ useEffect(() => {
         <p>Browse top-rated pet services by category and city</p>
       </div>
       <div className="directory-filters">
+        <input
+          type="text"
+          placeholder="Search ..."
+          value={search}
+          onChange={handleSearchChange}
+        />
         <select value={selectedCategory} onChange={handleCategoryChange}>
           <option value="">All Categories</option>
           {categories.map(cat => (
@@ -225,12 +231,7 @@ useEffect(() => {
             </option>
           ))}
         </select>
-        <input
-          type="text"
-          placeholder="Search ..."
-          value={search}
-          onChange={handleSearchChange}
-        />
+        
       </div>
       {/* <div className="directory-listings">
         {paginatedListings.length === 0 ? (
