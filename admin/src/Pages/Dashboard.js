@@ -45,6 +45,7 @@ const Dashboard = () => {
   const [pendingListing, setPendingListing] = useState();
   const [ userList,setUserList] = useState();
   const [categoryData, setCategoryData] = useState([]);
+  const [userData, setUserData] = useState([]);
   useEffect(() => {
   const fetchListings = async () => {
     try {
@@ -76,7 +77,7 @@ const Dashboard = () => {
       const res = await fetch(`${API_BASE}/api/user`);
       const data = await res.json();
       if(data.success && data.users) {
-        console.log(data);
+        //console.log(data);
         setUserList(data.users.length);
       }
     } catch (err) {
@@ -88,23 +89,28 @@ const Dashboard = () => {
         const res = await fetch(`${API_BASE}/api/stats/categories`);
         const data = await res.json();
         if (data.success) {
+          //console.log (data.chartData)
           setCategoryData(data.chartData);
         }
       } catch (err) {
         console.error("Error fetching category stats:", err);
       }
     };
+    const fetchUserStats = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/stats/user-activity`);
+        const data = await res.json();
+        if (data.success) {
+          console.log (data.activity)
+          setUserData(data.activity);
+        }
+      } catch (err) {
+        console.error("Error fetching category stats:", err);
+      }
+    };
 
+fetchUserStats();
     fetchCategoryStats();
-
-
-
-
-
-
-
-
-
   fetchUsers();
   fetchListings();
   fetchPending();
@@ -189,7 +195,7 @@ const Dashboard = () => {
             <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'><MdEventNote /> Recent User ACtivity</h5>
             <Card.Body style={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={activityData}>                  
+                <BarChart data={userData}>                  
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />

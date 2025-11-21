@@ -7,8 +7,8 @@ const API_BASE = process.env.NODE_ENV === "production"
 ? "https://petshop-admin.onrender.com"
 : "http://localhost:5000";
 
-const PetHealth = () => {
-  const pagename = "pethealth";
+const PrivacyPolicy = () => {
+  const pagename = "privacypolicy";
   const [petHealth, setPetHealth] = useState({});
   const fetchPetHealth = async()  => {
     try {
@@ -56,4 +56,4 @@ const PetHealth = () => {
   )
 }
 
-export default PetHealth
+export default PrivacyPolicy

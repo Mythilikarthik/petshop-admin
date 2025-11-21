@@ -4,6 +4,23 @@ const Review = require('../Models/Review');
 const Listing = require("../Models/Listing");
 const { verifyToken } = require('../middleware/authMiddleware');
 
+router.get("/list/:listingId", async (req, res) => {
+  try {
+    const reviews = await Review.find({
+      listingId: req.params.listingId,
+      status: "approved",
+    }).sort({ created_at: -1 });
+
+    return res.json({ success: true, reviews });
+  } catch (err) {
+    console.error("Error fetching reviews:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load reviews",
+    });
+  }
+});
+
 // POST /api/reviews
 router.post("/", async (req, res) => {
   const { listingId, userId, userName, userEmail, rating, comment } = req.body;
@@ -21,7 +38,7 @@ router.post("/", async (req, res) => {
     });
 
     await review.save();
-    res.status(201).json({ message: "Review submitted for approval.", review });
+    res.status(201).json({ success: true, message: "Review submitted for approval.", review });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

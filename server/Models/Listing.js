@@ -27,6 +27,10 @@ const ListingSchema = new mongoose.Schema({
   created_by_id: { type: mongoose.Schema.Types.ObjectId, required: true },
   status: { type: String, enum: ["approved", "pending"], default: "pending" },
   created_at: { type: Date, default: Date.now },
+
+  isClaimed: { type: Boolean, default: false },
+  claimedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  claimedAt: { type: Date, default: null },
 });
 
 ListingSchema.pre("validate", function (next) {

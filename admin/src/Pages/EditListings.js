@@ -392,7 +392,7 @@ const EditListing = () => {
                 {formData.existingPhotos.map((url, idx) => {
                   const imageUrl = url.startsWith("http")
                     ? url
-                    : `${API_BASE}/uploads/listings/${url}`;
+                    : `${url}`;
                   return (
                     <Col key={idx} xs={6} md={4} lg={3} className="mb-2">
                       <Image src={imageUrl} thumbnail fluid />

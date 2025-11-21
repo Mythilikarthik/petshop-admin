@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
       metaDescription,
       content,
     } = req.body;
-
+    page = page.replace(/\s+/g, "").toLowerCase();
     // Basic validation
     if (!page || !pageTitle) {
       return res.status(400).json({ success: false, message: "Page and Title are required" });
@@ -61,10 +61,22 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.get("/slug/:pagename", async (req, res) => {
+  try {
+    const page = await CustomPage.findOne({ page : req.params.pagename});
+    if (page.length === 0) return res.status(404).json({ message: "Page not found" });
+    res.json({success: true, page});
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ✅ Update page
 router.patch("/:id", async (req, res) => {
   try {
+    if (req.body.page) {
+      req.body.page = req.body.page.replace(/\s+/g, "").toLowerCase();
+    }
     const updated = await CustomPage.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });

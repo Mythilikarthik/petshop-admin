@@ -16,8 +16,8 @@ const PopularCitiesSection = ({cities}) => (
         <p>Discover pet services in major cities across India</p>
         <Row>
             {cities.map((city) => (
-            <Col xs={3} className="d-none d-md-block mb-4">
-                <Link to={`/city/${city.city.toLowerCase()}`} style={{ textDecoration: 'none' }}>
+            <Col key={city.city} xs={3} className="d-none d-md-block mb-4">
+                <Link to={`/directory/${city.city.toLowerCase()}`} style={{ textDecoration: 'none' }}>
                 <div className="cities-grid" 
                     style={{
                         background: '#FDBA74',
@@ -38,7 +38,7 @@ const PopularCitiesSection = ({cities}) => (
                         </span>
                         <div className="city-info">
                             <div className="city-name">{city.city}</div>
-                            <div className="city-listings">{city.listingsCount} listings</div>
+                            <div className="city-listings">{city.listingsCount}+ listings</div>
                         </div>
                         </div>
                 </div>

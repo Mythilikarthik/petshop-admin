@@ -6,7 +6,7 @@ const Faq = require('../Models/Faq');
 router.get('/', async (req, res) => {
   try {
     const faqs = await Faq.find();
-    res.json({status: 'success', listings: faqs});
+    res.json({status: 'success', listings: faqs, success: true});
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

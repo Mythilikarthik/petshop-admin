@@ -119,6 +119,73 @@ router.put("/admin/change-password/:id", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+// ------------------ User Register ------------------
+router.post("/user/register", async (req, res) => {
+  console.log("User register attempt:", req.body);
+
+  try {
+    const { name, username, email, phone, password } = req.body;
+
+    // Validate required fields
+    if (!name || !username || !email || !phone || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "All fields are required" 
+      });
+    }
+
+    // Check if username exists
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return res.status(400).json({
+        success: false,
+        message: "Username already taken"
+      });
+    }
+
+    // Check if email exists
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered"
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new user
+    const newUser = new User({
+      name,
+      username,
+      email,
+      phone,
+      password: hashedPassword,
+      isPremium: false, // default
+    });
+
+    await newUser.save();
+
+    // Generate token
+    const token = generateToken(newUser._id, "user");
+
+    res.status(201).json({
+      success: true,
+      message: "Registration successful",
+      token,
+      id: newUser._id,
+      role: "user"
+    });
+
+  } catch (err) {
+    console.error("User register error:", err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error" 
+    });
+  }
+});
 
 // ------------------ User Login ------------------
 router.post("/user/login", async (req, res) => {

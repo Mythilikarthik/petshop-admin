@@ -4,6 +4,8 @@ import Badge from './Badge';
 import './Css/badges.css';
 import './Css/featuredPetServices.css';
 import { BsLightningFill, BsTagFill, BsHouseFill, BsGeoAltFill, BsStarFill } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
+import dummyImage from '../dummy.jpg';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -62,6 +64,7 @@ const tagColors = {
 
 const FeaturedPetServicesSection = () => {
     const [services, setServices] = useState([]);
+    const navigate = useNavigate();
     
         const fetchServices = async () => {
             try {
@@ -93,28 +96,46 @@ const FeaturedPetServicesSection = () => {
             <Row className="justify-content-center">
                 {services.map(service => (
                     <Col key={service.id} md={4} className="mb-4">
-                        <Card className={`service-card w-100`}>
+                        <Card className={`service-card w-100 h-100 d-flex flex-column`}>
                             <Card.Header className="card-top-rated">
-                                {service.tags.map(tag => (
-                                        <span key={tag} className="badge badge-top-rated">{tag}</span>
-                                    ))}
+                                
                                 
                                     
                                 
-                                <div className="service-icon">
+                                {/* <div className="service-icon">
                                     <BsTagFill size={100} color="#ff8800" />
-                                </div>
+                                </div> */}
+                                {service.image && service.image.length > 0 ? (
+                                          <Card.Img 
+                                          variant="top" 
+                                          src={service.image}
+                                          alt={service.shopName}
+                                        />
+                                        ) : (
+                                          <Card.Img variant="top" src={dummyImage} alt={service.shopName} className='w-100' />
+                                        )}
                                 
                             </Card.Header>
-                            <Card.Body className='pos-rel'>
+                            <Card.Body className='pos-rel d-flex flex-grow-1 flex-column '>
+                                
                                 <Card.Title>{service.title}</Card.Title>
-                                <Card.Text>{service.description}</Card.Text>
+                                <div className="service-tags">
+                                {service.tags.map((tag, index) => (
+                                        <span key={service.id + "-tag-" + index} className="badge badge-top-rated">{tag}</span>
+                                    ))}
+                                </div>
+                                <Card.Text className='mt-4'>{service.description}</Card.Text>
                                 <div className="service-location">
                                     <span role="img" aria-label="location"> <BsGeoAltFill />  </span> {service.location}
                                 </div>
                                 <div className="service-tags">
-                                    {service.category.map((categrory) => (
-                                        <span class="service-tag tag-orange">{categrory}</span>
+                                    {service.category.map((categoryItem, index) => (
+                                        <span 
+                                            key={service.id + "-cat-" + index}
+                                            className="service-tag tag-orange"
+                                        >
+                                            {categoryItem}
+                                        </span>
                                     ))}
                                 </div>
                                 <div className="service-rating align-item-center d-flex gap-2">
@@ -123,7 +144,8 @@ const FeaturedPetServicesSection = () => {
                                 </div>
                                 <Button
                                     variant={"primary"}
-                                    className="details-btn"
+                                    className="details-btn mt-auto"
+                                    onClick={() => navigate(`/listing/${service.id}`)}
                                 >
                                     View Details
                                 </Button>
@@ -133,7 +155,9 @@ const FeaturedPetServicesSection = () => {
                 ))}
             </Row>
             <div className="text-center mt-3">
-                <button variant="warning" className="orange-btn py-2 px-4 border-2 border-orange-500 bg-orange-500 text-white rounded-full">
+                <button variant="warning" className="orange-btn py-2 px-4 border-2 border-orange-500 bg-orange-500 text-white rounded-full"
+                onClick={() => navigate("/directory")}
+                >
                     View All Listings
                 </button>
             </div>

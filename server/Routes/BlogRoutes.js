@@ -5,6 +5,8 @@ const multer = require('multer');
 const path = require('path'); 
 const fs = require('fs');
 const sharp = require("sharp");
+const Category = require('../Models/Category');
+const PetCategory = require('../Models/PetCategory');
 // Create a new blog post
 
 const uploadDir = "uploads/blogs/";
@@ -64,6 +66,47 @@ router.post('/', upload.fields([
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+router.post("/by-pet-category", async (req, res) => {
+  try {
+    const { categoryName } = req.body;
+
+    if (!categoryName) {
+      return res.status(400).json({ success: false, msg: "Provide categoryName" });
+    }
+
+    // 1. Find the PetCategory
+    const petCategory = await PetCategory.findOne({
+      categoryName: { $regex: new RegExp(`^${categoryName}$`, "i") }
+    });
+
+    if (!petCategory) {
+      return res.json({ success: true, blogs: [] });
+    }
+
+    // 2. Find categories that contain this pet category
+    const categories = await Category.find({
+      petCategories: petCategory._id
+    });
+
+    if (categories.length === 0) {
+      return res.json({ success: true, blogs: [] });
+    }
+
+    // 3. Extract category IDs
+    const categoryIds = categories.map(c => c._id);
+
+    // 4. Fetch blogs under those categories
+    const blogs = await Blog.find({
+      category: { $in: categoryIds }
+    }).populate("category", "categoryName");
+
+    res.json({ success: true, blogs });
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 
 // Get all blog posts
 router.get('/', async (req, res) => {
@@ -78,7 +121,7 @@ router.get('/', async (req, res) => {
 // Get a single blog post by ID
 router.get('/:id', async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id);
+    const blog = await Blog.findById(req.params.id).populate('category', 'categoryName');
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }

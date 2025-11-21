@@ -1,29 +1,40 @@
 import React from 'react';
 import './Css/JoinCommunityNewsletter.css';
 import { Row, Col, Container } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
-const JoinCommunityNewsletter = () => (
+const JoinCommunityNewsletter = ({home}) => {
+  const navigate = useNavigate();
+  return (
   <section className="join-newsletter-section">
     <Container>
         <div className="">
-            <Row className='d-flex align-items-stretch'>
+            <Row className='d-flex align-items-stretch justify-content-center'>
                 <Col xs={6} className="text-center mb-4 d-flex">
                     <div className="community-card">
-                        <h3>Join Our Pet Community</h3>
+                        <h3>{home.loginTitle}</h3>
                         <p style={{textAlign: "left"}}>
-                        Create an account to save your favorite listings, write reviews, and connect with other pet lovers.
+                        {home.loginDescription}
                         </p>
                         <div className="community-actions">
-                        <button className="login-btn">Login</button>
-                        <button className="register-btn">Register</button>
+                        <button className="login-btn"
+                          onClick={() => {
+                            (process.env.Node_ENV === "production") ? 
+                            window.open("https://petshop-user.onrender.com", "_blank") :
+                            window.open("http://localhost:3001", "_blank");
+                          } }
+                        >
+                            Login
+                        </button>
+                        <button className="register-btn" onClick={() => navigate("/register")}>Register</button>
                         </div>
                     </div>
                 </Col>
-                <Col xs={6} className="text-center mb-4 d-flex">
+                {/* <Col xs={6} className="text-center mb-4 d-flex">
                     <div className="newsletter-card">
-                        <h3>Subscribe to Our Newsletter</h3>
+                        <h3>{home.newsletterTitle}</h3>
                         <p>
-                        Get the latest pet care tips, special offers, and updates delivered to your inbox.
+                        {home.newsletterDescription}
                         </p>
                         <form className="newsletter-form" onSubmit={e => e.preventDefault()}>
                         <input type="text" placeholder="Your Name" required />
@@ -31,7 +42,7 @@ const JoinCommunityNewsletter = () => (
                         <button type="submit" className="subscribe-btn">Subscribe</button>
                         </form>
                     </div>
-                </Col>
+                </Col> */}
             </Row>
         
         
@@ -39,5 +50,6 @@ const JoinCommunityNewsletter = () => (
     </Container>
   </section>
 );
+};
 
 export default JoinCommunityNewsletter;

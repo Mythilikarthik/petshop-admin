@@ -4,7 +4,6 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const CategoryPage = require("../Models/CategoryPage");
-const PetCategory = require("../Models/PetCategory");
 
 const uploadDir = "uploads/categorypages";
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -45,42 +44,6 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-router.get("/by-name/:categoryName", async (req, res) => {
-  try {
-    const name = req.params.categoryName;
-
-    // 1️⃣ Find the PetCategory based on name
-    const petCategory = await PetCategory.findOne({
-      categoryName: { $regex: `^${name}$`, $options: "i" }
-    });
-
-    if (!petCategory) {
-      return res.status(404).json({
-        success: false,
-        message: "Pet Category not found"
-      });
-    }
-
-    // 2️⃣ Find CategoryPage using that category _id
-    const page = await CategoryPage.findOne({
-      category: petCategory._id
-    }).populate("category", "categoryName");
-
-    if (!page) {
-      return res.status(404).json({
-        success: false,
-        message: "Category page not found"
-      });
-    }
-
-    res.json({ success: true, page });
-
-  } catch (err) {
-    console.error("Error fetching:", err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
 
 router.post("/", upload.single("image"), async (req, res) => {
   try {

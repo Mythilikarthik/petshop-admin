@@ -32,9 +32,19 @@ const PageManagement = () => {
   const [loading, setLoading] = useState(true)
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  let name = e.target.name;
+  let value = e.target.value;
+
+  if (name === "page") {
+    value = value
+      .toLowerCase()
+      .replace(/[^a-z\- ]/g, "")  // remove special chars
+      .replace(/\s+/g, "-");         // convert spaces to hyphens
+  }
+
+  setFormData(prev => ({ ...prev, [name]: value }));
+};
+
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -194,13 +204,14 @@ const handleGoBack = () => {
               </Form.Select>
             </Form.Group> */}
             <Form.Group className="mb-3">
-              <Form.Label>Page</Form.Label>
+              <Form.Label>Page [slug]</Form.Label>
               <Form.Control 
                 type='text' 
                 name='page' 
                 value={formData.page || ""} 
                 required 
                 onChange={handleChange} 
+                pattern="[a-zA-Z0-9\- ]+"
               />
             </Form.Group>
 
@@ -211,7 +222,7 @@ const handleGoBack = () => {
                 isMulti
                 options={categoryList.map((c) => ({ value: c, label: c }))}
                 name='category'
-                value={(formData.category || []).map((c) => ({ value: c, label: c }))}
+                value={(formData.category || []).filter(c => c && c.trim() !== "").map((c) => ({ value: c, label: c }))}
                 onChange={(selected) =>
                   setFormData((prev) => ({
                     ...prev,

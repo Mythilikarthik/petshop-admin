@@ -1,240 +1,411 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import './Css/ListingDetailPage.css';
-import dummyImage from '../dummy.jpg';
-import { Col, Container, Row } from 'react-bootstrap';
-import { FaStar } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import "./Css/ListingDetailPage.css";
+import dummyImage from "../dummy.jpg";
+import { FaStar } from "react-icons/fa";
+import { Form, Button, Container, Row, Col, Alert } from "react-bootstrap";
 
-const sampleReviews = [
-  { id: 1, listingId: 1, user: 'Asha', rating: 5, title: 'Excellent care', body: 'Very kind staff and great service.', date: '2025-10-01' },
-  { id: 2, listingId: 1, user: 'Rahul', rating: 4, title: 'Good clinic', body: 'Reasonable prices and quick service.', date: '2025-09-18' },
-  { id: 3, listingId: 1, user: 'Meera', rating: 3, title: 'Okay experience', body: 'Waiting time was long but vets are skilled.', date: '2025-08-05' },
-];
-const allListings = [
-  {
-    id: 1,
-    name: "Paws & Claws Clinic",
-    type: "Veterinary",
-    city: "Mumbai",
-    category: "dog",
-    location: "Bandra West, Mumbai",
-    description:
-      "Premium veterinary services for all your pet’s healthcare needs.",
-    details:
-      "Open 24/7. Specializing in surgery, grooming, and vaccinations.",
-    contact: {
-      phone: "9876543210",
-      email: "info@demo.com",
-      address: "123 Pet Street, Bandra West, Mumbai",
-      website: "https://demo.com",
-    },
-    gallery: [
-      dummyImage,
-        dummyImage,
-        dummyImage,
-    ],
-  },
-  // ...other listings
-];
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
 
 const ListingDetailPage = () => {
-  const [form, setForm] = useState({ user: '', rating: 5, title: '', body: '' });
-  const [hoverRating, setHoverRating] = useState(0); // <-- new: track hover for star input
-  const { listingId } = useParams();
-  const listing = allListings.find(l => l.id === Number(listingId));
-  const [reviews, setReviews] = useState(() => sampleReviews.filter(r => r.listingId === listing.id));
-  if (!listing) {
-    return <div className="listing-detail-section"><h2>Listing not found.</h2></div>;
-  } 
-  
+  const navigate = useNavigate();
+  const [comment, setComment] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
+  const { listingId } = useParams(); // from URL
+  const id = listingId;
+  const [listing, setListing] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState({ show: false, type: "", message: "" });
+  const [listingName, setListingName] = useState("");
+const [isSubmitting, setIsSubmitting] = useState(false);
+const [rating, setRating] = useState(0);
+  // --- Review states ---
+  const [reviews, setReviews] = useState([]);
+  const [form, setForm] = useState({
+    userName: "",
+    rating: 5,
+    comment: "",
+  });
+  const [hoverRating, setHoverRating] = useState(0);
 
+  const renderStars = () => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <span
+          key={i}
+          style={{
+            fontSize: "1.8rem",
+            cursor: "pointer",
+            color: i <= rating ? "#ffc107" : "#ccc",
+          }}
+          onClick={() => setRating(i)}
+        >
+          ★
+        </span>
+      );
+    }
+    return stars;
+  };
+  // ============================================================
+  // 1️⃣ FETCH LISTING DETAILS
+  // ============================================================
+  useEffect(() => {
+    const fetchListing = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/listing/${id}`);
+        const data = await res.json();
+
+        if (data.success) {
+          setListing(data.listing);
+          setListingName(data.listing.shopName);
+          console.log("Listing Data:", data.listing);
+        }
+      } catch (err) {
+        console.error("Error fetching listing:", err);
+      }
+      setLoading(false);
+    };
+
+    fetchListing();
+  }, [id]);
+
+  // ============================================================
+  // 2️⃣ FETCH REVIEWS FOR THIS LISTING
+  // ============================================================
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/reviews/list/${id}`);
+        const data = await res.json();
+
+        if (data.success) {
+          setReviews(data.reviews);
+        }
+      } catch (err) {
+        console.error("Error fetching reviews:", err);
+      }
+    };
+
+    fetchReviews();
+  }, [id]);
+
+  // ============================================================
+  // 3️⃣ CALCULATE AVERAGE RATING
+  // ============================================================
   const averageRating = () => {
     if (!reviews.length) return 0;
-    return (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length);
+    return (
+      reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    ).toFixed(1);
   };
 
-  const renderStars = (value) => {
+  // ============================================================
+  // ⭐ STAR RENDER UTILITY
+  // ============================================================
+  const renderStarsCal = (value) => {
     const full = Math.round(value);
     return Array.from({ length: 5 }).map((_, i) => (
-      <FaStar key={i} color={i < full ? '#ffc107' : '#e4e5e9'} />
+      <FaStar
+        key={i}
+        color={i < full ? "#ffc107" : "#e4e5e9"}
+      />
     ));
   };
 
-  const addReview = (review) => {
-    // in real app send to backend then update state with response
-    const newReview = { id: Date.now(), listingId: listing.id, date: new Date().toISOString().slice(0,10), ...review };
-    setReviews(prev => [newReview, ...prev]);
-  };
-
-  // Simple controlled form state
-  
-
-  const handleSubmit = (e) => {
+  // ============================================================
+  // 4️⃣ SUBMIT NEW REVIEW (GUEST)
+  // ============================================================
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.user || !form.body) return; // minimal validation
-    addReview({ user: form.user, rating: Number(form.rating), title: form.title, body: form.body });
-    setForm({ user: '', rating: 5, title: '', body: '' });
-    setHoverRating(0);
+
+    if (!rating) {
+      setAlert({ show: true, type: "danger", message: "Please select a rating." });
+      return;
+    }
+
+    if (!comment.trim()) {
+      setAlert({ show: true, type: "danger", message: "Please enter a comment." });
+      return;
+    }
+
+    if (!userName.trim() || !userEmail.trim()) {
+      setAlert({
+        show: true,
+        type: "danger",
+        message: "Name and Email are required for guest reviews.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listingId,
+          userName,
+          userEmail,
+          rating,
+          comment,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setAlert({
+          show: true,
+          type: "success",
+          message: "Review submitted successfully! Awaiting admin approval.",
+        });
+        setRating(0);
+        setComment("");
+        setUserName("");
+        setUserEmail("");
+        
+      } else {
+        setAlert({ show: true, type: "danger", message: data.message || "Error submitting review." });
+      }
+    } catch (err) {
+      setAlert({ show: true, type: "danger", message: "Network error while submitting review." });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (!listing) return <div>Listing not found.</div>;
+
   return (
     <section className="listing-detail-section">
       <Container>
-        <h2>{listing.name}</h2>
-      <div className="listing-type">{listing.type}</div>
-      <div className='top-left'>
-        <Row className='d-flex align-items-center'>
+        <h2>{listing.shopName}</h2>
+        
+          <div className="d-flex gap-2">
+             {console.log("petcats:",listing.petCategories)}
+     {listing.petCategories?.length > 0 && (
+        listing.petCategories.map((cat, index) => (
+          <div className="listing-type">
+          <span key={index} className="">
+            {cat.categoryName}
+          </span>
+          </div>
+        ))
+      )}
+          </div>
+        <div className="listing-category">
+          {listing.categories?.map((cat, index) => (
+          <span key={index} className="service-tag tag-orange">
+            {cat.categoryName}
+          </span>
+        ))}
+        </div>
+
+        {/* TOP AREA */}
+        <Row className="mt-3">
           <Col md={6}>
-            <div className="listing-location">{listing.location} ({listing.city})</div>
-            <div className="listing-category">Category: {listing.category}</div>
+
             <p className="listing-description">{listing.description}</p>
-            <div className="listing-details">{listing.details}</div>
-            {/* Contact Info Section */}
+
             <div className="listing-contact">
               <h3>Contact Information</h3>
               <ul>
-                <li><strong>Phone:</strong> <a href={`tel:${listing.contact.phone}`}>{listing.contact.phone}</a></li>
-                <li><strong>Email:</strong> <a href={`mailto:${listing.contact.email}`}>{listing.contact.email}</a></li>
-                <li><strong>Address:</strong> {listing.contact.address}</li>
-                {listing.contact.website && (
-                  <li>
-                    <strong>Website:</strong>{" "}
-                    <a href={listing.contact.website} target="_blank" rel="noopener noreferrer">
-                      {listing.contact.website}
-                    </a>
-                  </li>
-                )}
+                <li>
+                  <strong>Phone:</strong>{" "}
+                  <a href={`tel:${listing.phone}`}>{listing.phone}</a>
+                </li>
+                <li>
+                  <strong>Email:</strong>{" "}
+                  <a href={`mailto:${listing.email}`}>
+                    {listing.email}
+                  </a>
+                </li>
+                <li>
+                  <strong>Address:</strong> {listing.address}
+                </li>
+                <li>
+                  <strong>City:</strong> {listing.city?.city}
+                </li>
+                <li>
+                  <strong>Website:</strong>{" "}
+                  <a
+                    href={listing.mapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {listing.mapUrl}
+                  </a>
+                </li>
               </ul>
-            </div>            
-          </Col>
-          <Col md={6}>
-            <div className="listing-image">
-              <img className='img-responsive' src={dummyImage} alt={listing.name} width={535} height={355} />
+              {console.log("Created By Type:", listing.created_by_type)}
+        {listing.created_by_type && listing.created_by_type === "admin" && !(listing.isClaimed) && (
+          <Button
+            variant="primary"
+            className="mt-3"
+            onClick={() => navigate(`/claim/${listing._id}`)}
+          >
+            Claim
+          </Button>
+        )}
             </div>
           </Col>
-        </Row>
-      </div>
 
-      {/* Gallery Section */}
-      {listing.gallery && listing.gallery.length > 0 && (
-        <div className="listing-gallery">
-          <h2>Gallery</h2 >
-          <div className="gallery-grid">
+          <Col md={6}>
+            {/* <img
+              src={listing.photos?.[0] || dummyImage}
+              alt="Shop"
+              className="img-fluid"
+              style={{ borderRadius: 10, objectFit: "cover" }}
+            /> */}
+          </Col>
+        </Row>
+
+        {/* GALLERY */}
+        {listing.photos?.length > 0 && (
+          <div className="listing-gallery mt-4">
+            <h2>Gallery</h2>
             <Row>
-                
-                    {listing.gallery.map((img, index) => (
-                        <Col xs={12} md={4} className="mb-3">
-                    <div key={index} className="gallery-item">
-                        <img className='img-responsive' src={img} alt={`${listing.name} ${index + 1}`} />
-                    </div>
+              {listing.photos && listing.photos.length > 0 && listing.photos.map((img, i) => (
+                <Col md={4} key={i} className="mb-3">
+                  <img
+                    src={img}
+                    alt={`${listing.shopName}-${i}`}
+                    className="img-fluid"
+                    style={{ borderRadius: 10, objectFit: "cover" }}
+                  />
                 </Col>
-                    ))}
+              ))}
             </Row>
           </div>
+        )}
+        
+        {/* REVIEWS SUMMARY */}
+        <h2 className="mt-5">Reviews</h2>
+        <div className="review-summary">
+          <div style={{ display: "flex", gap: 12, alignItems: "left" }}>
+            <div style={{ fontSize: 30, fontWeight: "bold" }}>
+              {averageRating()}
+            </div>
+            <div>
+              {renderStars(averageRating())}
+              <div style={{ fontSize: 14, color: "#666" }}>
+                {reviews.length} review(s)
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-<h2>Reviews</h2>
-      <div className="review-summary" style={{ marginTop: 18, marginBottom: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ fontSize: 28, fontWeight: 700 }}>{averageRating().toFixed(1)}</div>
-                  <div>
-                    <div>{renderStars(averageRating())}</div>
-                    <div style={{ color: '#6b7280', fontSize: 14 }}>{reviews.length} review{reviews.length !== 1 ? 's' : ''}</div>
-                  </div>
+
+        {/* REVIEW FORM */}
+        <Row className="">
+        <Col md={12}>
+          <h2 className="mb-4 mt-4">
+            Write a Review for <span className="text-primary">{listingName}</span>
+          </h2>
+          </Col>
+          
+        <Col md={8} lg={6}>
+          {alert.show && (
+            <Alert
+              variant={alert.type}
+              onClose={() => setAlert({ show: false })}
+              dismissible
+            >
+              {alert.message}
+            </Alert>
+          )}
+
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3 text-center">
+              <Form.Label><strong>Rating:</strong></Form.Label>
+              <div>{renderStars()}</div>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Your Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter your name"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Your Email</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="Enter your email"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Comment</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                placeholder="Write your review..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                required
+              />
+            </Form.Group>
+
+            <div className="">
+              <Button
+                variant="primary"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit Review"}
+              </Button>
+            </div>
+          </Form>
+        </Col>
+      </Row>
+
+        {/* REVIEW LIST */}
+        <div className="review-list mt-5">
+          <h2>Customer Reviews</h2>
+          {reviews.length === 0 ? (
+            <p>No reviews yet.</p>
+          ) : (
+            reviews.map((r) => (
+              <div
+                key={r._id}
+                className="review-item"
+                style={{
+                  borderBottom: "1px solid #ddd",
+                  padding: "10px 0",
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: "bold",
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span>{r.userName}</span>
+                  <span style={{ color: "#888" }}>
+                    {new Date(r.created_at).toLocaleDateString()}
+                  </span>
                 </div>
+                <div>{renderStarsCal(r.rating)}</div>
+                {/* {console.log("Review :",r.rating)} */}
+                <p>{r.comment}</p>
               </div>
-              
-
-              {/* Write review form */}
-              <div className="write-review pt-4 pb-4" style={{ marginTop: 12, marginBottom: 20 }}>
-                <Row>
-                  <Col md={6}>
-                    <h4 className='mb-4'>Ratings & Reviews</h4>
-                    <div className='mb-4'>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          {Array.from({ length: 5 }).map((_, i) => {
-                            const val = i + 1;
-                            const active = val <= (hoverRating || form.rating);
-                            return (
-                              <FaStar
-                                key={val}
-                                size={22}
-                                color={active ? '#ffc107' : '#e4e5e9'}
-                                style={{ cursor: 'pointer' }}
-                                onMouseEnter={() => setHoverRating(val)}
-                                onMouseLeave={() => setHoverRating(0)}
-                                onClick={() => setForm({ ...form, rating: val })}
-                                aria-label={`${val} star`}
-                              />
-                            );
-                          })}
-                          <div style={{ marginLeft: 8, color: '#6b7280' }}>{form.rating} / 5</div>
-                        </div>
-                      </div>
-                    <form onSubmit={handleSubmit}>
-                      <div style={{ marginBottom: 8 }}>
-                        <input
-                          type="text"
-                          placeholder="Your name"
-                          value={form.user}
-                          onChange={e => setForm({ ...form, user: e.target.value })}
-                          className="form-control"
-                        />
-                      </div>
-                      
-                      {/* <div style={{ marginBottom: 8 }}>
-                        <select value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} className="form-control">
-                          <option value={5}>5 - Excellent</option>
-                          <option value={4}>4 - Very good</option>
-                          <option value={3}>3 - Average</option>
-                          <option value={2}>2 - Poor</option>
-                          <option value={1}>1 - Terrible</option>
-                        </select>
-                      </div> */}
-                      <div style={{ marginBottom: 8 }}>
-                        <input
-                          type="text"
-                          placeholder="Review title (optional)"
-                          value={form.title}
-                          onChange={e => setForm({ ...form, title: e.target.value })}
-                          className="form-control"
-                        />
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <textarea
-                          placeholder="Share your experience"
-                          value={form.body}
-                          onChange={e => setForm({ ...form, body: e.target.value })}
-                          className="form-control"
-                          rows={3}
-                        />
-                      </div>
-                      <div>
-                        <button type="submit" className="btn btn-primary mt-4">Submit review</button>
-                      </div>
-                    </form>
-                  </Col>
-                </Row>
-              </div>
-
-              {/* Review list */}
-              <div className="review-list">
-                <h2>Customer reviews</h2>
-                {reviews.length === 0 ? (
-                  <div>No reviews yet. Be the first to review.</div>
-                ) : (
-                  reviews.map(r => (
-                    <div key={r.id} className="review-item" style={{ borderBottom: '1px solid #e6e9ef', padding: '12px 0' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontWeight: 600 }}>{r.user}</div>
-                        <div style={{ color: '#6b7280', fontSize: 13 }}>{r.date}</div>
-                      </div>
-                      <div style={{ margin: '6px 0' }}>{renderStars(r.rating)}</div>
-                      {r.title && <div style={{ fontWeight: 700 }}>{r.title}</div>}
-                      <div style={{ marginTop: 6 }}>{r.body}</div>
-                    </div>
-                  ))
-                )}
-              </div>
+            ))
+          )}
+        </div>
       </Container>
     </section>
   );

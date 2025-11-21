@@ -3,7 +3,7 @@
     "concurrently": "^9.2.0"
   },
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run user\"",
+    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run user\" \"npm run template\" ",
     "front" : "concurrently \"npm run server\" \"npm run template\" ",
     "server": "cd server && npm run dev",
     "client": "cd admin && npm start",

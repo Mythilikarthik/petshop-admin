@@ -8,3 +8,4 @@ body {
 .ml-5 { margin-left: 3rem !important; }
 .mr-5 { margin-right: 3rem !important; }
 .row { margin: 0 auto; }
+.text-red { color: red; }

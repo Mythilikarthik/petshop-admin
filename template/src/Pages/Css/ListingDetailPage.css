@@ -6,7 +6,7 @@
   text-align: left;
 }
 
-.listing-detail-section h2 {
+.listing-detail-section h2, .register h2 {
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 12px;

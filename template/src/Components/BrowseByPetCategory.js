@@ -11,10 +11,10 @@ const BrowseByPetCategory = ({categoryPage = []}) => {
   const categories = [];
   categoryPage.map(cat => {
     categories.push({
-      name: cat.displayName,
+      name: cat.category.categoryName,
       icon: cat.icon,
       color: cat.color,
-      slug: cat.displayName.toLowerCase().replace(/\s+/g, '-'),
+      slug: cat.category.categoryName.toLowerCase().replace(/\s+/g, '-'),
     });
   });
   const renderIcon = (iconName, color) => {
@@ -32,8 +32,8 @@ const BrowseByPetCategory = ({categoryPage = []}) => {
 // ];
   const navigate = useNavigate();
 
-  const handleCategoryClick = (categorySlug) => {
-    navigate(`/category/${categorySlug}`);
+  const handleCategoryClick = (categoryName) => {
+    navigate(`/category/${categoryName}`);
   };
 
   return (

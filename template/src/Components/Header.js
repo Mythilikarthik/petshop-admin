@@ -4,9 +4,10 @@ import { AiOutlineHeart } from "react-icons/ai";
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import './Css/Header.css'
-import { Link } from 'react-router-dom';
+import { Link , useNavigate} from 'react-router-dom';
 
-const Header = () => {
+const Header = ({home}) => {
+    const navigate = useNavigate();
   return (
     <div className='header'>
         <Navbar expand="lg" className="bg-white shadow-sm p-3 bg-body sticky-top">
@@ -14,10 +15,11 @@ const Header = () => {
                 <Row className='justify-content-between align-items-center w-100'>
                     <Col className='d-flex align-items-center justify-content-start gap-2'>
                         <Navbar.Brand href="/" >
-                            <span className='icon'>
+                            <img src={`/${home.siteLogoDark}`} alt="PetPals India" className='site-logo' width={300} />
+                            {/* <span className='icon'>
                                 <AiOutlineHeart size={28} style={{ color: '#fff',  padding: '4px' }} />
                             </span>
-                            <b>PetPals</b><span className='highlight'>India</span>
+                            <b>PetPals</b><span className='highlight'>India</span> */}
                         </Navbar.Brand>
                     </Col>
                     <Col>
@@ -33,8 +35,16 @@ const Header = () => {
                         </Navbar.Collapse>
                     </Col>
                     <Col className='d-flex justify-content-end gap-4'>
-                        <button className='login-btn py-2 px-4 border-2 border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition duration-300'>Login</button>
-                        <button className='signup-btn px-4 py-2 border-2 border-orange-500 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition duration-300'>Sign Up</button>
+                        <button className='login-btn py-2 px-4 border-2 border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition duration-300'
+                        onClick={() => {
+                            (process.env.Node_ENV === "production") ? 
+                            window.open("https://petshop-user.onrender.com", "_blank") :
+                            window.open("http://localhost:3001", "_blank");
+                          } }
+                        >Login</button>
+                        <button className='signup-btn px-4 py-2 border-2 border-orange-500 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition duration-300'
+                        onClick = {() => navigate("/register")}
+                        >Sign Up</button>
                     </Col>
                 </Row>
             </Container>

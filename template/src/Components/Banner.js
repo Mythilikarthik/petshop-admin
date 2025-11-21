@@ -193,9 +193,30 @@ const Banner = ({home}) => {
                 </Form.Select>
 
                 {/* Search Button */}
-                <Button type="submit" className="mt-2 mt-md-0">
+                {/* <Button type="submit" className="mt-2 mt-md-0"
+                onClick={() => navigate(`/directory/${city.city}/${category.categoryName}/${type.categoryName}`)}
+                >
                   Search
-                </Button>
+                </Button> */}
+                <Button
+  type="submit"
+  className="mt-2 mt-md-0"
+  onClick={() => {
+    const cityObj = cities.find(c => c._id === city);
+    const catObj = categories.find(c => c._id === category);
+    const typeObj = types.find(t => t._id === type);
+
+    navigate(`/directory/${
+      cityObj ? cityObj.city.toLowerCase() : "all"
+    }/${
+      catObj ? catObj.categoryName.toLowerCase() : "all"
+    }/${
+      typeObj ? typeObj.categoryName.toLowerCase() : "all"
+    }`);
+  }}
+>
+  Search
+</Button>
               </div>
             </Form>
           </div>

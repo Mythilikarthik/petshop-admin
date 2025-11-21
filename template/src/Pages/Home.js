@@ -20,13 +20,15 @@ const Home = () => {
   const [categoryPage, setCategoryPage] = useState([]);
   const [cities, setCities] = useState([]);
   const cityListingsCombine = [{}];
+  const [blog, setBlog] = useState([]);
+  const [faqs, setFaqs] = useState([]);
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
         const homeRes = await fetch(`${API_BASE}/api/home-page`);
         const homeData = await homeRes.json();
         if(homeData.success) setHome(homeData.home);
-        //console.log("Homedata", homeData.home);
+        console.log("Homedata", homeData.home);
       } catch (err) {
         console.error("Error fetching home data:", err);
       }
@@ -85,27 +87,53 @@ const Home = () => {
 
 
       setCities(firstEight);
-      console.log("Cities with Listing Counts (8 only):", firstEight);
+      //console.log("Cities with Listing Counts (8 only):", firstEight);
     }
   } catch (err) {
     console.error("Error fetching city data:", err);
   }
 };
+const blogData = async () => {
+  try {
+    const blogRes = await fetch(`${API_BASE}/api/blog`);
+    const blogData = await blogRes.json();
+    if(blogData.success) {
+      //console.log("Blog Data:", blogData.blogs);
+      setBlog(blogData.blogs.slice(0, 3));
+    }
+  } catch (err) {
+    console.error("Error fetching blog data:", err);
+  }
+};
+const fetchFaqs = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/faq`); 
+        const data = await res.json();
+        if(data.success) {
+          setFaqs(data.listings.slice(0, 5));
+          //console.log("FAQ Data:", data.listings);
+        }
+      } catch (err) {
+        console.error("Error fetching FAQ data:", err);
+      }
+    };
 
     fetchHomeData();
     fetchCategoryData();
     fetchCityData();
+    blogData();
+    fetchFaqs();
   }, []);
   return (
     <div className='home'>
       <Banner home={home} />
-      <Container fluid>
+      <Container fluid className='p-0'>
         <BrowseByPetCategory categoryPage={categoryPage} />
         <PopularCitiesSection cities={cities} />
         <FeaturedPetServicesSection />
-        <PetHealthTips />
+        <PetHealthTips blog={blog} />
         <JoinCommunityNewsletter home={home} />
-        <FAQSection />
+        <FAQSection faqs={faqs} />
       </Container>
     </div>
   )

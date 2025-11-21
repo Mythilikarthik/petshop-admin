@@ -6,87 +6,89 @@ import './Css/featuredPetServices.css';
 import { BsLightningFill, BsTagFill, BsHouseFill,  } from 'react-icons/bs';
 import backgroundImage from './Image/bg-image.svg';
 
-
-const services = [
-    {
-        id: 1,
-        title: 'Paws & Claws Clinic',
-        category: 'Top Rated',
-        description: "Premium veterinary services with state-of-the-art facilities for all your pet’s healthcare needs.",
-        location: "Bandra West, Mumbai",
-        date: 'Aug 15, 2023',
-        tags: ['Veterinary', '24/7 Emergency', 'Pet Surgery'],
-        icon: <BsTagFill size={100} color="#ff8800" />,
-        color:"#ff8800" 
-    },
-    {
-        id: 2,
-        title: 'Furry Friends Grooming',
-        category: 'Popular',
-        description: "Professional grooming services to keep your pets clean, healthy, and looking their best.",
-        location: "Indiranagar, Bangalore",
-        date: 'Aug 15, 2023',
-        tags: ['Grooming', 'Spa', 'Pet Styling'],
-        icon: <BsLightningFill size={100} color="#3b82f6" />,
-        color: "#3b82f6" 
-    },
-    {
-        id: 3,
-        title: 'Happy Tails Boarding',
-        category: 'New',
-        description: "Luxury pet boarding with spacious accommodations, playtime, and personalized care.",
-        location: "Gurgaon, Delhi NCR",
-        date: 'Aug 15, 2023',
-        tags: ['Boarding', 'Daycare', 'Training'],
-        icon: <BsHouseFill size={100} color="#1ecb6b" />,
-        color: "#1ecb6b" 
-    }
-];
-
-const categoryBg = {
-    'Top Rated': 'card-top-rated',
-    'Popular': 'card-popular',
-    'New': 'card-new'
-};
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
 
 
-const PetHealthTips = () => (
-    <div className="featured-section bg-image"  style={{"background-image": `url(${backgroundImage})`}}>
+
+
+const PetHealthTips = ({ blog, showViewAll= true }) => (
+
+    <div className="featured-section bg-image" style={{ backgroundImage: `url(${backgroundImage})` }}>
         <Container>
             <div className='title text-center'>
                 <h2>
-                    Pet Health <span className="highlight">Tips & Articles</span>
+                    Our <span className="highlight"> Blog & Updates</span>
                 </h2>
                 <p className="subtitle">
-                    Expert advice to keep your pets happy and healthy
+                    Stay informed with the latest articles, news, and helpful information.
                 </p>
             </div>
+
             <Row className="justify-content-center">
-                {services.map(service => (
-                    <Col key={service.id} md={4} className="mb-4">
-                        <Card className={`pethealth-card `}>
-                            <Card.Header className={`${categoryBg[service.category]}`}>                            
-                                <div className="service-icon">{service.icon}</div>                            
-                            </Card.Header>
-                            <Card.Body className='pos-rel'>
-                                <span className="category-badge mb-3 d-block">{service.date}</span>
-                                <Card.Title>{service.title}</Card.Title>
-                                <Card.Text>{service.description}</Card.Text>
-                                <Link as button style={{color: `${service.color}`}} to={`/services/${service.id}`}>
-                                    Read More                            
-                                </Link>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                ))}
+                {blog && blog.length > 0 ? (
+                    blog.map((item) => (
+                        <Col key={item._id} md={4} className="mb-4">
+                            <Card className="pethealth-card w-100 h-100">
+
+                                {/* Blog Image */}
+                                <Card.Header className="blog-card-header">
+                                    <div className="service-icon">
+                                        <BsLightningFill size={100} color="#3b82f6" />
+                                    </div>
+                                </Card.Header>
+
+                                <Card.Body className='pos-rel'>
+
+                                    {/* Blog Date */}
+                                    <span className="category-badge mb-3 d-block">
+                                       {new Date(item.date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric"
+}).replace(" ", " ").replace(",", ",")}
+
+
+                                    </span>
+
+                                    {/* Blog Title */}
+                                    <Card.Title>{item.title}</Card.Title>
+
+                                    {/* Blog Excerpt */}
+                                    <Card.Text>
+                                        {item.excerpt ? item.excerpt.slice(0, 100) + "..." : ""}
+                                    </Card.Text>
+
+                                    {/* Blog Link */}
+                                    <Link 
+                                        style={{ color: "#ff6b00" }} 
+                                        to={`/blog/${item._id}`}
+                                    >
+                                        Read More
+                                    </Link>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    ))
+                ) : (
+                    <p className="text-center text-muted">No blogs available.</p>
+                )}
             </Row>
+
             <div className="text-center mt-3">
-                <button  className="view-all-btn">
-                    View All Articles
-                </button>
+                <Link to="/blog">
+                {showViewAll && (
+                    <button className="view-all-btn">
+                        View All Articles
+                    </button>
+                )}
+                </Link>
             </div>
         </Container>
     </div>
 );
+
 
 export default PetHealthTips;

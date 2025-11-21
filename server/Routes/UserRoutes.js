@@ -2,6 +2,21 @@ const express = require('express');
 const router = express.Router();
 const User = require('../Models/User');
 
+router.post('/register', async (req, res) => {
+  const { username, email, phone, name, password } = req.body;
+  try {
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Username or Email already exists' });
+    }
+    const newUser = new User({ username, email, phone, name, password });
+    await newUser.save();
+    res.status(201).json({ success: true, message: 'User registered successfully', user: newUser });
+  } catch (err) {
+    console.error("Registration error:", err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 

@@ -6,6 +6,7 @@ const Listing = require("../Models/Listing");
 const Message = require("../Models/Message");
 const Review = require("../Models/Review");
 const { verifyToken } = require("../middleware/authMiddleware");
+const PetCategory = require("../Models/PetCategory");
 
 const router = express.Router();
 
@@ -87,7 +88,47 @@ router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 });
-router.post("/city", verifyToken, async (req, res) => {
+router.put("/claim/:id", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const listing = await Listing.findByIdAndUpdate(
+      id,
+      {
+        isClaimed: true,
+        claimedBy: req.body.claimedBy,
+        claimedAt: new Date(),
+        user_id: req.body.claimedBy,
+      },
+      { new: true }
+    );
+
+    res.json({ success: true, message: "Listing claimed successfully!", listing });
+  } catch (err) {
+    res.json({ success: false, message: err.message });
+  }
+});
+
+router.post("/simple", verifyToken, async (req, res) => {
+  try {
+    const newListing = new Listing({
+      ...req.body,
+      photos: [],
+      created_by_id: req.userId,
+      created_by_type: req.userType,
+      status: req.userType === "admin" ? "approved" : "pending",
+    });
+
+    await newListing.save();
+
+    res.json({ success: true, message: "Listing created successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.post("/city", async (req, res) => {
   try {
     const {city} = req.body;
     const listings = await Listing.countDocuments({ city : { $in : [city]}});
@@ -130,6 +171,8 @@ router.get("/featured-services", async (req, res) => {
     const result = listings.map(listing => ({
       id: listing._id,
       title: listing.shopName,
+      phone: listing.phone,
+      email: listing.email,
       category: listing.categories.map(p => p.categoryName),
       description: listing.description,
       location: listing.city?.city || "Unknown",
@@ -143,6 +186,56 @@ router.get("/featured-services", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
+// router.post("/by-pet-category", async (req, res) => {
+//   try {
+//     const { petCategoryIds } = req.body;  // array or single ID
+
+//     if (!petCategoryIds || petCategoryIds.length === 0) {
+//       return res.status(400).json({ success: false, msg: "Provide petCategoryIds" });
+//     }
+
+//     const listings = await Listing.find({
+//       petCategories: { $in: petCategoryIds }
+//     })
+//       .populate("categories", "categoryName")
+//       .populate("petCategories", "petCategoryName")
+//       .populate("city", "city");
+
+//     res.json({ success: true, listings });
+//   } catch (error) {
+//     res.status(500).json({ success: false, error: error.message });
+//   }
+// });
+router.post("/by-pet-category", async (req, res) => {
+  try {
+    const { categoryName } = req.body;
+
+    if (!categoryName) {
+      return res.status(400).json({ success: false, msg: "Provide categoryName" });
+    }
+
+    // Find pet category ID from name
+    const petCategory = await PetCategory.findOne({ 
+      categoryName: { $regex: new RegExp(`^${categoryName}$`, "i") }
+     });
+
+    if (!petCategory) {
+      return res.json({ success: true, listings: [petCategory, categoryName] });
+    }
+
+    const listings = await Listing.find({
+      petCategories: petCategory._id
+    })
+      .populate("categories", "categoryName")
+      .populate("petCategories", "petCategoryName")
+      .populate("city", "city");
+
+    res.json({ success: true, listings });
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -421,6 +514,8 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+
 
 
 // UPDATE
