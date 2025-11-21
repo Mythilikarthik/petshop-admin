@@ -37,7 +37,7 @@ const Header = ({home}) => {
                     <Col className='d-flex justify-content-end gap-4'>
                         <button className='login-btn py-2 px-4 border-2 border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition duration-300'
                         onClick={() => {
-                            (process.env.Node_ENV === "production") ? 
+                            process.env.NODE_ENV === "production" ? 
                             window.open("https://petshop-user.onrender.com", "_blank") :
                             window.open("http://localhost:3001", "_blank");
                           } }
