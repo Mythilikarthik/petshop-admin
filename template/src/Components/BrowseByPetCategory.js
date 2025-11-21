@@ -33,7 +33,7 @@ const BrowseByPetCategory = ({categoryPage = []}) => {
   const navigate = useNavigate();
 
   const handleCategoryClick = (categoryName) => {
-    navigate(`/category/${categoryName}`);
+    navigate(`/type/${categoryName}`);
   };
 
   return (

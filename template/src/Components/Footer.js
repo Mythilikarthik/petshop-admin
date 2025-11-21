@@ -49,7 +49,7 @@ const Footer = ({home, categoryPage}) => {
                                 {/* {console.log("Footer categoryPage:", categoryPage)} */}
                                 {categoryPage && categoryPage.map((category) => (
                                     <li key={category.category._id}>
-                                        <Link to={`/category/${category.category.categoryName.toLowerCase()}`} className="text-white">{category.category.categoryName}</Link>
+                                        <Link to={`/type/${category.category.categoryName.toLowerCase()}`} className="text-white">{category.category.categoryName}</Link>
                                     </li>
                                 ))}
                                 {/* <li><Link to="/directory?category=dogs" className="text-white">Dogs</Link></li>

@@ -63,7 +63,7 @@ function App() {
         <Header home={home} />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/category/:categoryName" element={<CategoryPage />} />
+          <Route path="/type/:categoryName" element={<CategoryPage />} />
           <Route path="/directory" element={<Directory />} />
           <Route path="/pet-health" element={<PetHealth />} />
           <Route path="/about" element={<About />} />
