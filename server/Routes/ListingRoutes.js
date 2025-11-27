@@ -138,17 +138,94 @@ router.post("/city", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 })
-// GET Featured Pet Services
+// GET Featured Pet Services [not randomly]
+// router.get("/featured-services", async (req, res) => {
+//   try {
+//     const listings = await Listing.find({ status: "approved" })
+//       .populate("city", "city")
+//       .populate("categories", "categoryName")
+//       .populate("petCategories", "categoryName")
+//       .limit(3) // only 3 featured
+//       .lean();
+
+//     // Get rating for each listing
+//     const listingIds = listings.map(l => l._id);
+
+//     const reviews = await Review.aggregate([
+//       { $match: { listingId: { $in: listingIds }, status: "approved" } },
+//       {
+//         $group: {
+//           _id: "$listingId",
+//           averageRating: { $avg: "$rating" },
+//         }
+//       }
+//     ]);
+
+//     // Map ratings
+//     const ratingMap = {};
+//     reviews.forEach(r => {
+//       ratingMap[r._id.toString()] = Number(r.averageRating.toFixed(1));
+//     });
+
+//     // Combine listing + rating
+//     const result = listings.map(listing => ({
+//       id: listing._id,
+//       title: listing.shopName,
+//       phone: listing.phone,
+//       email: listing.email,
+//       category: listing.categories.map(p => p.categoryName),
+//       description: listing.description,
+//       location: listing.city?.city || "Unknown",
+//       rating: ratingMap[listing._id.toString()] || 0,
+//       tags: listing.petCategories.map(p => p.categoryName),
+//       image: listing.photos?.[0] || null
+//     }));
+
+//     res.json({ success: true, services: result });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ success: false, message: "Server Error" });
+//   }
+// });
+
+
+
+
+// shuffle randomly
 router.get("/featured-services", async (req, res) => {
   try {
-    const listings = await Listing.find({ status: "approved" })
-      .populate("city", "city")
-      .populate("categories", "categoryName")
-      .populate("petCategories", "categoryName")
-      .limit(3) // only 3 featured
-      .lean();
+    // RANDOM 3 listings
+    const listings = await Listing.aggregate([
+      { $match: { status: "approved" } },
+      { $sample: { size: 3 } }, // RANDOM 3
+      {
+        $lookup: {
+          from: "cities",
+          localField: "city",
+          foreignField: "_id",
+          as: "city"
+        }
+      },
+      { $unwind: { path: "$city", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categories",
+          foreignField: "_id",
+          as: "categories"
+        }
+      },
+      {
+        $lookup: {
+          from: "petcategories",
+          localField: "petCategories",
+          foreignField: "_id",
+          as: "petCategories"
+        }
+      }
+    ]);
 
-    // Get rating for each listing
     const listingIds = listings.map(l => l._id);
 
     const reviews = await Review.aggregate([
@@ -161,24 +238,24 @@ router.get("/featured-services", async (req, res) => {
       }
     ]);
 
-    // Map ratings
+    // rating map
     const ratingMap = {};
     reviews.forEach(r => {
       ratingMap[r._id.toString()] = Number(r.averageRating.toFixed(1));
     });
 
-    // Combine listing + rating
+    // final output
     const result = listings.map(listing => ({
       id: listing._id,
       title: listing.shopName,
       phone: listing.phone,
       email: listing.email,
-      category: listing.categories.map(p => p.categoryName),
+      category: listing.categories?.map(c => c.categoryName) || [],
       description: listing.description,
       location: listing.city?.city || "Unknown",
       rating: ratingMap[listing._id.toString()] || 0,
-      tags: listing.petCategories.map(p => p.categoryName),
-      image: listing.photos?.[0] || null
+      tags: listing.petCategories?.map(c => c.categoryName) || [],
+      image: listing.photos?.[0] || null,
     }));
 
     res.json({ success: true, services: result });
@@ -425,18 +502,68 @@ router.post("/image", upload.array("image", 10), (req, res) => {
 });
 
 // READ (all)
+// router.get("/", async (req, res) => {
+//   try {
+//     const listings = await Listing.find()
+//     .populate("categories", "categoryName")
+//       .populate("petCategories", "categoryName")
+//       .populate("city", "city").sort({ created_at: -1 }); // <-- add lean()
+//     res.json({ success: true, listings });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
+
+
+// READ (all) - randomly
 router.get("/", async (req, res) => {
   try {
-    const listings = await Listing.find()
-    .populate("categories", "categoryName")
-      .populate("petCategories", "categoryName")
-      .populate("city", "city").sort({ created_at: -1 }); // <-- add lean()
+    const listings = await Listing.aggregate([
+      { $match: {} }, // match everything
+
+      // RANDOM SHUFFLE
+      { $sample: { size: 50 } }, // pick 50 random; increase if needed
+
+      // populate city
+      {
+        $lookup: {
+          from: "cities",
+          localField: "city",
+          foreignField: "_id",
+          as: "city"
+        }
+      },
+      { $unwind: { path: "$city", preserveNullAndEmptyArrays: true } },
+
+      // populate categories
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categories",
+          foreignField: "_id",
+          as: "categories"
+        }
+      },
+
+      // populate petCategories
+      {
+        $lookup: {
+          from: "petcategories",
+          localField: "petCategories",
+          foreignField: "_id",
+          as: "petCategories"
+        }
+      }
+    ]);
+
     res.json({ success: true, listings });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 router.get("/counts", verifyToken, async (req, res) => {
@@ -514,6 +641,41 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+router.get("/incviews/:id", async (req, res) => {
+  try {
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
+      req.socket.remoteAddress;
+
+    let listing = await Listing.findById(req.params.id)
+      .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("city", "city");
+
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Not found"
+      });
+    }
+
+    // If IP not found → increment view
+    if (!listing.viewedIPs.includes(ip)) {
+      listing.views += 1;
+      listing.viewedIPs.push(ip);
+      await listing.save();
+    }
+
+    res.json({ success: true, listing });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+});
+
 
 
 

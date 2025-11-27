@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col, Spinner, Alert } from "react-bootstrap";
-import { DiscussionEmbed } from "disqus-react";   // <-- ADD THIS
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -23,6 +22,7 @@ const BlogDetail = () => {
         if (!data.success) {
           setError("Blog not found");
         } else {
+            console.log(data.blog);
           setBlog(data.blog);
         }
       } catch (err) {
@@ -49,15 +49,6 @@ const BlogDetail = () => {
         <Alert variant="danger">{error}</Alert>
       </Container>
     );
-
-  // ---------------------------- DISQUS CONFIG ----------------------------
-  const disqusShortname = "pets-directory";
-  const disqusConfig = {
-    url: window.location.href,
-    identifier: blog?._id,
-    title: blog?.title,
-  };
-  // -----------------------------------------------------------------------
 
   return (
     <div className="blog-detail py-5">
@@ -111,12 +102,6 @@ const BlogDetail = () => {
               className="mt-4"
               dangerouslySetInnerHTML={{ __html: blog.content }}
             ></div>
-
-            {/* ---------------- DISQUS COMMENT BOX ---------------- */}
-            <div className="mt-5 pt-4">
-              <DiscussionEmbed shortname={disqusShortname} config={disqusConfig} />
-            </div>
-            {/* ----------------------------------------------------- */}
           </Col>
         </Row>
       </Container>

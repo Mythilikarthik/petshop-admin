@@ -20,14 +20,19 @@ const mongoose = require("mongoose");
 
 const adSchema = new mongoose.Schema(
   {
-    category: { type: mongoose.Schema.Types.ObjectId, ref: "PetCategory" },
-    city: { type: mongoose.Schema.Types.ObjectId, ref: "City" },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: "PetCategory", default: null, set: v => v === "" ? null : v },
+    city: { type: mongoose.Schema.Types.ObjectId, ref: "City", default: null, set: v => v === "" ? null : v },
     position: { type: String, enum: ["top", "middle", "bottom"], required: true },
     image: { type: String, required: true },
     url: { type: String },
     impressions: { type: Number, default: 0 },
     clicks: { type: Number, default: 0 },
-    earnings: { type: Number, default: 0 } // optional for later
+    earnings: { type: Number, default: 0 } ,
+    page: {
+  type: String,
+  enum: ["home", "directory", "blog"],
+  required: true
+},
   },
   { timestamps: true }
 );

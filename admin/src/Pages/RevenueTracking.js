@@ -33,115 +33,170 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./RevenueTracking.css";
+import html2pdf from "html2pdf.js";
+import * as XLSX from "xlsx";
 
+
+const API_BASE =
+  process.env.NODE_ENV === 'production'
+    ? 'https://petshop-admin.onrender.com'
+    : 'http://localhost:5000';
+    
 
 
 export default function RevenueTracking() {
-  const [loadingAds, setLoadingAds] = useState(true);
-    const [adTotals, setAdTotals] = useState({
-      impressions: 0,
-      clicks: 0,
-      earnings: 0,
-      count: 0,
-    });
   
-    useEffect(() => {
-      const fetchAds = async () => {
-        try {
-          const res = await fetch(`${API_BASE}/ads`);
-          const data = await res.json();
-  
-          // ✅ Handle multiple response shapes
-          let adsArray = [];
-          if (Array.isArray(data)) adsArray = data;
-          else if (Array.isArray(data.ads)) adsArray = data.ads;
-          else {
-            console.warn('Unexpected ads response:', data);
-            adsArray = [];
-          }
-  
-          // ✅ Calculate totals
-          const totals = adsArray.reduce(
-            (acc, ad) => {
-              acc.impressions += Number(ad.impressions) || 0;
-              acc.clicks += Number(ad.clicks) || 0;
-              acc.earnings += Number(ad.earnings) || 0;
-              acc.count += 1;
-              return acc;
-            },
-            { impressions: 0, clicks: 0, earnings: 0, count: 0 }
-          );
-  
-          setAdTotals(totals);
-        } catch (err) {
-          console.error('Error fetching ads:', err);
-        } finally {
-          setLoadingAds(false);
-        }
-      };
-  
-      fetchAds();
-    }, []);
-  // Sample revenue chart data
-const revenueData = [
-  { month: 'Jan', revenue: 1200 },
-  { month: 'Feb', revenue: 2100 },
-  { month: 'Mar', revenue: 800 },
-  { month: 'Apr', revenue: 1600 },
-  { month: 'May', revenue: 1900 },
-  { month: 'Jun', revenue: 2200 },
-];
+const [detailedRevenue, setDetailedRevenue] = useState([]);
+const [totalRevenue, setTotalRevenue] = useState(0);
+const [monthlyRevenue, setMonthlyRevenue] = useState(0);
+const [subscriptionCount, setSubscriptionCount] = useState(0);
 
-// Pie chart (by source)
-const revenueBySource = [
-  { name: 'Subscriptions', value: 5000 },
-  { name: 'Ads', value: 3200 },
-  { name: 'Pay-Per-Lead', value: 1800 },
-];
-
-// Detailed revenue report
-const detailedRevenue = [
-  { date: "2025-08-10", source: "Subscription", amount: 999 },
-  { date: "2025-08-12", source: "Ads", amount: 1200 },
-  { date: "2025-09-02", source: "Subscription", amount: 1500 },
-  { date: "2025-09-03", source: "Ads", amount: 700 },
-  { date: "2025-09-05", source: "Pay-Per-Lead", amount: 500 },
-];
-
-const sources = ["Subscription", "Ads", "Pay-Per-Lead"];
 const [searchTerm, setSearchTerm] = useState("");
-const [selectedSources, setSelectedSources] = useState([]);
 
-// Filter data
-const API_BASE =
-  process.env.NODE_ENV === 'production'
-    ? 'https://petshop-admin.onrender.com/api'
-    : 'http://localhost:5000/api';
-
-const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+useEffect(() => {
+  const fetchPayments = async () => {
+    try {
+      // Fetch all payments
+      const res = await fetch(`${API_BASE}/api/payments/all`);
+      const data = await res.json();
+
+      if (data.success) {
+        const formatted = data.payments.map((p) => ({
+          date: p.createdAt.substring(0, 10),
+          source: p.plan.charAt(0).toUpperCase() + p.plan.slice(1),
+          amount: p.amount,
+        }));
+
+        setDetailedRevenue(formatted);
+      }
+    } catch (err) {
+      console.error("Error fetching payments:", err);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      // Total revenue
+      const totalRes = await fetch(`${API_BASE}/api/payments/totalrevenue`);
+      const totalData = await totalRes.json();
+      if (totalData.success) setTotalRevenue(totalData.totalRevenue);
+
+      // Subscription counts
+      const countRes = await fetch(`${API_BASE}/api/payments/counts`);
+      const countData = await countRes.json();
+      if (countData.success) {
+        setSubscriptionCount(countData.totalSuccessPayments);
+      }
+
+      // Monthly revenue (by month API)
+      const month = String(selectedMonth.getMonth() + 1).padStart(2, "0");
+      const year = selectedMonth.getFullYear();
+
+      const monthlyRes = await fetch(
+        `${API_BASE}/api/payments/revenue-by-month?month=${month}&year=${year}`
+      );
+
+      const monthlyData = await monthlyRes.json();
+
+      if (monthlyData.success) {
+        setMonthlyRevenue(monthlyData.total);
+      } else {
+        setMonthlyRevenue(0);
+      }
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  };
+
+  fetchPayments();
+  fetchStats();
+}, [selectedMonth]);
+
+
+
+
+
 
   // Filter data by selected month
   const filteredData = detailedRevenue.filter((row) => {
-    const rowDate = new Date(row.date); 
-    const rowMonth = row.date.slice(0, 7); // e.g. "2025-09"
-    const rowMonthName = rowDate.toLocaleString("default", { month: "long" }); // e.g. "September"
-    const rowYear = rowDate.getFullYear().toString(); // "2025"
+  const rowDate = new Date(row.date); 
+  const rowMonth = row.date.slice(0, 7);
+  const rowMonthName = rowDate.toLocaleString("default", { month: "long" });
+  const rowYear = rowDate.getFullYear().toString();
 
-    const matchSearch =
-      searchTerm === "" ||
-      rowMonth.includes(searchTerm) ||                 // 2025-09
-      rowMonthName.toLowerCase().includes(searchTerm.toLowerCase()) || // September
-      rowYear.includes(searchTerm);                   // 2025
+  const matchSearch =
+    searchTerm === "" ||
+    rowMonth.includes(searchTerm) ||
+    rowMonthName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    rowYear.includes(searchTerm);
 
-    const matchSource =
-      selectedSources.length === 0 ||
-      selectedSources.includes(row.source);
+  return matchSearch;
+});
 
-    return matchSearch && matchSource;
-  });
+// ------------------ CSV DOWNLOAD ------------------
+const downloadCSV = () => {
+  if (!detailedRevenue.length) return alert("No data available!");
 
+  const header = ["User", "Email", "Amount", "Plan", "Status", "Date"];
+  const rows = detailedRevenue.map(p => [
+    p.userId?.name || "",
+    p.userId?.email || "",
+    p.amount,
+    p.plan,
+    p.paymentStatus,
+    new Date(p.createdAt).toLocaleString()
+  ]);
+
+  let csvContent =
+    "data:text/csv;charset=utf-8," +
+    [header, ...rows].map(e => e.join(",")).join("\n");
+
+  const link = document.createElement("a");
+  link.href = encodeURI(csvContent);
+  link.download = "payments.csv";
+  link.click();
+};
+
+// ------------------ EXCEL (.xlsx) DOWNLOAD ------------------
+
+
+const downloadExcel = () => {
+  if (!detailedRevenue.length) return alert("No data available!");
+
+  const formatted = detailedRevenue.map(p => ({
+    User: p.userId?.name || "",
+    Email: p.userId?.email || "",
+    Amount: p.amount,
+    Plan: p.plan,
+    Status: p.paymentStatus,
+    Date: new Date(p.createdAt).toLocaleString()
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(formatted);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Payments");
+
+  XLSX.writeFile(workbook, "payments.xlsx");
+};
+
+// ------------------ PDF DOWNLOAD ------------------
+
+
+const downloadPDF = () => {
+  const element = document.getElementById("pdf-content");
+
+  const options = {
+    margin: 10,
+    filename: "payments.pdf",
+    image: { type: "jpeg", quality: 1 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+  };
+
+  html2pdf().set(options).from(element).save();
+};
 
   return (
     <Container fluid className="">
@@ -167,7 +222,7 @@ const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
               <Col xs={4}><MdAttachMoney size={60} /></Col>
               <Col xs={8}>
                 <h6>Total Revenue</h6>
-                <h4>₹10,000</h4>
+                <h4>₹{totalRevenue}</h4>
               </Col>
             </Row>
           </Card>
@@ -184,7 +239,7 @@ const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
               <Col xs={4}><MdCalendarMonth size={60} /></Col>
               <Col xs={8}>
                 <h6>{selectedMonth.toLocaleString("default", { month: "long", year: "numeric" })}</h6>
-                <h4>₹2,800</h4>
+                <h4>₹{monthlyRevenue}</h4>
               </Col>
             </Row>
           </Card>
@@ -211,14 +266,14 @@ const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
               <Col xs={4}><MdWorkspacePremium size={60} /></Col>
               <Col xs={8}>
                 <h6>Subscriptions</h6>
-                <h4>₹5,000</h4>
+                <h4>{subscriptionCount}</h4>
               </Col>
             </Row>
           </Card>
         </Col>
 
         {/* Ads */}
-        <Col md={3}>
+        {/* <Col md={3}>
           <Card className="shadow-sm text-center p-3 bg-danger text-white">
             <Row>
               <Col xs={4}><MdOutlineAdsClick size={60} /></Col>
@@ -228,87 +283,12 @@ const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
               </Col>
             </Row>
           </Card>
-        </Col>
+        </Col> */}
       </Row>
       {/* <h5 class="d-flex gap-1 align-items-center mb-3 font-magenta"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path fill="none" d="M0 0h24v24H0z"></path><path d="m3.5 18.49 6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"></path></svg> Ad Overview</h5> */}
-      <Row className="mb-4">
-              {loadingAds ? (
-                <Col className="text-center"><p>Loading Ad Stats...</p></Col>
-              ) : (
-                <>
-                  <Col lg={6} md={6}>
-                    <Card className="bg-info text-white p-3">
-                      <h6><AiOutlineEye /> Total Impressions</h6>
-                      <h3>{adTotals.impressions}</h3>
-                      <small>{adTotals.count} ad(s) tracked</small>
-                    </Card>
-                  </Col>
-                  <Col lg={6} md={6}>
-                    <Card className="bg-success text-white p-3">
-                      <h6> Total Clicks</h6>
-                      <h3>{adTotals.clicks}</h3>
-                      <small>{adTotals.count} ad(s) tracked</small>
-                    </Card>
-                  </Col>
-                  {/* <Col lg={4} md={6}>
-                    <Card className="bg-warning text-white p-3">
-                      <h6><AiOutlineDollar /> Total Earnings</h6>
-                      <h3>₹{(adTotals.earnings || 0).toFixed(2)}</h3>
-                      <small>{adTotals.count} ad(s) tracked</small>
-                    </Card>
-                  </Col> */}
-                </>
-              )}
-            </Row>
+      
 
-      {/* Charts */}
-      <Row className="mb-4">
-        {/* Revenue Over Time */}
-        <Col md={8}>
-          <Card className="shadow-sm p-3">
-            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'>
-              <MdShowChart /> Revenue Over Time
-            </h5>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="revenue" stroke="#8884d8" />
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
-        </Col>
-
-        {/* Revenue by Source */}
-        <Col md={4}>
-          <Card className="shadow-sm p-3">
-            <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'>
-              <MdOutlineSource /> Revenue by Source
-            </h5>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={revenueBySource}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="80%"
-                  fill="#8884d8"
-                  dataKey="value"
-                  label
-                >
-                  {revenueBySource.map((entry, index) => (
-                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Legend />
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </Card>
-        </Col>
-      </Row>
+      
 
       {/* Revenue Table */}
       <Card className="shadow-sm p-3">
@@ -322,7 +302,7 @@ const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
             <Form.Group>
               <Form.Control
                 type="month"
-                placeholder="Search by Month"
+                placeholder="Search by Month or Year"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -344,7 +324,7 @@ const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
         </Row>
 
         {/* Table */}
-        <div className="table-responsive">
+        <div className="table-responsive" id="pdf-content">
           <Table bordered hover responsive>
             <thead>
               <tr>
@@ -377,9 +357,17 @@ const COLORS = ['#0088FE', '#FF8042', '#00C49F'];
 
         {/* Export Buttons */}
         <div className="text-end">
-          <Button variant="success" className="me-2">Download CSV</Button>
-          <Button variant="primary" className="me-2">Download Excel</Button>
-          <Button variant="danger">Download PDF</Button>
+          <Button variant="success" className="me-2" onClick={downloadCSV}>
+            Download CSV
+          </Button>
+
+          <Button variant="primary" className="me-2" onClick={downloadExcel}>
+            Download Excel
+          </Button>
+
+          <Button variant="danger" onClick={downloadPDF}>
+            Download PDF
+          </Button>
         </div>
       </Card>
 

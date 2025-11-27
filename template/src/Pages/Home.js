@@ -10,19 +10,77 @@ import JoinCommunityNewsletter from '../Components/JoinCommunityNewsletter';
 import { Container } from 'react-bootstrap';
 import { useState } from 'react';
 import { useEffect } from 'react';
+import AdSlider from '../Components/AdSlider';
+
 
 const API_BASE =
   process.env.NODE_ENV === "production"
     ? "https://petshop-admin.onrender.com"
     : "http://localhost:5000";
 const Home = () => {  
+  const pgname = "home";
   const [home, setHome] = useState([]);
   const [categoryPage, setCategoryPage] = useState([]);
   const [cities, setCities] = useState([]);
   const cityListingsCombine = [{}];
   const [blog, setBlog] = useState([]);
   const [faqs, setFaqs] = useState([]);
+  const [topHomeAds, setTopHomeAds] = useState([]);
+  const [bottomHomeAds, setBottomHomeAds] = useState([]);
+  const [middleHomeAds, setMiddleHomeAds] = useState([]);
+const [adSettings, setAdSettings] = useState({ slideInterval: 5, maxImages: 5 });
+
+
   useEffect(() => {
+    const fetchBottomHomeAds = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/ads/bottom/${pgname}`);
+    const data = await res.json();
+
+    if (data.success) {
+      // Apply the limit here
+      const limitedAds = data.ads.slice(0, data.settings.maxImages);
+
+      setBottomHomeAds(limitedAds);
+      setAdSettings(data.settings); 
+    }
+  } catch (err) {
+    console.error("Error fetching home ads:", err);
+  }
+};
+const fetchMiddleHomeAds = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/ads/middle/${pgname}`);
+    const data = await res.json();
+
+    if (data.success) {
+      // Apply the limit here
+      const limitedAds = data.ads.slice(0, data.settings.maxImages);
+
+      setMiddleHomeAds(limitedAds);
+      setAdSettings(data.settings); 
+    }
+  } catch (err) {
+    console.error("Error fetching home ads:", err);
+  }
+};
+    const fetchTopHomeAds = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/ads/top/${pgname}`);
+    const data = await res.json();
+
+    if (data.success) {
+      // Apply the limit here
+      const limitedAds = data.ads.slice(0, data.settings.maxImages);
+
+      setTopHomeAds(limitedAds);
+      setAdSettings(data.settings); 
+    }
+  } catch (err) {
+    console.error("Error fetching home ads:", err);
+  }
+};
+
     const fetchHomeData = async () => {
       try {
         const homeRes = await fetch(`${API_BASE}/api/home-page`);
@@ -123,10 +181,21 @@ const fetchFaqs = async () => {
     fetchCityData();
     blogData();
     fetchFaqs();
+    fetchTopHomeAds();
+    fetchBottomHomeAds();
+    fetchMiddleHomeAds();
   }, []);
   return (
     <div className='home'>
       <Banner home={home} />
+      {topHomeAds.length > 0 && (
+  <AdSlider ads={topHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
+)}
+{middleHomeAds.length > 0 && (
+        <AdSlider ads={middleHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} float={true}
+  side="right" />
+      )}
+
       <Container fluid className='p-0'>
         <BrowseByPetCategory categoryPage={categoryPage} />
         <PopularCitiesSection cities={cities} />
@@ -135,6 +204,10 @@ const fetchFaqs = async () => {
         <JoinCommunityNewsletter home={home} />
         <FAQSection faqs={faqs} />
       </Container>
+      
+      {bottomHomeAds.length > 0 && (
+        <AdSlider ads={bottomHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
+      )}
     </div>
   )
 }

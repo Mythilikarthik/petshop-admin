@@ -18,6 +18,7 @@ const ListingSchema = new mongoose.Schema({
   metaKeyword: [String],
   metaDescription: String,
 
+  viewedIPs: {type: [String], default: [] },
   views: { type: Number, default: 0 },
   enquiries: { type: Number, default: 0 },
   messages: {type: Number, default : 0},

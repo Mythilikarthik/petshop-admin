@@ -176,7 +176,7 @@ const AdListings = () => {
                 <th>#</th>
                 <th>Image</th>
                 <th>City</th>
-                <th>Category</th>
+                <th>Type</th>
                 <th>Position</th>
                 <th>URL</th>
                 <th>Actions</th>

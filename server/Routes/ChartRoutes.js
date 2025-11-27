@@ -3,6 +3,7 @@ const router = express.Router();
 const Category = require('../Models/Category');
 const Listing = require('../Models/Listing');
 const Review = require("../Models/Review");
+const User = require("../Models/User");
 const { Types } = require("mongoose");
 
 router.get('/categories', async (req, res) => {
@@ -48,56 +49,51 @@ router.get('/categories', async (req, res) => {
 router.get("/user-activity", async (req, res) => {
   try {
     const data = await Listing.aggregate([
-      {
-        $group: {
-          _id: "$user_id",
-          listings: { $sum: 1 }   
-        }
-      },
+      // Only listings created by users
+      { $match: { created_by_type: "user" } },
+
+      // Lookup reviews for each listing
       {
         $lookup: {
           from: "reviews",
-          localField: "_id",
-          foreignField: "user_id",
-          pipeline: [
-            {
-              $lookup: {
-                from: "listings",
-                localField: "listing_id",
-                foreignField: "_id",
-                as: "listingData"
-              }
-            }
-          ],
+          localField: "_id",        // listing id
+          foreignField: "listingId",
           as: "reviewData"
         }
       },
+
+      // Lookup user details
       {
         $lookup: {
-          from: "users",
-          localField: "_id",
+          from: "user",
+          localField: "user_id",    // user id
           foreignField: "_id",
           as: "userData"
         }
       },
-      {
-        $unwind: "$userData"
-      },
+
+      // Flatten user array
+      { $unwind: { path: "$userData", preserveNullAndEmptyArrays: true } },
+
+      // Project the fields you need
       {
         $project: {
+          listing_id: "$_id",
+          user_id: "$user_id",
           name: "$userData.name",
-          listings: 1,
+          listings: "1",
           reviews: { $size: "$reviewData" }
         }
       }
     ]);
 
     res.json({ success: true, activity: data });
-
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("User Activity Error:", err);
+    res.status(500).json({ success: false, message: err.message || "Server error" });
   }
 });
+
+
 
 module.exports = router;

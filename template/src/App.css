@@ -9,7 +9,7 @@ body {
 .mr-5 { margin-right: 3rem !important; }
 .row { margin: 0 auto; }
 .text-red { color: red; }
-.scroll-to-top {
+/* .scroll-to-top {
   position: fixed;
   bottom: 25px;
   right: 25px;
@@ -22,8 +22,29 @@ body {
   z-index: 999;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   transition: 0.3s ease-in-out;
-}
+} */
 
+.scroll-to-top {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: #007bff;
+  color: white;
+  
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 999;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: 0.3s ease-in-out;
+  padding: 0;
+  width: 35px;
+  height: 35px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
 .scroll-to-top:hover {
   background: #0056b3;
   transform: translateY(-3px);

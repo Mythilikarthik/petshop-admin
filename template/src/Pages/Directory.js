@@ -5,6 +5,7 @@ import { Row, Col, Card, Button, Container } from "react-bootstrap";
 import { BsGeoAltFill, BsStarFill } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 import dummyImage from '../dummy.jpg';
+import AdSlider from '../Components/AdSlider';
 
 // Example data (replace with API data)
 
@@ -13,12 +14,17 @@ const API_BASE =
     ? "https://petshop-admin.onrender.com"
     : "http://localhost:5000";
 const Directory = () => {
+  const pgname = "directory";
   const navigate = useNavigate();
   const { city: routeCity, category: routeCategory, pet: routePet } = useParams();
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(routeCategory || '');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [topHomeAds, setTopHomeAds] = useState([]);
+    const [bottomHomeAds, setBottomHomeAds] = useState([]);
+    const [middleHomeAds, setMiddleHomeAds] = useState([]);
+  const [adSettings, setAdSettings] = useState({ slideInterval: 5, maxImages: 5 });
   // console.log("routeCity:",routeCity);
 
 
@@ -91,7 +97,9 @@ const PAGE_SIZE = 4;
   return allListings.filter(l => {
     const cat = (l.categories?.[0]?.categoryName || "").toLowerCase();
     const cityName = (l.city?.city || "").toLowerCase();
-    const pet = (l.petCategories?.[0]?.categoryName || "").toLowerCase();
+    // const pet = (l.petCategories?.[0]?.categoryName || "").toLowerCase();
+    const petNames = (l.petCategories || [])
+  .map(p => p.categoryName.toLowerCase());
     const shop = (l.shopName || "").toLowerCase();
 
     const categoryMatch =
@@ -107,12 +115,12 @@ const PAGE_SIZE = 4;
     const petMatch =
       !search ||
       search.toLowerCase() === "all" ||
-      pet.includes(searchLower);
+        petNames.some(p => p.includes(searchLower));
 
     const searchMatch =
       shop.includes(searchLower) ||
       cat.includes(searchLower) ||
-      pet.includes(searchLower) ||
+      petNames.some(p => p.includes(searchLower));
       cityName.includes(searchLower);
 
     return categoryMatch && cityMatch && petMatch && searchMatch;
@@ -154,9 +162,60 @@ const PAGE_SIZE = 4;
     }
   }
 
+  const fetchBottomHomeAds = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/ads/bottom/${pgname}`);
+    const data = await res.json();
+
+    if (data.success) {
+      // Apply the limit here
+      const limitedAds = data.ads.slice(0, data.settings.maxImages);
+
+      setBottomHomeAds(limitedAds);
+      setAdSettings(data.settings); 
+    }
+  } catch (err) {
+    console.error("Error fetching home ads:", err);
+  }
+};
+const fetchMiddleHomeAds = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/ads/middle/${pgname}`);
+    const data = await res.json();
+
+    if (data.success) {
+      // Apply the limit here
+      const limitedAds = data.ads.slice(0, data.settings.maxImages);
+
+      setMiddleHomeAds(limitedAds);
+      setAdSettings(data.settings); 
+    }
+  } catch (err) {
+    console.error("Error fetching home ads:", err);
+  }
+};
+    const fetchTopHomeAds = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/ads/top/${pgname}`);
+    const data = await res.json();
+
+    if (data.success) {
+      // Apply the limit here
+      const limitedAds = data.ads.slice(0, data.settings.maxImages);
+
+      setTopHomeAds(limitedAds);
+      setAdSettings(data.settings); 
+    }
+  } catch (err) {
+    console.error("Error fetching home ads:", err);
+  }
+};
+
   useEffect(() => {
     fetchListings();
-    
+    fetchTopHomeAds();
+    fetchBottomHomeAds();
+    fetchMiddleHomeAds();
   }, [])
 //   useEffect(() => {
 //   if (routeCity) setSelectedCity(routeCity);
@@ -199,6 +258,14 @@ useEffect(() => {
 
 // console.log("all:",allListings)
   return (
+    <>
+    {topHomeAds.length > 0 && (
+      <AdSlider ads={topHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
+    )}
+    {middleHomeAds.length > 0 && (
+      <AdSlider ads={middleHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} float={true}
+      side="right" />
+    )}
     <section className="directory-inner-section">
       <Container>
         <div className="directory-header">
@@ -396,6 +463,10 @@ useEffect(() => {
       )} */}
       </Container>
     </section>
+    {bottomHomeAds.length > 0 && (
+        <AdSlider ads={bottomHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
+      )}
+      </>
   );
 };
 

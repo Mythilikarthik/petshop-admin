@@ -28,7 +28,7 @@ const AdManagement = () => {
   // ✅ Fetch existing Ad settings
   const fetchAdSettings = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/ad/settings`);
+      const res = await fetch(`${API_BASE}/api/ads/settings`);
       const data = await res.json();
       if (data.success && data.setting) {
         setFormData({
@@ -61,7 +61,7 @@ const AdManagement = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/api/ad/settings`, {
+      const res = await fetch(`${API_BASE}/api/ads/settings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

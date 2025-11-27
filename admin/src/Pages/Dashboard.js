@@ -101,7 +101,7 @@ const Dashboard = () => {
         const res = await fetch(`${API_BASE}/api/stats/user-activity`);
         const data = await res.json();
         if (data.success) {
-          console.log (data.activity)
+          console.log ("activity", data.activity)
           setUserData(data.activity);
         }
       } catch (err) {

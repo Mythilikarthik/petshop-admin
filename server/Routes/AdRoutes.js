@@ -76,7 +76,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     console.log("📩 Incoming ad data:", req.body);
     console.log("📷 Uploaded file:", req.file);
 
-    const { category, city, position, url } = req.body;
+    const { category, city, position, url, page } = req.body;
 
     // 🔍 Validation checks
     if (!position) {
@@ -87,7 +87,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     }
 
     const image = `/uploads/ads/${req.file.filename}`;
-    const ad = new Ad({ category, city, position, url, image });
+    const ad = new Ad({ category, city, position, url, image , page });
 
     await ad.save();
 
@@ -103,16 +103,31 @@ router.post("/", upload.single("image"), async (req, res) => {
 
 router.patch("/:id", upload.single("image"), async (req, res) => {
   try {
-    const { category, city, position, url } = req.body;
-    const updateData = { category, city, position, url };
-    if (req.file) updateData.image = `/uploads/ads/${req.file.filename}`;
-    const updated = await Ad.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    const updateData = {};
+
+    // Add only non-empty fields
+    ["category", "city", "position", "url", "page"].forEach((field) => {
+      if (req.body[field] && req.body[field] !== "") {
+        updateData[field] = req.body[field];
+      }
+    });
+
+    // Handle file upload
+    if (req.file) {
+      updateData.image = `/uploads/ads/${req.file.filename}`;
+    }
+
+    const updated = await Ad.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
+
     res.json({ success: true, ad: updated });
   } catch (err) {
-    console.error("Error updating ad:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Error updating ad:", err.message);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
+
 
 router.delete("/:id", async (req, res) => {
   try {
@@ -166,6 +181,63 @@ router.get("/earnings/:id", async (req, res) => {
   const CPC_RATE = 1.0; // ₹1 per click
   const earnings = (ad.impressions / 1000) * CPM_RATE + ad.clicks * CPC_RATE;
   res.json({ earnings });
+});
+router.get("/top/:pgname", async (req, res) => {
+  try {
+    const {pgname } = req.params;
+    const ads = await Ad.find({ page: pgname, position: "top" })
+      .populate("category", "categoryName")
+      .populate("city", "city");
+
+    const setting = await AdSetting.findOne() || { slideInterval: 5, maxImages: 5 };
+
+    res.json({
+      success: true,
+      ads,
+      settings: setting
+    });
+  } catch (err) {
+    console.error("Error loading home ads:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+router.get("/bottom/:pgname", async (req, res) => {
+  try {
+    const {pgname } = req.params;
+    const ads = await Ad.find({ page: pgname, position: "bottom" })
+      .populate("category", "categoryName")
+      .populate("city", "city");
+
+    const setting = await AdSetting.findOne() || { slideInterval: 5, maxImages: 5 };
+
+    res.json({
+      success: true,
+      ads,
+      settings: setting
+    });
+  } catch (err) {
+    console.error("Error loading home ads:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+router.get("/middle/:pgname", async (req, res) => {
+  try {
+    const {pgname } = req.params;
+    const ads = await Ad.find({ page: pgname, position: "middle" })
+      .populate("category", "categoryName")
+      .populate("city", "city");
+
+    const setting = await AdSetting.findOne() || { slideInterval: 5, maxImages: 5 };
+
+    res.json({
+      success: true,
+      ads,
+      settings: setting
+    });
+  } catch (err) {
+    console.error("Error loading home ads:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 });
 
 

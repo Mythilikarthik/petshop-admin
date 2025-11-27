@@ -90,5 +90,124 @@ router.post("/verify", verifyToken, async (req, res) => {
     res.json({ success: false, message: "Invalid payment signature" });
   }
 });
+// ✅ Get all payments (for admin revenue dashboard)
+router.get("/all", async (req, res) => {
+  try {
+    const payments = await Payment.find().populate("userId", "name email");
+
+    res.json({
+      success: true,
+      payments,
+    });
+  } catch (err) {
+    console.error("Error fetching payments:", err.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+// ===========================================
+// ✅ TOTAL REVENUE
+// ===========================================
+router.get("/totalrevenue", async (req, res) => {
+  try {
+    const result = await Payment.aggregate([
+      { $match: { paymentStatus: "success" } },
+      { $group: { _id: null, totalRevenue: { $sum: "$amount" } } }
+    ]);
+
+    const totalRevenue = result.length > 0 ? result[0].totalRevenue : 0;
+
+    res.json({ success: true, totalRevenue });
+  } catch (err) {
+    console.error("Error calculating total revenue:", err.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+// ===========================================
+// ✅ REVENUE BY MONTH (LAST 12 MONTHS)
+// ===========================================
+// 📌 Get revenue grouped by month
+router.get("/revenue-by-month", async (req, res) => {
+  try {
+    let { month, year } = req.query;
+
+    month = parseInt(month);
+    year = parseInt(year);
+
+    if (!month || !year) {
+      return res.status(400).json({
+        success: false,
+        message: "Month and year are required",
+      });
+    }
+
+    const result = await Payment.aggregate([
+      {
+        $match: {
+          paymentStatus: "success",
+          $expr: {
+            $and: [
+              { $eq: [{ $month: "$createdAt" }, month] },
+              { $eq: [{ $year: "$createdAt" }, year] },
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    const total = result.length ? result[0].total : 0;
+
+    res.json({ success: true, total });
+  } catch (err) {
+    console.error("Revenue filter error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+
+
+
+// ===========================================
+// ✅ COUNTS: total payments, premium users, and plan wise
+// ===========================================
+router.get("/counts", async (req, res) => {
+  try {
+    const totalPayments = await Payment.countDocuments();
+    const totalSuccessPayments = await Payment.countDocuments({ paymentStatus: "success" });
+
+    const premiumUsers = await User.countDocuments({ isPremium: true });
+
+    const monthlyCount = await Payment.countDocuments({ plan: "monthly", paymentStatus: "success" });
+    const yearlyCount = await Payment.countDocuments({ plan: "yearly", paymentStatus: "success" });
+    const lifelongCount = await Payment.countDocuments({ plan: "lifelong", paymentStatus: "success" });
+
+    res.json({
+      success: true,
+      totalPayments,
+      totalSuccessPayments,
+      premiumUsers,
+      planCounts: {
+        monthly: monthlyCount,
+        yearly: yearlyCount,
+        lifelong: lifelongCount
+      }
+    });
+  } catch (err) {
+    console.error("Error fetching counts:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
 
 module.exports = router;

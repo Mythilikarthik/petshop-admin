@@ -57,7 +57,7 @@ const [rating, setRating] = useState(0);
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/listing/${id}`);
+        const res = await fetch(`${API_BASE}/api/listing/incviews/${id}`);
         const data = await res.json();
 
         if (data.success) {

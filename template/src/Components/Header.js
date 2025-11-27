@@ -29,7 +29,7 @@ const Header = ({home}) => {
                                 <Link to="/">Home</Link>
                                 <Link to="/directory">Directory</Link>
                                 <Link to="/pet-health">Pet Health</Link>
-                                <Link to="/about">About</Link>
+                                <Link to="/blog">Blog</Link>
                                 <Link to="/contact">Contact</Link>
                             </Nav>
                         </Navbar.Collapse>

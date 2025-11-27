@@ -24,9 +24,9 @@ const Dashboard = () => {
   ];
 
   const details = [
-    { text: 'text-white', bg: 'bg-info', number: views, label: 'Views', icon: <MdOutlineRemoveRedEye size={80} /> },
-    { text: 'text-white', bg: 'bg-success', number: reviews, label: 'Reviews', icon: <MdOutlineQuestionAnswer size={80} /> },
-    { text: '', bg: 'bg-warning', number: messages, label: 'Messages', icon: <MdMarkUnreadChatAlt size={80} /> },
+    { text: 'text-white', bg: 'bg-info', number: views, label: 'Views', icon: <MdOutlineRemoveRedEye size={80} /> , 'link' : "/"},
+    { text: 'text-white', bg: 'bg-success', number: reviews, label: 'Reviews', icon: <MdOutlineQuestionAnswer size={80} />, 'link' : "/review" },
+    { text: '', bg: 'bg-warning', number: messages, label: 'Messages', icon: <MdMarkUnreadChatAlt size={80} />, 'link' : "/messages" },
   ];
 
   useEffect(() => {
@@ -77,7 +77,7 @@ const Dashboard = () => {
         <Col lg={4} md={6} sm={6}>
           {details.map((stat, i) => (
             <Col className='mb-3' lg={12} md={12} sm={12} key={i}>
-              <Link to="/">
+              <Link to={`${stat.link}`}>
                 <Card className={`${stat.text} ${stat.bg}`}>
                   <Card.Body className='pl-0 pr-0 pb-0'>
                     <div className='pos-rel d-flex justify-content-between align-items-center'>

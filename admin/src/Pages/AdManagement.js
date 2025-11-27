@@ -29,6 +29,7 @@ const AdManagement = () => {
     position: "",
     url: "",
     image: "",
+    page: "", 
   });
 
   const [bannerFile, setBannerFile] = useState(null);
@@ -41,7 +42,7 @@ const AdManagement = () => {
     const fetchData = async () => {
       try {
         const [catRes, cityRes] = await Promise.all([
-          fetch(`${API_BASE}/api/category/show`),
+          fetch(`${API_BASE}/api/pet-category/show`),
           fetch(`${API_BASE}/api/city/show`),
         ]);
 
@@ -49,7 +50,7 @@ const AdManagement = () => {
         const cityData = await cityRes.json();
 console.log(catData);
         if (catData.success && cityData.success) {
-          setCategoryList(catData.categories || []);
+          setCategoryList(catData.petCategories || []);
           setCityList(cityData.cities || []);
         }
       } catch (err) {
@@ -77,6 +78,7 @@ console.log(catData);
               position: ad.position || "",
               url: ad.url || "",
               image: ad.image || "",
+              page: ad.page || "",
             });
           }
         } catch (err) {
@@ -110,6 +112,7 @@ console.log(catData);
     formToSend.append("city", formData.city);
     formToSend.append("position", formData.position);
     formToSend.append("url", formData.url);
+    formToSend.append("page", formData.page);
 
     if (bannerFile) formToSend.append("image", bannerFile);
 
@@ -168,6 +171,21 @@ console.log(catData);
 
         <div className="form-container">
           <Form onSubmit={handleSubmit}>
+            {/* Page Selection */}
+            <Form.Group className="mb-3">
+              <Form.Label>Select Page</Form.Label>
+              <Form.Select
+                name="page"
+                value={formData.page}
+                onChange={handleChange}
+                required
+              >
+                <option value="">-- Select Page --</option>
+                <option value="home">Home Page</option>
+                <option value="directory">Directory Page</option>
+                <option value="blog">Blog Page</option>
+              </Form.Select>
+            </Form.Group>
             {/* Category */}
             <Form.Group className="mb-3">
               <Form.Label>Category</Form.Label>
