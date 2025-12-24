@@ -362,7 +362,7 @@ const [rating, setRating] = useState(0);
 >
   <Modal.Body className="p-0">
     <img
-      src={selectedImage}
+      src={`${API_BASE}${selectedImage}`}
       alt="Gallery preview"
       className="w-100"
       style={{ maxHeight: "80vh", objectFit: "contain" }}
