@@ -343,7 +343,7 @@ const [rating, setRating] = useState(0);
             }}
           >
             <img
-              src={img}
+              src={`${API_BASE}${img}`}
               alt={`${listing.shopName}-${i}`}
               className="gallery-img"
             />
