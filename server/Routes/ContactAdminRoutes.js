@@ -16,18 +16,26 @@ router.post("/", async (req, res) => {
     }
 
     
+    // const transporter = nodemailer.createTransport({
+    //   host: "smtp.gmail.com",
+    //   port: 587,
+    //   secure: false,
+    //   auth: {
+    //     user: process.env.SMTP_USER, // e.g. your gmail
+    //     pass: process.env.SMTP_PASS,
+    //   },
+    // });
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER, // e.g. your gmail
-        pass: process.env.SMTP_PASS,
-      },
-    });
+  service: "gmail",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
 
     const mailOptions = {
-      from: admin.email,             
+      from: `"Website Contact" <${process.env.SMTP_USER}>`,
       replyTo: email,               
       to: admin.email,
       subject: `Contact from ${shopName}`,
@@ -39,6 +47,8 @@ router.post("/", async (req, res) => {
       `,
     };
 
+    await transporter.verify();
+    console.log("SMTP ready");
     await transporter.sendMail(mailOptions);
 
     return res.json({ success: true, message: "Message sent to admin successfully" });
@@ -61,18 +71,31 @@ if (!name || !email || !message) {
     }
 
     
+    // const transporter = nodemailer.createTransport({
+    //   host: "smtp.gmail.com",
+    //   port: 587,
+    //   secure: false,
+    //   auth: {
+    //     user: process.env.SMTP_USER, // e.g. your gmail
+    //     pass: process.env.SMTP_PASS,
+    //   },
+    // });
+
+
+
+
+
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER, // e.g. your gmail
-        pass: process.env.SMTP_PASS,
-      },
-    });
+  service: "gmail",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
     
     const mailOptions = {
-      from: admin.email,             
+      from: `"Website Contact" <${process.env.SMTP_USER}>`,         
       replyTo: email,                
       to: admin.email,
       subject: "New Contact Form Submission",
@@ -84,7 +107,8 @@ if (!name || !email || !message) {
         <p><strong>Message:</strong> ${message}</p>
       `,
     };
-
+await transporter.verify();
+console.log("SMTP ready");
     await transporter.sendMail(mailOptions);
 
     return res.json({ success: true, message: "Message sent to admin successfully" });
