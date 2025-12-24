@@ -111,6 +111,7 @@ function App() {
           <Route path="/claim/:listingId" element={<ClaimListing />} />
           <Route path="/listing/:listingId" element={<ListingDetailPage />} />
           <Route path="/directory/:city?/:category?/:pet?" element={<Directory />} />
+          <Route path="/listings/:slugId" element={<ListingDetailPage />} />
         </Routes>        
         <Footer home={home} categoryPage={categoryPage} />
          {showScroll && (

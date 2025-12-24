@@ -4,6 +4,7 @@ const HomePage = require("../Models/HomePage");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const sharp = require("sharp");
 
 // ------------------------------
 // MULTER STORAGE CONFIG
@@ -52,7 +53,8 @@ router.post(
   "/",
   upload.fields([
     { name: "siteLogoDark", maxCount: 1 },
-    { name: "siteLogoLight", maxCount: 1 }
+    { name: "siteLogoLight", maxCount: 1 },
+    { name: "bannerImages", maxCount: 10 }
   ]),
   async (req, res) => {
     try {
@@ -66,12 +68,38 @@ router.post(
       if (req.files?.siteLogoLight) {
         body.siteLogoLight = `${uploadDir}${req.files.siteLogoLight[0].filename}`;
       }
+      // Handle banner slider images
+      if (req.files?.bannerImages) {
+        body.bannerImages = req.files.bannerImages.map(
+          file => `${uploadDir}${file.filename}`
+        );
+      }
+      // if (req.files?.bannerImages) {
+      //   body.bannerImages = [];
+
+      //   for (const file of req.files.bannerImages) {
+      //     const filename = `banner-${Date.now()}-${file.originalname}`;
+      //     const filepath = `${uploadDir}${filename}`;
+
+      //     await sharp(file.buffer)
+      //       .resize(1200, 300)
+      //       .toFile(filepath);
+
+      //     body.bannerImages.push(filepath);
+      //   }
+      // }   
+
 
       const existing = await HomePage.findOne();
 
       // ------------------------------
       // IF UPDATING EXISTING DOCUMENT
       // ------------------------------
+      if (existing && req.files?.bannerImages && existing.bannerImages?.length) {
+        existing.bannerImages.forEach(img => {
+          if (fs.existsSync(img)) fs.unlinkSync(img);
+        });
+      }
       if (existing) {
 
         // Delete replaced logo images

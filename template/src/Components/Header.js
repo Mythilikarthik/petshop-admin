@@ -6,11 +6,16 @@ import Navbar from 'react-bootstrap/Navbar';
 import './Css/Header.css'
 import { Link , useNavigate} from 'react-router-dom';
 
+const LOGIM_URI =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-user.onrender.com"
+    : "http://localhost:3001";
+
 const Header = ({home}) => {
     const navigate = useNavigate();
   return (
     <div className='header'>
-        <Navbar expand="lg" className="bg-white shadow-sm p-3 bg-body sticky-top">
+        <Navbar expand="lg" className="bg-white shadow-sm bg-body sticky-top">
             <Container>
                 <Row className='justify-content-between align-items-center w-100'>
                     <Col className='d-flex align-items-center justify-content-start gap-2'>
@@ -42,7 +47,7 @@ const Header = ({home}) => {
                         //     window.open("http://localhost:3001", "_blank");
                         //   } }
                         onClick={() => {
-                            window.open("https://petshop-user.onrender.com", "_blank");
+                            window.open(LOGIM_URI, "_self");
                           } }
                         >Login</button>
                         <button className='signup-btn px-4 py-2 border-2 border-orange-500 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition duration-300'

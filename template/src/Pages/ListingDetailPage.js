@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "./Css/ListingDetailPage.css";
 import dummyImage from "../dummy.jpg";
 import { FaStar } from "react-icons/fa";
-import { Form, Button, Container, Row, Col, Alert } from "react-bootstrap";
+import { Form, Button, Container, Row, Col, Alert, Modal  } from "react-bootstrap";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -15,8 +15,17 @@ const ListingDetailPage = () => {
   const [comment, setComment] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
-  const { listingId } = useParams(); // from URL
-  const id = listingId;
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+const [selectedImage, setSelectedImage] = useState(null);
+  // const { listingId } = useParams(); // from URL
+  // const id = listingId;
+  const { slugId } = useParams();
+  const getIdFromSlug = (slugId) => {
+  const parts = slugId.split("-");
+  return parts[parts.length - 1]; // last part = Mongo _id
+};
+const id = getIdFromSlug(slugId);
+console.log("Listing ID from slug:", id);
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState({ show: false, type: "", message: "" });
@@ -57,7 +66,7 @@ const [rating, setRating] = useState(0);
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/listing/incviews/${id}`);
+        const res = await fetch(`${API_BASE}/api/listing/incviewsslug/${slugId}`);
         const data = await res.json();
 
         if (data.success) {
@@ -117,6 +126,16 @@ const [rating, setRating] = useState(0);
     ));
   };
 
+  const renderAvgStarsCal = (value) => {
+    const full = Math.round(value);
+    return Array.from({ length: 5 }).map((_, i) => (
+      <FaStar
+        key={i}
+        color={i < full ? "#ffc107" : "#e4e5e9"}
+      />
+    ));
+  };
+
   // ============================================================
   // 4️⃣ SUBMIT NEW REVIEW (GUEST)
   // ============================================================
@@ -148,7 +167,7 @@ const [rating, setRating] = useState(0);
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          listingId,
+          listingId: id,
           userName,
           userEmail,
           rating,
@@ -182,11 +201,49 @@ const [rating, setRating] = useState(0);
   if (!listing) return <div>Listing not found.</div>;
 
   return (
-    <section className="listing-detail-section">
+    <section className="listing-detail-section p-0 mt-0">
+      {listing.bannerImage && (
+          <div className="mb-4">
+            <img
+              src={`${listing.bannerImage}`}
+              alt={listing.shopName}
+              style={{
+                width: "100%",
+                height: "auto", // ✅ never cut
+                
+              }}
+            />
+          </div>
+        )}
       <Container>
-        <h2>{listing.shopName}</h2>
         
-          <div className="d-flex gap-2">
+
+        <Row className="">
+          <Col md={8}>
+          <div className="review-summary">
+            <div style={{ display: "flex", gap: 12, alignItems: "left" }}>
+              <div style={{ fontSize: 30, fontWeight: "bold" }}>
+                {averageRating()}
+              </div>
+              <div>
+                {renderAvgStarsCal(averageRating())}
+                <div style={{ fontSize: 14, color: "#666" }}>
+                  {reviews.length} review(s)
+                </div>
+              </div>
+            </div>
+          </div>
+            <h2>{listing.shopName}</h2>
+        
+          
+
+        {/* TOP AREA */}
+        <Row className="mt-3">
+          <Col md={12}>
+
+            <p className="listing-description text-align-justify">{listing.description}</p>
+
+            <div className="d-flex gap-2">
              {console.log("petcats:",listing.petCategories)}
      {listing.petCategories?.length > 0 && (
         listing.petCategories.map((cat, index) => (
@@ -206,14 +263,8 @@ const [rating, setRating] = useState(0);
         ))}
         </div>
 
-        {/* TOP AREA */}
-        <Row className="mt-3">
-          <Col md={6}>
-
-            <p className="listing-description">{listing.description}</p>
-
             <div className="listing-contact">
-              <h3>Contact Information</h3>
+              
               <ul>
                 <li>
                   <strong>Phone:</strong>{" "}
@@ -255,17 +306,10 @@ const [rating, setRating] = useState(0);
             </div>
           </Col>
 
-          <Col md={6}>
-            {/* <img
-              src={listing.photos?.[0] || dummyImage}
-              alt="Shop"
-              className="img-fluid"
-              style={{ borderRadius: 10, objectFit: "cover" }}
-            /> */}
-          </Col>
+          
         </Row>
 
-        {/* GALLERY */}
+        {/* GALLERY
         {listing.photos?.length > 0 && (
           <div className="listing-gallery mt-4">
             <h2>Gallery</h2>
@@ -282,33 +326,65 @@ const [rating, setRating] = useState(0);
               ))}
             </Row>
           </div>
-        )}
-        
-        {/* REVIEWS SUMMARY */}
-        <h2 className="mt-5">Reviews</h2>
-        <div className="review-summary">
-          <div style={{ display: "flex", gap: 12, alignItems: "left" }}>
-            <div style={{ fontSize: 30, fontWeight: "bold" }}>
-              {averageRating()}
-            </div>
-            <div>
-              {renderStars(averageRating())}
-              <div style={{ fontSize: 14, color: "#666" }}>
-                {reviews.length} review(s)
-              </div>
-            </div>
-          </div>
-        </div>
+        )} */}
+        {/* GALLERY */}
+{listing.photos?.length > 0 && (
+  <div className="listing-gallery mt-4">
+    <h2>Gallery</h2>
 
-        {/* REVIEW FORM */}
-        <Row className="">
-        <Col md={12}>
-          <h2 className="mb-4 mt-4">
-            Write a Review for <span className="text-primary">{listingName}</span>
-          </h2>
+    <Row>
+      {listing.photos.map((img, i) => (
+        <Col md={4} sm={6} xs={12} key={i} className="mb-3">
+          <div
+            className="gallery-item"
+            onClick={() => {
+              setSelectedImage(img);
+              setShowGalleryModal(true);
+            }}
+          >
+            <img
+              src={img}
+              alt={`${listing.shopName}-${i}`}
+              className="gallery-img"
+            />
+          </div>
+        </Col>
+      ))}
+    </Row>
+  </div>
+)}
+
+        <Modal
+  show={showGalleryModal}
+  onHide={() => setShowGalleryModal(false)}
+  centered
+  size="lg"
+>
+  <Modal.Body className="p-0">
+    <img
+      src={selectedImage}
+      alt="Gallery preview"
+      className="w-100"
+      style={{ maxHeight: "80vh", objectFit: "contain" }}
+    />
+  </Modal.Body>
+</Modal>
+        {/* REVIEWS SUMMARY */}
+        
+        
+
+        
+
+        
           </Col>
+          <Col md={4} className="bg-grey"> 
+          {/* SIDE AREA - Placeholder for future content */}
+          {/* REVIEW FORM */}
           
-        <Col md={8} lg={6}>
+        <Row className=" shadow-sm m-4 rounded">
+       
+          <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Write Review</h5>
+        <Col md={12} lg={12}>
           {alert.show && (
             <Alert
               variant={alert.type}
@@ -359,7 +435,7 @@ const [rating, setRating] = useState(0);
               />
             </Form.Group>
 
-            <div className="">
+            <div className="mb-3">
               <Button
                 variant="primary"
                 type="submit"
@@ -371,10 +447,9 @@ const [rating, setRating] = useState(0);
           </Form>
         </Col>
       </Row>
-
-        {/* REVIEW LIST */}
-        <div className="review-list mt-5">
-          <h2>Customer Reviews</h2>
+      {/* REVIEW LIST */}
+        <div className="review-list m-4">
+          <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Customer Reviews</h5>
           {reviews.length === 0 ? (
             <p>No reviews yet.</p>
           ) : (
@@ -406,6 +481,10 @@ const [rating, setRating] = useState(0);
             ))
           )}
         </div>
+          </Col>
+        </Row>
+
+        
       </Container>
     </section>
   );

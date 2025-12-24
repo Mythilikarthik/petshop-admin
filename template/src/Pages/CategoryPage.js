@@ -412,6 +412,7 @@ const CategoryPage = () => {
               backgroundColor: currentCategory.color,
               borderColor: currentCategory.color,
             }}
+            onClick={() => navigate(`/listing/${provider._id}`)}
           >
             Contact Provider
           </Button>

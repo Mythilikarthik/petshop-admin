@@ -6,12 +6,64 @@ const Review = require("../Models/Review");
 const User = require("../Models/User");
 const { Types } = require("mongoose");
 
+// router.get('/categories', async (req, res) => {
+//   try {
+//     const data = await Category.aggregate([
+//       {
+//         $match: { show: true } 
+//       },
+//       {
+//         $lookup: {
+//           from: "listings",
+//           let: { catId: "$_id" },
+//           pipeline: [
+//             {
+//               $match: {
+//                 $expr: {
+//                   $and: [
+//                     { $in: ["$$catId", "$categories"] }  // match category ObjectId
+//                   ]
+//                 },
+//                 status: "approved",  
+//               }
+//             }
+//           ],
+//           as: "matchedListings"
+//         }
+//       },
+//       {
+//         $project: {
+//           name: "$categoryName",
+//           value: { $size: "$matchedListings" }
+//         }
+//       },
+//       { $sort: { value: -1 } }
+//     ]);
+
+//     res.json({ success: true, chartData: data });
+//   } catch (err) {
+//     console.error("Error fetching category stats:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
 router.get('/categories', async (req, res) => {
   try {
+    const { city } = req.query;
+
+    const listingMatch = {
+      status: "approved"
+    };
+
+    // 🔹 If city is provided, filter by city
+    if (city) {
+      listingMatch.city = Types.ObjectId.isValid(city)
+        ? new Types.ObjectId(city)
+        : city;
+    }
+
     const data = await Category.aggregate([
-      {
-        $match: { show: true } 
-      },
+      { $match: { show: true } },
+
       {
         $lookup: {
           from: "listings",
@@ -19,24 +71,25 @@ router.get('/categories', async (req, res) => {
           pipeline: [
             {
               $match: {
-                $expr: {
-                  $and: [
-                    { $in: ["$$catId", "$categories"] }  // match category ObjectId
-                  ]
-                },
-                status: "approved",  
+                $expr: { $in: ["$$catId", "$categories"] },
+                ...listingMatch
               }
             }
           ],
           as: "matchedListings"
         }
       },
+
       {
         $project: {
           name: "$categoryName",
           value: { $size: "$matchedListings" }
         }
       },
+
+      // 🔹 Remove zero-value categories
+      { $match: { value: { $gt: 0 } } },
+
       { $sort: { value: -1 } }
     ]);
 
@@ -46,6 +99,7 @@ router.get('/categories', async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 router.get("/user-activity", async (req, res) => {
   try {
     const data = await Listing.aggregate([

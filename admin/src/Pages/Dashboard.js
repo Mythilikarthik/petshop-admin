@@ -1,8 +1,8 @@
 // src/Pages/Dashboard.js
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Table, Breadcrumb } from 'react-bootstrap';
+import { Row, Col, Card, Table, Breadcrumb, Form } from 'react-bootstrap';
 import { 
-  AiFillRightCircle, AiOutlineShopping, AiFillSignal, AiOutlineUserAdd, AiOutlinePieChart 
+  AiFillRightCircle, AiOutlineShopping, AiFillSignal, AiOutlineUserAdd, AiOutlinePieChart , AiOutlineShop, AiOutlineMessage
 } from 'react-icons/ai';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis,  Legend } from 'recharts';
@@ -46,7 +46,41 @@ const Dashboard = () => {
   const [ userList,setUserList] = useState();
   const [categoryData, setCategoryData] = useState([]);
   const [userData, setUserData] = useState([]);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [cityList, setCityList] = useState([]);
+  const [newShopOwners, setNewShopOwners] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+  
   useEffect(() => {
+    const fetchReviewCount = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/reviews/count/all`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await res.json();
+        if (data.success) {
+          setReviewCount(data.count);
+        }
+      } catch (err) {
+        console.error("Error fetching review count:", err.message);
+      }
+    };
+    const fetchNewShopOwners = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/listing/new/shop-owners`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await res.json();
+    if (data.success) {
+      setNewShopOwners(data.count);
+    }
+  } catch (err) {
+    console.error("Error fetching new shop owners:", err.message);
+  }
+};
+
   const fetchListings = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/listing`);
@@ -84,18 +118,20 @@ const Dashboard = () => {
       console.error("Error: " , err);
     }
   }
-  const fetchCategoryStats = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/stats/categories`);
-        const data = await res.json();
-        if (data.success) {
-          //console.log (data.chartData)
-          setCategoryData(data.chartData);
-        }
-      } catch (err) {
-        console.error("Error fetching category stats:", err);
-      }
-    };
+  // const fetchCategoryStats = async () => {
+  //     try {
+  //       const res = await fetch(`${API_BASE}/api/stats/categories`);
+  //       const data = await res.json();
+  //       if (data.success) {
+  //         //console.log (data.chartData)
+  //         setCategoryData(data.chartData);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error fetching category stats:", err);
+  //     }
+  //   };
+  
+
     const fetchUserStats = async () => {
       try {
         const res = await fetch(`${API_BASE}/api/stats/user-activity`);
@@ -108,13 +144,53 @@ const Dashboard = () => {
         console.error("Error fetching category stats:", err);
       }
     };
-
+const getCities = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/api/city/show`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) throw new Error("Network response was not ok");
+    const data = await response.json();
+    return data.cities || []; // [{_id, city, show}]
+  } catch (error) {
+    console.error("Error fetching cities:", error);
+    return [];
+  }
+};
 fetchUserStats();
-    fetchCategoryStats();
+    // fetchCategoryStats();
   fetchUsers();
   fetchListings();
   fetchPending();
+  fetchNewShopOwners();
+  fetchReviewCount();
+  const fetchCities = async () => {
+    const cities = await getCities();
+    setCityList(cities);
+  };
+  fetchCities();
+  
 }, []);
+useEffect(() => {
+  const fetchCategoryStats = async () => {
+    try {
+      const url = selectedCity
+        ? `${API_BASE}/api/stats/categories?city=${selectedCity}`
+        : `${API_BASE}/api/stats/categories`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.success) {
+        setCategoryData(data.chartData);
+      }
+    } catch (err) {
+      console.error("Error fetching category stats:", err);
+    }
+  };
+  fetchCategoryStats();
+}, [selectedCity]);
 
   return (
     <div className='dashboard pl-3 pr-3'>
@@ -136,7 +212,16 @@ fetchUserStats();
         {[
           { text: 'text-white', bg: 'bg-info', number: `${businessListing}`, linkto : '/business-listing', label: 'Business Listings', icon: <AiOutlineShopping size={80} /> },
           { text: 'text-white', bg: 'bg-success', number: `${pendingListing}`, linkto : '/business-listing', label: 'Pending Listings', icon: <AiFillSignal size={80} /> },
-          { text: '', bg: 'bg-warning', number: `${userList}`, label: 'New Users', linkto : '/business-listing', icon: <AiOutlineUserAdd size={80} /> },
+          { text: '', bg: 'bg-warning', number: `${userList}`, label: 'Users', linkto : '/business-listing', icon: <AiOutlineUserAdd size={80} /> },
+          {
+  text: 'text-white',
+  bg: 'bg-primary',
+  number: newShopOwners,
+  linkto: '/business-listing',
+  label: 'New Shop Owners Today',
+  icon: <AiOutlineShop size={80} />
+},         { text: 'text-white', bg: 'bg-danger', number: `${reviewCount}`, linkto : '/review-management', label: 'Total Reviews', icon: <AiOutlineMessage size={80} /> },
+
         ].map((stat, i) => (
           <Col className='mb-3' lg={4} md={6} sm={6} key={i}>
             <Link to={`${stat.linkto}`}>
@@ -166,6 +251,26 @@ fetchUserStats();
           <Card className='shadow-sm p-3 '>
             <h5 className='d-flex gap-1 align-items-center mb-3 font-magenta'> <MdShowChart /> Top-Performing Categories</h5>
             <Card.Body style={{ height: 400 }}>
+             
+  
+  <Form.Group className="mb-3">
+                
+                <Form.Select
+    name="city"
+    value={selectedCity}
+    onChange={(e) => setSelectedCity(e.target.value)}
+    required
+  >
+    <option value="">--Select City--</option>
+    {cityList.map((c) => (
+      <option key={c._id} value={c._id}>
+        {c.city}
+      </option>
+    ))}
+  </Form.Select>
+  
+              </Form.Group>
+
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie

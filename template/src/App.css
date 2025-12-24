@@ -49,3 +49,32 @@ body {
   background: #0056b3;
   transform: translateY(-3px);
 }
+.bg-grey { background-color: #f8f8f8 !important; }
+.pb-5 { padding-bottom: 3rem !important; }
+.pt-5 { padding-top: 3rem !important; }
+.mt-5 { margin-top: 3rem !important; }
+.mb-5 { margin-bottom: 3rem !important; }
+.text-red { color: #dc3545 !important; }
+.text-blue { color: #1142A2 !important; }
+.text-green { color: #11A242 !important; }
+.text-magenta { color: #A21142 !important; }
+.text-deep-blue { color: #2E4765 !important; }  
+.bg-color {
+  min-height: 100%;
+  /* background: linear-gradient(135deg, #4e73df, #1cc88a); */
+  /* background: linear-gradient( 120deg, rgb(249, 115, 22), rgb(250, 204, 21), rgb(220, 38, 38) ); */
+  background: radial-gradient(
+    circle at center center,
+    rgb(250, 204, 21) 0%,
+    rgb(249, 115, 22) 60%,
+    rgb(220, 38, 38) 100%
+  );
+  
+}
+
+@media (max-width: 768px) {
+  .bg-color {
+    
+    text-align: center;
+  }
+}

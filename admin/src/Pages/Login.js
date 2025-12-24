@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Button, Container, Form, Card } from 'react-bootstrap';
+import { Button, Container, Form, Card, InputGroup } from 'react-bootstrap';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {loginUser} from "../features/authSlice"
 
 
+
 const Login = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -44,15 +47,34 @@ const Login = () => {
             />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
-            <Form.Control 
-              type="password" 
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)} 
-              required
-            />
-          </Form.Group>
+  <Form.Label>Password</Form.Label>
+
+  <InputGroup>
+    <Form.Control
+      type={showPassword ? "text" : "password"}
+      placeholder="Enter password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      autoComplete="current-password"
+      required
+    />
+    <InputGroup.Text
+      style={{ cursor: "pointer" }}
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      {showPassword ? <FaEyeSlash /> : <FaEye />}
+    </InputGroup.Text>
+  </InputGroup>
+</Form.Group>
+
+          <div className="text-end mb-3">
+            <span
+              style={{ cursor: "pointer", color: "#0d6efd", fontSize: "14px" }}
+              onClick={() => navigate("/forgot-password")}
+            >
+              Forgot password?
+            </span>
+          </div>
           <Button variant="primary" type="submit" className="w-100" disabled={loading}>
             {loading ? "Loading in ..." :  "Login"}
           </Button>

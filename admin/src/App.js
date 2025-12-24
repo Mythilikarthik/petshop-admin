@@ -52,6 +52,8 @@ import AddCategoryPage from './Pages/AddCategoryPage';
 import EditProfile from './Pages/EditProfile';
 import ChangePassword from './Pages/ChangePassword';
 import SessionTimeoutHandler from './Hooks/SessionTimeoutHandler'; 
+import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
 
 function App() {
   
@@ -72,6 +74,8 @@ function App() {
       <Routes>
         {/* Login route shown first */}
         <Route path="/login" element={<PublicAuth><Login /></PublicAuth>} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Protected admin layout route */}
         <Route path="/" element={<RequireAuth><Theme /></RequireAuth>}>

@@ -33,6 +33,9 @@ const HomePage = () => {
   const [previewDark, setPreviewDark] = useState("");
   const [previewLight, setPreviewLight] = useState("");
 
+  const [bannerImages, setBannerImages] = useState([]);
+  const [bannerPreview, setBannerPreview] = useState([]);
+
   const [loading, setLoading] = useState(false);
 
   // ---------- FETCH DATA ----------
@@ -64,7 +67,13 @@ const HomePage = () => {
 
           if (data.home.siteLogoLight)
             setPreviewLight(`${data.home.siteLogoLight}`);
+
+          if (data.home.bannerImages) {
+            setBannerPreview(data.home.bannerImages);
+          }
+
         }
+
       })
       .catch((err) => console.error(err));
   }, []);
@@ -74,6 +83,40 @@ const HomePage = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+  // const handleBannerImages = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   setBannerImages(files);
+
+  //   const previews = files.map(file => URL.createObjectURL(file));
+  //   setBannerPreview(previews);
+  // };
+  const handleBannerImages = (e) => {
+  const files = Array.from(e.target.files);
+  const validFiles = [];
+  const previews = [];
+
+  files.forEach((file) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = () => {
+      if (img.width === 1200 && img.height === 300) {
+        validFiles.push(file);
+        previews.push(img.src);
+      } else {
+        alert(
+          `${file.name} rejected ❌\nImage must be exactly 1200 x 300`
+        );
+      }
+
+      // Update state after checking all
+      setBannerImages([...validFiles]);
+      setBannerPreview([...previews]);
+    };
+  });
+};
+
+
 
   // ---------- IMAGE INPUT HANDLER ----------
   const handleImageChange = (e, setter, previewSetter) => {
@@ -98,6 +141,11 @@ const HomePage = () => {
 
     if (siteLogoDark) submitData.append("siteLogoDark", siteLogoDark);
     if (siteLogoLight) submitData.append("siteLogoLight", siteLogoLight);
+
+    bannerImages.forEach(img => {
+      submitData.append("bannerImages", img);
+    });
+
 
     try {
       const res = await fetch(`${API_BASE}/api/home-page`, {
@@ -130,6 +178,31 @@ const HomePage = () => {
 
         <div className="form-container">
           <Form onSubmit={handleSubmit}>
+            {/* ---------------- BANNER SLIDER ---------------- */}
+<h6 className="mb-3 title-bg-style">Main Banner Slider</h6>
+
+<Form.Group className="mb-3">
+  <Form.Label>Banner Images (Multiple) - <b>1200 × 300 px only</b></Form.Label>
+  <Form.Control
+    type="file"
+    multiple
+    accept="image/*"
+    onChange={handleBannerImages}
+  />
+</Form.Group>
+
+<div className="d-flex flex-wrap gap-2">
+  {bannerPreview.map((img, i) => (
+    <img
+      key={i}
+      src={img}
+      alt="Banner Preview"
+      className="img-preview"
+      style={{ width: "150px", height: "80px", objectFit: "cover" }}
+    />
+  ))}
+</div>
+
 
             {/* ---------------- BANNER SECTION ---------------- */}
             <h6 className="mb-3 title-bg-style">Banner Section</h6>

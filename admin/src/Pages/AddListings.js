@@ -39,6 +39,29 @@ const [newKeyword, setNewKeyword] = useState("");
 const { shouldBlockNavigation, confirmLeave, markAsSaved } =
     useUnsavedChanges(formData);
 
+    const [banner, setBanner] = useState(null);
+const [bannerPreview, setBannerPreview] = useState(null);
+
+const handleBannerChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const img = new window.Image(); // ✅ IMPORTANT
+  img.src = URL.createObjectURL(file);
+
+  img.onload = () => {
+    if (img.width === 1200 && img.height === 300) {
+      setBanner(file);
+      setBannerPreview(img.src);
+    } else {
+      alert(`${file.name} rejected ❌\nImage must be exactly 1200 × 300`);
+      e.target.value = "";
+    }
+  };
+};
+
+
+
   // handle normal input change
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -177,7 +200,9 @@ console.log(formDataToSend.getAll("categories[]"));
       formData.photos.forEach((photo) => {
         formDataToSend.append("photos", photo);
       });
-
+if (banner) {
+  formDataToSend.append("bannerImage", banner);
+}
       const response = await fetch(`${API_BASE}/api/listing`, {
         method: "POST",
         headers: {
@@ -456,6 +481,29 @@ useEffect(() => {
                 onChange={handleChange}
               />
             </Form.Group>
+            <Form.Group className="mb-4">
+  <Form.Label>Banner Image (1200 × 300)</Form.Label>
+  <Form.Control
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    onChange={handleBannerChange}
+  />
+</Form.Group>
+
+{bannerPreview && (
+  <img
+    src={bannerPreview}
+    alt="Banner Preview"
+    style={{
+      width: "100%",
+      height: "300px",
+      objectFit: "contain", // ✅ NO CUT, NO SHARP
+      background: "#f5f5f5",
+      borderRadius: "8px",
+    }}
+  />
+)}
+
 
             {/* Photos */}
             <Form.Group className="mb-4">

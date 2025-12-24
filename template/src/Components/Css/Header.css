@@ -65,6 +65,6 @@
   color: rgb(255 255 255 );
 }
 .bg-orange-500 {
-  background-color: rgb(249 115 22 );
+  background-color: rgb(249 115 22 ) !important;
 }
 button { background: #fff; border: none; padding: 0 20px; font: inherit; color: inherit; cursor: pointer; }

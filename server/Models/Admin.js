@@ -7,6 +7,8 @@ const AdminSchema = new mongoose.Schema({
   phone: String,
   name: String,
   password: String,
+  resetPasswordToken: String,
+resetPasswordExpires: Date,
   created_at: { type: Date, default: Date.now }
 });
 

@@ -11,7 +11,7 @@ const homePageSchema = new mongoose.Schema({
   metaDescription: { type: String },
 
   // ---------- NEW FIELDS ADDED BELOW ----------
-
+  bannerImages: [String],
   // Footer Description
   footerDescription: { type: String },
 

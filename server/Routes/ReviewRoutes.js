@@ -148,6 +148,15 @@ router.get("/user/user-listings", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
+router.get("/count/all", async (req, res) => {
+  try {
+    const count = await Review.countDocuments();  
+    res.json({ success: true, count });
+  } catch (err) {
+    console.error("Error counting reviews:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 
 

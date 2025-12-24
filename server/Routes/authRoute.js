@@ -6,8 +6,21 @@ const Admin = require("../Models/Admin");
 const User = require("../Models/User");
 const { SECRET_KEY, verifyToken } = require("../middleware/authMiddleware");
 const checkPremium = require("../middleware/checkPremium");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 const router = express.Router();
+
+const ADMIN_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin-frontend.onrender.com"
+    : "http://localhost:3000";
+
+const USER_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-user.onrender.com"
+    : "http://localhost:3001";
+
 
 // helper function
 const generateToken = (id, role) => {
@@ -119,6 +132,78 @@ router.put("/admin/change-password/:id", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+router.post("/admin/forgot-password", async (req, res) => {
+  const { email } = req.body;
+
+  const admin = await Admin.findOne({ email });
+  if (!admin)
+    return res.json({ success: true }); // prevent email enumeration
+
+  const token = crypto.randomBytes(32).toString("hex");
+
+  admin.resetPasswordToken = token;
+  admin.resetPasswordExpires = Date.now() + 1000 * 60 * 15; // 15 min
+  await admin.save();
+
+  const resetLink = `${ADMIN_URL}/reset-password?token=${token}`;
+
+  const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER, // e.g. your gmail
+          pass: process.env.SMTP_PASS,
+        },
+      });
+  const mailOptions = {
+      from: `"Pet Directory" <${process.env.SMTP_USER}>`,             
+      replyTo: admin.email,               
+      to: admin.email,
+      subject: "Reset Your Password",
+      html: `
+      <div style="font-family: Arial">
+        <h2>Password Reset</h2>
+        <p>You requested a password reset.</p>
+        <a href="${resetLink}"
+           style="padding:10px 15px;background:#f97316;color:#fff;text-decoration:none;border-radius:5px">
+          Reset Password
+        </a>
+        <p style="margin-top:10px;font-size:12px">
+          This link expires in 15 minutes
+        </p>
+      </div>
+    `,
+    };
+  
+  
+  await transporter.sendMail(mailOptions);
+
+  res.json({ success: true, message: "Reset link sent" });
+});
+router.post("/admin/reset-password", async (req, res) => {
+  const { token, password } = req.body;
+
+  const admin = await Admin.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!admin)
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired token" });
+
+  admin.password = await bcrypt.hash(password, 10);
+  admin.resetPasswordToken = undefined;
+  admin.resetPasswordExpires = undefined;
+
+  await admin.save();
+
+  res.json({ success: true, message: "Password reset successful" });
+});
+
 // ------------------ User Register ------------------
 router.post("/user/register", async (req, res) => {
   console.log("User register attempt:", req.body);
@@ -321,4 +406,78 @@ router.get("/user/all", verifyToken, async (req,res) => {
     res.json({success: false, message: err});
   }
 });
+
+
+router.post("/user/forgot-password", async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user)
+    return res.json({ success: true }); // prevent email enumeration
+
+  const token = crypto.randomBytes(32).toString("hex");
+
+  user.resetPasswordToken = token;
+  user.resetPasswordExpires = Date.now() + 1000 * 60 * 15; // 15 min
+  await user.save();
+
+  const resetLink = `${USER_URL}/reset-password?token=${token}`;
+
+  const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER, // e.g. your gmail
+          pass: process.env.SMTP_PASS,
+        },
+      });
+  const mailOptions = {
+      from: `"Pet Directory" <${process.env.SMTP_USER}>`,             
+      replyTo: user.email,               
+      to: user.email,
+      subject: "Reset Your Password",
+      html: `
+      <div style="font-family: Arial">
+        <h2>Password Reset</h2>
+        <p>You requested a password reset.</p>
+        <a href="${resetLink}"
+           style="padding:10px 15px;background:#f97316;color:#fff;text-decoration:none;border-radius:5px">
+          Reset Password
+        </a>
+        <p style="margin-top:10px;font-size:12px">
+          This link expires in 15 minutes
+        </p>
+      </div>
+    `,
+    };
+  
+  
+  await transporter.sendMail(mailOptions);
+
+  res.json({ success: true, message: "Reset link sent" });
+});
+router.post("/user/reset-password", async (req, res) => {
+  const { token, password } = req.body;
+
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user)
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired token" });
+
+  user.password = await bcrypt.hash(password, 10);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  res.json({ success: true, message: "Password reset successful" });
+});
+
+
 module.exports = router;

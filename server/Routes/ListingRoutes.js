@@ -7,6 +7,7 @@ const Message = require("../Models/Message");
 const Review = require("../Models/Review");
 const { verifyToken } = require("../middleware/authMiddleware");
 const PetCategory = require("../Models/PetCategory");
+const mongoose = require("mongoose");
 
 const router = express.Router();
 
@@ -34,60 +35,157 @@ const upload = multer({
   limits: { fileSize: 2 * 1024 * 1024 },
  });
 
-router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
-  try {
-    const { shopName, email, phone, address, city, country, mapUrl, description, categories, petCategories, metaTitle, metaKeyword, metaDescription } = req.body;
-    const status = req.userType === "admin" ? "approved" : "pending";
-    const user_id = req.userType === "user" ? req.userId : null;
-    const existing = await Listing.findOne(
-      { shopName, email, city }
-    ).collation({ locale: "en", strength: 2 });
-    if (existing) {
-      return res.status(400).json({ success: false, message: "Listing already exists" });
-    }
+// router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
+//   try {
+//     const { shopName, email, phone, address, city, country, mapUrl, description, categories, petCategories, metaTitle, metaKeyword, metaDescription } = req.body;
+//     const status = req.userType === "admin" ? "approved" : "pending";
+//     const user_id = req.userType === "user" ? req.userId : null;
+//     const existing = await Listing.findOne(
+//       { shopName, email, city }
+//     ).collation({ locale: "en", strength: 2 });
+//     if (existing) {
+//       return res.status(400).json({ success: false, message: "Listing already exists" });
+//     }
 
-    const newListing = new Listing({
-      shopName,
-      email,
-      phone,
-      address,
-      city,
-      country,
-      mapUrl,
-      description,
-      categories,
-      petCategories,
-      created_by_id: req.userId, 
-      created_by_type: req.userType, 
-      photos: req.files.map((file) => file.filename),
-      metaTitle,
-      metaKeyword,
-      metaDescription,
-      status,
-      user_id,
-    });
+//     const newListing = new Listing({
+//       shopName,
+//       email,
+//       phone,
+//       address,
+//       city,
+//       country: country && country.trim() !== "" ? country : "India",
+//       mapUrl,
+//       description,
+//       categories,
+//       petCategories,
+//       created_by_id: req.userId, 
+//       created_by_type: req.userType, 
+//       photos: req.files.map((file) => file.filename),
+//       metaTitle,
+//       metaKeyword,
+//       metaDescription,
+//       status,
+//       user_id,
+//     });
 
-    await newListing.save();
-    return res.json({ success: true, message: "Listing added successfully" });
-  } catch (err) {
-    if (err.code === 11000) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Duplicate listing already exists" });
-    }
-    if (err instanceof multer.MulterError) {
-      if (err.code === "LIMIT_FILE_SIZE") {
-        return res
-          .status(400)
-          .json({ success: false, message: "File too large (max 2MB per image)" });
+//     await newListing.save();
+//     return res.json({ success: true, message: "Listing added successfully" });
+//   } catch (err) {
+//     if (err.code === 11000) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Duplicate listing already exists" });
+//     }
+//     if (err instanceof multer.MulterError) {
+//       if (err.code === "LIMIT_FILE_SIZE") {
+//         return res
+//           .status(400)
+//           .json({ success: false, message: "File too large (max 2MB per image)" });
+//       }
+//     } else if (err.message.includes("Only JPG, PNG, and WEBP")) {
+//       return res.status(400).json({ success: false, message: err.message });
+//     }
+//     console.error("Error saving listing:", err);
+//     return res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
+router.post(
+  "/",
+  verifyToken,
+  upload.fields([
+    { name: "bannerImage", maxCount: 1 },
+    { name: "photos", maxCount: 10 }
+  ]),
+  async (req, res) => {
+    try {
+      const {
+        shopName,
+        email,
+        phone,
+        address,
+        city,
+        country,
+        mapUrl,
+        description,
+        categories,
+        petCategories,
+        metaTitle,
+        metaKeyword,
+        metaDescription
+      } = req.body;
+
+      const status = req.userType === "admin" ? "approved" : "pending";
+      const user_id = req.userType === "user" ? req.userId : null;
+
+      const existing = await Listing.findOne({ shopName, email, city })
+        .collation({ locale: "en", strength: 2 });
+
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: "Listing already exists"
+        });
       }
-    } else if (err.message.includes("Only JPG, PNG, and WEBP")) {
-      return res.status(400).json({ success: false, message: err.message });
+
+      const bannerFile = req.files?.bannerImage?.[0];
+      const photoFiles = req.files?.photos || [];
+
+      const newListing = new Listing({
+        shopName,
+        email,
+        phone,
+        address,
+        city,
+        country: country?.trim() || "India",
+        mapUrl,
+        description,
+        categories,
+        petCategories,
+        created_by_id: req.userId,
+        created_by_type: req.userType,
+        bannerImage: bannerFile ? bannerFile.filename : null,
+        photos: photoFiles.map(file => file.filename),
+        metaTitle,
+        metaKeyword,
+        metaDescription,
+        status,
+        user_id
+      });
+
+      await newListing.save();
+
+      return res.json({
+        success: true,
+        message: "Listing added successfully"
+      });
+
+    } catch (err) {
+      console.error("Error saving listing:", err);
+
+      if (err.code === 11000) {
+        return res.status(400).json({
+          success: false,
+          message: "Duplicate listing already exists"
+        });
+      }
+
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(400).json({
+            success: false,
+            message: "File too large (max 2MB per image)"
+          });
+        }
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: "Server error"
+      });
     }
-    console.error("Error saving listing:", err);
-    return res.status(500).json({ success: false, message: "Server error" });
   }
-});
+);
+
 router.put("/claim/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -114,6 +212,7 @@ router.post("/simple", verifyToken, async (req, res) => {
     const newListing = new Listing({
       ...req.body,
       photos: [],
+      country: req.body.country && req.body.country.trim() !== "" ? req.body.country : "India",
       created_by_id: req.userId,
       created_by_type: req.userType,
       status: req.userType === "admin" ? "approved" : "pending",
@@ -564,6 +663,73 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/approved", async (req, res) => {
+  try {
+    const listings = await Listing.aggregate([
+      { $match: {status : "approved"} }, // match everything
+
+      // RANDOM SHUFFLE
+      { $sample: { size: 50 } }, // pick 50 random; increase if needed
+
+      // populate city
+      {
+        $lookup: {
+          from: "cities",
+          localField: "city",
+          foreignField: "_id",
+          as: "city"
+        }
+      },
+      { $unwind: { path: "$city", preserveNullAndEmptyArrays: true } },
+
+      // populate categories
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categories",
+          foreignField: "_id",
+          as: "categories"
+        }
+      },
+
+      // populate petCategories
+      {
+        $lookup: {
+          from: "petcategories",
+          localField: "petCategories",
+          foreignField: "_id",
+          as: "petCategories"
+        }
+      }
+    ]);
+
+    const listingIds = listings.map(l => l._id);
+    const reviews = await Review.aggregate([
+      { $match: { listingId: { $in: listingIds }, status: "approved" } },
+      {
+        $group: {
+          _id: "$listingId",
+          averageRating: { $avg: "$rating" },
+        }
+      }
+    ]);
+
+    // rating map
+    const ratingMap = {};
+    reviews.forEach(r => {
+      ratingMap[r._id.toString()] = Number(r.averageRating.toFixed(1));
+    });
+    const listingsWithRating = listings.map(listing => ({
+  ...listing.toObject?.() ?? listing,   // important if using Mongoose
+  rating: ratingMap[listing._id.toString()] || 0
+}));
+
+    res.json({ success: true, listings : listingsWithRating });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 
 router.get("/counts", verifyToken, async (req, res) => {
@@ -633,9 +799,14 @@ router.get("/:id", async (req, res) => {
     const listing = await Listing.findById(req.params.id)
     .populate("categories", "categoryName")
       .populate("petCategories", "categoryName")
-      .populate("city", "city");
+      .populate("city", "city")
+      .populate("user_id", "name");
     if (!listing) return res.status(404).json({ success: false, message: "Not found" });
-    res.json({ success: true, listing });
+    const response = {
+      ...listing.toObject(),
+      user_id: listing.created_by_type === "user" ? listing.user_id : null
+    };
+    res.json({ success: true, listing: response });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -675,115 +846,327 @@ router.get("/incviews/:id", async (req, res) => {
     });
   }
 });
+router.get("/incviewsslug/:slugId", async (req, res) => {
+  try {
+    const { slugId } = req.params;
+
+    const id = slugId.split("-").pop();
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid listing ID",
+      });
+    }
+
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.socket.remoteAddress;
+
+    const listing = await Listing.findOne({
+      _id: id,
+      status: "approved", // remove if needed for testing
+    })
+      .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("city", "city");
+
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found or not approved",
+      });
+    }
+
+    if (!listing.viewedIPs.includes(ip)) {
+      listing.views += 1;
+      listing.viewedIPs.push(ip);
+      await listing.save();
+    }
+
+    res.json({ success: true, listing });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 
 
 
 
 
 // UPDATE
-router.put("/:id", upload.array("photos", 10), async (req, res) => {
-  try {
-    const data = req.body;
-    console.log("Update data received:", data);
+// router.put(
+//   "/:id",
+//   verifyToken,
+//   upload.fields([
+//     { name: "bannerImage", maxCount: 1 },
+//     { name: "photos", maxCount: 10 }
+//   ]),
+//   async (req, res) => {
+//   try {
+//     const data = req.body;
+//     console.log("Update data received:", data);
 
-    // Parse categories
-    if (data["categories[]"]) {
-      data.categories = Array.isArray(data["categories[]"])
-        ? data["categories[]"]
-        : [data["categories[]"]];
+//     // Parse categories
+//     if (data["categories[]"]) {
+//       data.categories = Array.isArray(data["categories[]"])
+//         ? data["categories[]"]
+//         : [data["categories[]"]];
+//     }
+
+//     // Parse existing photos
+//     let existingPhotos = [];
+//     if (data["existingPhotos[]"]) {
+//       existingPhotos = Array.isArray(data["existingPhotos[]"])
+//         ? data["existingPhotos[]"]
+//         : [data["existingPhotos[]"]];
+//     }
+
+//     // Uploaded photos
+//     const uploadedPhotos = req.files.map(f => `/uploads/listings/${f.filename}`);
+
+//     // If nothing sent, preserve old photos
+//     if (!uploadedPhotos.length && !existingPhotos.length) {
+//       const currentListing = await Listing.findById(req.params.id);
+//       existingPhotos = currentListing?.photos || [];
+//     }
+
+//     // Merge photos
+//     data.photos = [...existingPhotos, ...uploadedPhotos];
+
+//     if (data.status) data.status = data.status.toString();
+
+//     const listing = await Listing.findByIdAndUpdate(req.params.id, data, { new: true });
+//     res.json({ success: true, listing });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ success: false, message: "Update failed" });
+//   }
+// });
+router.put(
+  "/:id",
+  verifyToken,
+  upload.fields([
+    { name: "bannerImage", maxCount: 1 },
+    { name: "photos", maxCount: 10 }
+  ]),
+  async (req, res) => {
+    try {
+      const data = req.body;
+      console.log("Update data received:", data);
+
+      /* -------------------- Parse categories -------------------- */
+      if (data["categories[]"]) {
+        data.categories = Array.isArray(data["categories[]"])
+          ? data["categories[]"]
+          : [data["categories[]"]];
+      }
+
+      /* -------------------- Parse existing photos -------------------- */
+      let existingPhotos = [];
+      if (data["existingPhotos[]"]) {
+        existingPhotos = Array.isArray(data["existingPhotos[]"])
+          ? data["existingPhotos[]"]
+          : [data["existingPhotos[]"]];
+      }
+
+      /* -------------------- Uploaded photos -------------------- */
+      let uploadedPhotos = [];
+      if (req.files?.photos) {
+        uploadedPhotos = req.files.photos.map(
+          f => `/uploads/listings/${f.filename}`
+        );
+      }
+
+      /* -------------------- Preserve old photos if nothing sent -------------------- */
+      if (!uploadedPhotos.length && !existingPhotos.length) {
+        const currentListing = await Listing.findById(req.params.id);
+        existingPhotos = currentListing?.photos || [];
+      }
+
+      /* -------------------- Merge photos -------------------- */
+      data.photos = [...existingPhotos, ...uploadedPhotos];
+
+      /* -------------------- Banner Image (IMPORTANT FIX) -------------------- */
+      if (req.files?.bannerImage?.[0]) {
+        // New banner uploaded → replace
+        data.bannerImage = `/uploads/listings/${req.files.bannerImage[0].filename}`;
+      } else {
+        // No new banner → keep existing
+        const currentListing = await Listing.findById(req.params.id);
+        data.bannerImage = currentListing?.bannerImage || null;
+      }
+
+      /* -------------------- Status safety -------------------- */
+      if (data.status) data.status = data.status.toString();
+
+      /* -------------------- Update listing -------------------- */
+      const listing = await Listing.findByIdAndUpdate(
+        req.params.id,
+        data,
+        { new: true }
+      );
+
+      res.json({ success: true, listing });
+
+    } catch (err) {
+      console.error("Update error:", err);
+      res.status(500).json({ success: false, message: "Update failed" });
     }
-
-    // Parse existing photos
-    let existingPhotos = [];
-    if (data["existingPhotos[]"]) {
-      existingPhotos = Array.isArray(data["existingPhotos[]"])
-        ? data["existingPhotos[]"]
-        : [data["existingPhotos[]"]];
-    }
-
-    // Uploaded photos
-    const uploadedPhotos = req.files.map(f => `/uploads/listings/${f.filename}`);
-
-    // If nothing sent, preserve old photos
-    if (!uploadedPhotos.length && !existingPhotos.length) {
-      const currentListing = await Listing.findById(req.params.id);
-      existingPhotos = currentListing?.photos || [];
-    }
-
-    // Merge photos
-    data.photos = [...existingPhotos, ...uploadedPhotos];
-
-    if (data.status) data.status = data.status.toString();
-
-    const listing = await Listing.findByIdAndUpdate(req.params.id, data, { new: true });
-    res.json({ success: true, listing });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Update failed" });
   }
-});
-router.put("/user/:id", verifyToken, upload.array("photos", 10), async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const data = req.body;
-    const status = req.userType === "admin" ? "approved" : "pending";
+);
 
-    console.log("Update or create listing for user:", userId, data);
+// router.put("/user/:id", verifyToken, upload.array("photos", 10), async (req, res) => {
+//   try {
+//     const userId = req.params.id;
+//     const data = req.body;
+//     const status = req.userType === "admin" ? "approved" : "pending";
 
-    // Parse categories properly
-    if (data["categories[]"]) {
-      data.categories = Array.isArray(data["categories[]"])
-        ? data["categories[]"]
-        : [data["categories[]"]];
+//     console.log("Update or create listing for user:", userId, data);
+
+//     // Parse categories properly
+//     if (data["categories[]"]) {
+//       data.categories = Array.isArray(data["categories[]"])
+//         ? data["categories[]"]
+//         : [data["categories[]"]];
+//     }
+
+//     if (data["petCategories[]"]) {
+//       data.petCategories = Array.isArray(data["petCategories[]"])
+//         ? data["petCategories[]"]
+//         : [data["petCategories[]"]];
+//     }
+
+//     // Existing photos
+//     let existingPhotos = [];
+//     if (data["existingPhotos[]"]) {
+//       existingPhotos = Array.isArray(data["existingPhotos[]"])
+//         ? data["existingPhotos[]"]
+//         : [data["existingPhotos[]"]];
+//     }
+
+//     // Uploaded photos
+//     const uploadedPhotos = req.files.map(f => `/uploads/listings/${f.filename}`);
+
+//     // If nothing sent, preserve old photos (if listing exists)
+//     const currentListing = await Listing.findOne({ user_id: userId });
+//     if (!uploadedPhotos.length && !existingPhotos.length && currentListing) {
+//       existingPhotos = currentListing.photos || [];
+//     }
+
+//     // Merge photos
+//     data.photos = [...existingPhotos, ...uploadedPhotos];
+
+//     // --- Find and Update ---
+//     let listing = await Listing.findOneAndUpdate(
+//       { user_id: userId },
+//       {
+//         ...data,
+//         status,
+//         user_id: userId,
+//         created_by_id: req.userId,
+//         created_by_type: req.userType,
+//       },
+//       { new: true }
+//     );
+
+// await listing.save();
+//     // --- If found and updated ---
+//     return res.json({ success: true, message: "Listing updated successfully", listing });
+//   } catch (err) {
+//     console.error("Error in listing update/create:", err);
+//     res.status(500).json({ success: false, message: "Server error", error: err.message });
+//   }
+// });
+router.put(
+  "/user/:id",
+  verifyToken,
+  upload.fields([
+    { name: "photos", maxCount: 10 },
+    { name: "bannerImage", maxCount: 1 }
+  ]),
+  async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const data = req.body;
+      const status = req.userType === "admin" ? "approved" : "pending";
+
+      console.log("Update or create listing for user:", userId, data);
+
+      // --- Parse categories ---
+      if (data["categories[]"]) {
+        data.categories = Array.isArray(data["categories[]"])
+          ? data["categories[]"]
+          : [data["categories[]"]];
+      }
+
+      if (data["petCategories[]"]) {
+        data.petCategories = Array.isArray(data["petCategories[]"])
+          ? data["petCategories[]"]
+          : [data["petCategories[]"]];
+      }
+
+      // --- Existing photos ---
+      let existingPhotos = [];
+      if (data["existingPhotos[]"]) {
+        existingPhotos = Array.isArray(data["existingPhotos[]"])
+          ? data["existingPhotos[]"]
+          : [data["existingPhotos[]"]];
+      }
+
+      // --- Uploaded photos ---
+      let uploadedPhotos = [];
+      if (req.files && req.files.photos) {
+        uploadedPhotos = req.files.photos.map(f => `/uploads/listings/${f.filename}`);
+      }
+
+      // --- Preserve old photos if nothing sent ---
+      const currentListing = await Listing.findOne({ user_id: userId });
+      if (!uploadedPhotos.length && !existingPhotos.length && currentListing) {
+        existingPhotos = currentListing.photos || [];
+      }
+
+      // --- Merge photos ---
+      data.photos = [...existingPhotos, ...uploadedPhotos];
+
+      // --- Handle banner image ---
+      if (req.files && req.files.bannerImage && req.files.bannerImage[0]) {
+        data.bannerImage = `/uploads/listings/${req.files.bannerImage[0].filename}`;
+      } else if (currentListing && !data.bannerImage) {
+        // preserve old banner if exists
+        data.bannerImage = currentListing.bannerImage || null;
+      }
+
+      // --- Find and Update ---
+      let listing = await Listing.findOneAndUpdate(
+        { user_id: userId },
+        {
+          ...data,
+          status,
+          user_id: userId,
+          created_by_id: req.userId,
+          created_by_type: req.userType,
+        },
+        { new: true, upsert: true } // upsert in case listing doesn't exist
+      );
+
+      return res.json({
+        success: true,
+        message: "Listing updated successfully",
+        listing
+      });
+    } catch (err) {
+      console.error("Error in listing update/create:", err);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+        error: err.message
+      });
     }
-
-    if (data["petCategories[]"]) {
-      data.petCategories = Array.isArray(data["petCategories[]"])
-        ? data["petCategories[]"]
-        : [data["petCategories[]"]];
-    }
-
-    // Existing photos
-    let existingPhotos = [];
-    if (data["existingPhotos[]"]) {
-      existingPhotos = Array.isArray(data["existingPhotos[]"])
-        ? data["existingPhotos[]"]
-        : [data["existingPhotos[]"]];
-    }
-
-    // Uploaded photos
-    const uploadedPhotos = req.files.map(f => `/uploads/listings/${f.filename}`);
-
-    // If nothing sent, preserve old photos (if listing exists)
-    const currentListing = await Listing.findOne({ user_id: userId });
-    if (!uploadedPhotos.length && !existingPhotos.length && currentListing) {
-      existingPhotos = currentListing.photos || [];
-    }
-
-    // Merge photos
-    data.photos = [...existingPhotos, ...uploadedPhotos];
-
-    // --- Find and Update ---
-    let listing = await Listing.findOneAndUpdate(
-      { user_id: userId },
-      {
-        ...data,
-        status,
-        user_id: userId,
-        created_by_id: req.userId,
-        created_by_type: req.userType,
-      },
-      { new: true }
-    );
-
-await listing.save();
-    // --- If found and updated ---
-    return res.json({ success: true, message: "Listing updated successfully", listing });
-  } catch (err) {
-    console.error("Error in listing update/create:", err);
-    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
-});
+);
 
 
 // DELETE
@@ -803,5 +1186,25 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ success: false, message: "Delete failed" });
   }
 });
+router.get("/new/shop-owners", async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const count = await Listing.countDocuments({
+      created_by_type: "user",
+      created_at: { $gte: today }
+    });
+
+    res.json({
+      success: true,
+      count
+    });
+  } catch (err) {
+    console.error("New shop owner count error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 
 module.exports = router;

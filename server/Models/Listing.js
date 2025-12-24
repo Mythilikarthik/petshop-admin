@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
+const slugify = require("slugify");
 
 const ListingSchema = new mongoose.Schema({
   shopName: { type: String, required: true },
+  slug: { type: String, index: true },
   email: { type: String, required: true },
   phone: { type: String, required: true },
   address: String,
@@ -14,6 +16,7 @@ const ListingSchema = new mongoose.Schema({
 
   description: String,
   photos: [String],
+  bannerImage: { type: String }, 
   metaTitle: String,
   metaKeyword: [String],
   metaDescription: String,
@@ -33,6 +36,20 @@ const ListingSchema = new mongoose.Schema({
   claimedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   claimedAt: { type: Date, default: null },
 });
+
+ListingSchema.pre("save", function (next) {
+  if (this.isModified("shopName")) {
+    this.slug = slugify(this.shopName, {
+      lower: true,
+      strict: true, // removes special chars
+    });
+  }
+  next();
+});
+ListingSchema.index(
+  { slug: 1, city: 1 },
+  { unique: true }
+);
 
 ListingSchema.pre("validate", function (next) {
   if (this.created_by_type === "user" && !this.user_id) {

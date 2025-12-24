@@ -22,6 +22,9 @@ const EditListing = () => {
   const [cityList, setCityList] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const [newKeyword, setNewKeyword] = useState("");
+  const [banner, setBanner] = useState(null);
+const [bannerPreview, setBannerPreview] = useState(null);
+const [existingBanner, setExistingBanner] = useState(null);
 
   const [formData, setFormData] = useState({
     shopName: '',
@@ -105,38 +108,34 @@ const EditListing = () => {
         const data = await res.json();
 console.log(data);
         if (res.ok && data.success) {
-          setListing(data.listing);
+  setListing(data.listing);
+  setExistingBanner(data.listing.bannerImage || null);
 
-          setFormData({
-            shopName: data.listing.shopName || '',
-            email: data.listing.email || '',
-            phone: data.listing.phone || '',
-            address: data.listing.address || '',
-            city: data.listing.city?._id || data.listing.city || '',
-            country: data.listing.country || '',
-            mapUrl: data.listing.mapUrl || '',
-            description: data.listing.description || '',
-            categories: data.listing.categories?.map(c => c._id || c) || [],
-            petCategories: data.listing.petCategories?.map(c => c._id || c) || [],
-            photos: [],
-            existingPhotos: data.listing.photos || [],
-            metaTitle: data.listing.metaTitle || '',
-            metaKeyword: data.listing.metaKeyword
-            ? (
-                Array.isArray(data.listing.metaKeyword)
-                  ? data.listing.metaKeyword
-                      .flatMap(k => k.split(',').map(x => x.trim()))
-                      .filter(k => k) // 🔥 removes empty keywords
-                  : data.listing.metaKeyword
-                      .split(',')
-                      .map(k => k.trim())
-                      .filter(k => k) // 🔥 removes empty ones
-              )
-            : [],
-            metaDescription: data.listing.metaDescription || '',
-            status: data.listing.status === 'approved',
-          });
-        } 
+  setFormData({
+    shopName: data.listing.shopName || '',
+    email: data.listing.email || '',
+    phone: data.listing.phone || '',
+    address: data.listing.address || '',
+    city: data.listing.city?._id || data.listing.city || '',
+    country: data.listing.country || '',
+    mapUrl: data.listing.mapUrl || '',
+    description: data.listing.description || '',
+    categories: data.listing.categories?.map(c => c._id || c) || [],
+    petCategories: data.listing.petCategories?.map(c => c._id || c) || [],
+    photos: [],
+    existingPhotos: data.listing.photos || [],
+    bannerImage: data.listing.bannerImage || null,
+    metaTitle: data.listing.metaTitle || '',
+    metaKeyword: data.listing.metaKeyword
+      ? (Array.isArray(data.listing.metaKeyword)
+          ? data.listing.metaKeyword.flatMap(k => k.split(',').map(x => x.trim())).filter(k => k)
+          : data.listing.metaKeyword.split(',').map(k => k.trim()).filter(k => k))
+      : [],
+    metaDescription: data.listing.metaDescription || '',
+    status: data.listing.status === 'approved',
+  });
+}
+
       } catch (err) {
         console.error('Error fetching listing:', err);
         alert('Error fetching listing');
@@ -167,6 +166,23 @@ console.log(data);
       categories: selected ? selected.map(s => s.value) : []
     }));
   };
+const handleBannerChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const img = new window.Image();
+  img.src = URL.createObjectURL(file);
+
+  img.onload = () => {
+    if (img.width === 1200 && img.height === 300) {
+      setBanner(file);
+      setBannerPreview(img.src);
+    } else {
+      alert("Image must be exactly 1200 × 300");
+      e.target.value = "";
+    }
+  };
+};
 
   const handlePetCategoryChange = (selected) => {
     setFormData(prev => ({
@@ -239,6 +255,9 @@ console.log(data);
       formData.petCategories.forEach(cat => formDataToSend.append('petCategories[]', cat));
       formData.photos.forEach(photo => formDataToSend.append('photos', photo));
       formData.existingPhotos.forEach(photo => formDataToSend.append('existingPhotos[]', photo));
+      if (banner) {
+        formDataToSend.append("bannerImage", banner);
+      }
 
       const res = await fetch(`${API_BASE}/api/listing/user/${id}`, {
         method: 'PUT',
@@ -370,6 +389,30 @@ console.log(data);
               <Form.Label>Description</Form.Label>
               <Form.Control as="textarea" rows={3} name="description" value={formData.description} onChange={handleChange} />
             </Form.Group>
+            <Form.Group className="mb-3">
+  <Form.Label>Banner Image (1200 × 300)</Form.Label>
+  <Form.Control
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    onChange={handleBannerChange}
+  />
+</Form.Group>
+
+{/* Banner Preview */}
+{bannerPreview ? (
+  <img
+    src={bannerPreview}
+    alt="New Banner Preview"
+    style={{ width: "100%", height: "300px", objectFit: "contain", background: "#f5f5f5", borderRadius: "8px", marginBottom: "10px" }}
+  />
+) : existingBanner ? (
+  <img
+    src={existingBanner.startsWith("http") ? existingBanner : `${API_BASE}${existingBanner}`}
+    alt="Existing Banner"
+    style={{ width: "100%", height: "300px", objectFit: "contain", background: "#f5f5f5", borderRadius: "8px", marginBottom: "10px" }}
+  />
+) : null}
+
 
             {/* Photos */}
             <Form.Group className="mb-4">
@@ -378,7 +421,7 @@ console.log(data);
             </Form.Group>
 
             {/* Existing Photo Previews */}
-            {formData.existingPhotos.length > 0 && (
+            {/* {formData.existingPhotos.length > 0 && (
               <Row className="mb-3">
                 {formData.existingPhotos.map((url, idx) => {
                   const imageUrl = url.startsWith("http")
@@ -391,7 +434,22 @@ console.log(data);
                   );
                 })}
               </Row>
-            )}
+            )} */}
+            {formData.existingPhotos.length > 0 && (
+  <Row className="mb-3">
+    {formData.existingPhotos.map((url, idx) => {
+      const imageUrl = url.startsWith("http")
+        ? url
+        : `${API_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
+      return (
+        <Col key={idx} xs={6} md={4} lg={3} className="mb-2">
+          <Image src={imageUrl} thumbnail fluid />
+        </Col>
+      );
+    })}
+  </Row>
+)}
+
 
             {/* New Photo Previews */}
             {previewUrls.length > 0 && (

@@ -32,7 +32,7 @@ const Contact = () => {
       });
 
       const data = await res.json();
-
+console.log(data);
       if (data.success) {
         setStatus({ success: data.message, error: "" });
         setFormData({ name: "", email: "", phone: "", message: "" });
@@ -40,6 +40,7 @@ const Contact = () => {
         setStatus({ error: data.message, success: "" });
       }
     } catch (err) {
+      console.log(err);
       setStatus({ error: "Something went wrong!", success: "" });
     }
   };

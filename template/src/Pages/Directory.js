@@ -71,7 +71,7 @@ useEffect(() => {
   }, []);
 
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 20;
 
   // Filtered listings
   const filteredListings = useMemo(() => {
@@ -150,11 +150,11 @@ const PAGE_SIZE = 4;
   const handlePageChange = newPage => setPage(newPage);
   const fetchListings = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/listing`);
+      const res = await fetch(`${API_BASE}/api/listing/approved`);
       const data = await res.json();
       if(data.success) {
         setAllListings(data.listings);
-        //console.log("Listings fetched:", data.listings);
+        console.log("Listings fetched:", data.listings);
       }
     }
     catch (err) {
@@ -329,14 +329,24 @@ useEffect(() => {
   {paginatedListings.length === 0 ? (
     <div className="no-results">No listings found.</div>
   ) : (
-    paginatedListings.map(listing => (
-      <Col key={listing._id} md={4} className="mb-4 d-flex">
+    paginatedListings.map(listing => {
+      const safeSlug = listing.slug && listing.slug !== "undefined"
+        ? listing.slug
+        : listing.shopName
+            ?.toLowerCase()
+            .trim()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
+
+      return(
+        <Col key={listing._id} md={3} className="mb-4 d-flex">
   <Card className="provider-card w-100 h-100 d-flex flex-column">
 
     <Card.Header className="card-top-rated">
+      {console.log("Listing image:", listing.photos)  }
       <Card.Img
         variant="top"
-        src={listing.image?.[0] || dummyImage}
+        src={listing.photos?.[0] || dummyImage}
         alt={listing.shopName}
       />
     </Card.Header>
@@ -354,8 +364,16 @@ useEffect(() => {
       )}
 
       </div>
+      <div className="service-rating align-items-center d-flex gap-1">
+          <span className='align-items-center d-flex' role="img" aria-label="star" style={{"verticalAlign" : "unset"}}> <BsStarFill /> </span> 
+          <span className='d-block'>{listing.rating}</span>
+      </div>
 
-      <Card.Text className="mt-3">{listing.description}</Card.Text>
+      <Card.Text className="mt-2">
+        {listing.description.length > 30
+          ? listing.description.slice(0, 30) + "..."
+          : listing.description}
+      </Card.Text>
 
       <div className="service-location mt-2">
         <BsGeoAltFill /> {listing.city.city}
@@ -369,26 +387,29 @@ useEffect(() => {
         ))}
       </div>
 
-      {listing.rating && (
+      {/* {listing.rating && (
         <div className="service-rating d-flex gap-2 mt-2">
           <BsStarFill />
           <span>{listing.rating}</span>
         </div>
-      )}
+      )} */}
 
       {/* Button pushed to bottom */}
       <Button
         variant="primary"
         className="details-btn mt-auto"
-        onClick={() => navigate(`/listing/${listing._id}`)}
+        // onClick={() => navigate(`/listing/${listing._id}`)} 
+        
+        onClick = {() => navigate(`/listings/${safeSlug}-${listing._id}`)}
       >
         View Details
       </Button>
     </Card.Body>
   </Card>
 </Col>
+      )
 
-    ))
+})
   )}
 </Row>
 

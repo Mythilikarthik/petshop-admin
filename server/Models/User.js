@@ -11,6 +11,9 @@ const UserSchema = new mongoose.Schema({
   premiumStartDate: { type: Date, default: null },
   premiumEndDate: { type: Date, default: null },
   paymentId: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
+  resetPasswordToken: String,
+resetPasswordExpires: Date,
+
   created_at: { type: Date, default: Date.now },
 });
 

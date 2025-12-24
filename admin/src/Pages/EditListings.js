@@ -21,6 +21,10 @@ const EditListing = () => {
   const [cityList, setCityList] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const [newKeyword, setNewKeyword] = useState("");
+  const [banner, setBanner] = useState(null);
+const [bannerPreview, setBannerPreview] = useState(null);
+const [existingBanner, setExistingBanner] = useState(null);
+
 
   const [formData, setFormData] = useState({
     shopName: '',
@@ -39,6 +43,7 @@ const EditListing = () => {
     metaKeyword: '',
     metaDescription: '',
     status: false,
+    u_name: '',
   });
 
   const { confirmLeave, markAsSaved, resetInitialSnapshot } =
@@ -105,8 +110,10 @@ const EditListing = () => {
 
         if (res.ok && data.success) {
           setListing(data.listing);
+          setExistingBanner(data.listing.bannerImage || null);
 
           setFormData({
+            u_name: data.listing.user_id?.name || '',
             shopName: data.listing.shopName || '',
             email: data.listing.email || '',
             phone: data.listing.phone || '',
@@ -118,6 +125,7 @@ const EditListing = () => {
             categories: data.listing.categories?.map(c => c._id || c) || [],
             petCategories: data.listing.petCategories?.map(c => c._id || c) || [],
             photos: [],
+            bannerImage: data.listing.bannerImage || null,
             existingPhotos: data.listing.photos || [],
             metaTitle: data.listing.metaTitle || '',
             metaKeyword: data.listing.metaKeyword
@@ -214,6 +222,11 @@ const EditListing = () => {
 
   // ✅ Submit
   const handleSubmit = async (e) => {
+    const token = localStorage.getItem("token");
+  if (!token) {
+    alert("You must be logged in");
+    return;
+  }
     e.preventDefault();
     try {
       const formDataToSend = new FormData();
@@ -229,16 +242,23 @@ const EditListing = () => {
         metaTitle: formData.metaTitle,
         metaKeyword: formData.metaKeyword.join(','),
         metaDescription: formData.metaDescription,
-        status: formData.status ? 'approved' : 'pending'
+        status: formData.status ? 'approved' : 'pending',
+        createdBy: formData.createdBy,
       }).forEach(([key, val]) => formDataToSend.append(key, val));
 
       formData.categories.forEach(cat => formDataToSend.append('categories[]', cat));
       formData.petCategories.forEach(cat => formDataToSend.append('petCategories[]', cat));
       formData.photos.forEach(photo => formDataToSend.append('photos', photo));
       formData.existingPhotos.forEach(photo => formDataToSend.append('existingPhotos[]', photo));
+      if (banner) {
+  formDataToSend.append("bannerImage", banner);
+}
 
       const res = await fetch(`${API_BASE}/api/listing/${id}`, {
         method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ send token
+        },
         body: formDataToSend
       });
 
@@ -255,6 +275,24 @@ const EditListing = () => {
       alert("Error updating listing");
     }
   };
+  const handleBannerChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const img = new window.Image();
+  img.src = URL.createObjectURL(file);
+
+  img.onload = () => {
+    if (img.width === 1200 && img.height === 300) {
+      setBanner(file);
+      setBannerPreview(img.src);
+    } else {
+      alert("Image must be exactly 1200 × 300");
+      e.target.value = "";
+    }
+  };
+};
+
 
   const handleGoBack = () => {
     if (!confirmLeave()) return;
@@ -283,7 +321,12 @@ const EditListing = () => {
         </Row>
 
         <div className='form-container'>
+          {console.log("Form Data:", formData)}
           <Form onSubmit={handleSubmit}>
+            {formData.u_name && (
+              <h3 className="mb-4">Created by : {formData.u_name.toUpperCase()}</h3>
+            )}
+
             {/* Status Toggle */}
             <Form.Group className="mb-3">
               <Form.Check
@@ -294,6 +337,7 @@ const EditListing = () => {
                 onChange={handleStatusToggle}
               />
             </Form.Group>
+            
 
             {/* Category Select */}
             <Form.Group className="mb-3">
@@ -376,6 +420,46 @@ const EditListing = () => {
               <Form.Label>Description</Form.Label>
               <Form.Control as="textarea" rows={3} name="description" value={formData.description} onChange={handleChange} />
             </Form.Group>
+            {/* Banner Image Upload */}
+<Form.Group className="mb-3">
+  <Form.Label>Banner Image (1200 × 300)</Form.Label>
+  <Form.Control
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    onChange={handleBannerChange}
+  />
+</Form.Group>
+
+{/* Banner Preview */}
+{bannerPreview ? (
+  <img
+    src={bannerPreview}
+    alt="New Banner Preview"
+    style={{
+      width: "100%",
+      height: "300px",
+      objectFit: "contain",
+      background: "#f5f5f5",
+      borderRadius: "8px",
+      marginBottom: "10px"
+    }}
+  />
+) : existingBanner ? (
+  <img
+    src={existingBanner.startsWith("http") ? existingBanner : `${API_BASE}${existingBanner}`}
+    alt="Existing Banner"
+    style={{
+      width: "100%",
+      height: "300px",
+      objectFit: "contain",
+      background: "#f5f5f5",
+      borderRadius: "8px",
+      marginBottom: "10px"
+    }}
+  />
+) : null}
+
+
 
             {/* Photos */}
             <Form.Group className="mb-4">

@@ -22,6 +22,8 @@ import ChangePassword from './Pages/ChangePassword';
 import Messages from './Pages/Messages';
 import Review from './Pages/Review';
 import SessionTimeoutHandler from './Hooks/SessionTimeoutHandler'; 
+import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,8 @@ function App() {
       <Routes>
         {/* Login route shown first */}
         <Route path="/login" element={<PublicAuth><Login /></PublicAuth>} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Protected admin layout route */}
         <Route path="/" element={<RequireAuth><Theme /></RequireAuth>}>
@@ -56,6 +60,7 @@ function App() {
           <Route path="change-password" element={<ChangePassword />} />
           <Route path="review" element={<Review />} />
           {/* <Route path="add-listing" element={<AddListing />} /> */}
+          
 
           <Route path="logout" element={<Logout />} />
         </Route>

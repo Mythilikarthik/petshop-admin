@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Form, Button, Container } from "react-bootstrap";
+import { Row, Col, Form, Button, Container, Carousel } from "react-bootstrap";
 import backgroundImage from "./Image/bg-image.svg";
 import "./Css/Banner.css";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -92,7 +92,21 @@ const Banner = ({home}) => {
   return (
     <div className="banner">
       <div className="inner-banner">
-        <div
+        {home.bannerImages && home.bannerImages.length > 0 && (
+        <Carousel fade interval={3000} className="home-banner-carousel">
+          {home.bannerImages.map((img, i) => (
+            <Carousel.Item key={i}>
+              <img
+                className="d-block w-100"
+                src={`${API_BASE}/${img}`}
+                alt={`Banner ${i + 1}`}
+              />
+            </Carousel.Item>
+          ))}
+        </Carousel>
+      )}
+
+        {/* <div
           className="bg-image"
           style={{ backgroundImage: `url(${backgroundImage})` }}
         >
@@ -137,7 +151,7 @@ const Banner = ({home}) => {
                 </Col>
             </Row>
           </Container>
-        </div>
+        </div> */}
 
         {/* ✅ Filter Form */}
         <div className="form-section">
