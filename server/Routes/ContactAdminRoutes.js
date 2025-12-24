@@ -54,7 +54,7 @@ router.post("/", async (req, res) => {
     return res.json({ success: true, message: "Message sent to admin successfully" });
   } catch (err) {
     console.error("Error sending admin mail:", err);
-    res.status(500).json({ success: false, message: "Server error sending mail" });
+    res.status(500).json({ success: false, message: err.message});
   }
 });
 
@@ -114,7 +114,7 @@ console.log("SMTP ready");
     return res.json({ success: true, message: "Message sent to admin successfully" });
   } catch (err) {
     console.error("Error sending admin mail:", err);
-    res.status(500).json({ success: false, message: "Server error sending mail" });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
