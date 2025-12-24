@@ -101,29 +101,40 @@ const router = express.Router();
 const emailjs = require("@emailjs/nodejs");
 const Admin = require("../Models/Admin");
 
-router.post("/", async (req, res) => {
+const sendEmail = async (templateData) => {
+  return emailjs.send(
+    process.env.EMAILJS_SERVICE_ID,
+    process.env.EMAILJS_TEMPLATE_ID,
+    templateData,
+    {
+      publicKey: process.env.EMAILJS_PUBLIC_KEY,
+      privateKey: process.env.EMAILJS_PRIVATE_KEY,
+    }
+  );
+};
+
+
+rourouter.post("/", async (req, res) => {
   try {
     const { shopName, email, description } = req.body;
+
+    if (!shopName || !email || !description) {
+      return res.json({ success: false, message: "Required fields missing" });
+    }
 
     const admin = await Admin.findOne({});
     if (!admin || !admin.email) {
       return res.status(404).json({ success: false, message: "Admin email not found" });
     }
 
-    await emailjs.send(
-      process.env.EMAILJS_SERVICE_ID,
-      process.env.EMAILJS_TEMPLATE_ID,
-      {
-        shopName,
-        email,
-        message: description,
-        admin_email: admin.email,
-      },
-      {
-        publicKey: process.env.EMAILJS_PUBLIC_KEY,
-        privateKey: process.env.EMAILJS_PRIVATE_KEY,
-      }
-    );
+    await sendEmail({
+      title: `Contact from ${shopName}`,
+      name: shopName,
+      email,
+      phone: "",
+      message: description,
+      admin_email: admin.email,
+    });
 
     res.json({ success: true, message: "Message sent successfully" });
   } catch (err) {
@@ -131,6 +142,7 @@ router.post("/", async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to send message" });
   }
 });
+
 router.post("/send", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
@@ -144,21 +156,14 @@ router.post("/send", async (req, res) => {
       return res.status(404).json({ success: false, message: "Admin email not found" });
     }
 
-    await emailjs.send(
-      process.env.EMAILJS_SERVICE_ID,
-      process.env.EMAILJS_TEMPLATE_ID,
-      {
-        name,
-        email,
-        phone,
-        message,
-        admin_email: admin.email,
-      },
-      {
-        publicKey: process.env.EMAILJS_PUBLIC_KEY,
-        privateKey: process.env.EMAILJS_PRIVATE_KEY,
-      }
-    );
+    await sendEmail({
+      title: "New Contact Form Submission",
+      name,
+      email,
+      phone: phone || "",
+      message,
+      admin_email: admin.email,
+    });
 
     res.json({ success: true, message: "Message sent successfully" });
   } catch (err) {
@@ -166,4 +171,5 @@ router.post("/send", async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to send message" });
   }
 });
+
 module.exports = router;
