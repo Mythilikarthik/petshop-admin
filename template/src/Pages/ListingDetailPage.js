@@ -205,7 +205,7 @@ const [rating, setRating] = useState(0);
       {listing.bannerImage && (
           <div className="mb-4">
             <img
-              src={`${listing.bannerImage}`}
+              src={`${API_BASE}${listing.bannerImage}`}
               alt={listing.shopName}
               style={{
                 width: "100%",

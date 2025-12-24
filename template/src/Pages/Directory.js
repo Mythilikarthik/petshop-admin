@@ -346,7 +346,11 @@ useEffect(() => {
       {console.log("Listing image:", listing.photos)  }
       <Card.Img
         variant="top"
-        src={listing.photos?.[0] || dummyImage}
+        src={
+    listing.photos?.[0]
+      ? `${API_BASE}${listing.photos[0]}`
+      : dummyImage
+  }
         alt={listing.shopName}
       />
     </Card.Header>
