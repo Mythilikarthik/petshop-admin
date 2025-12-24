@@ -41,6 +41,7 @@ const [formData, setFormData] = useState({
     const data = await res.json();
     if (data.success) {
       alert("Your message has been sent to the admin!");
+      setFormData({ description: "" });
       navigate("/contact-admin");
     } else {
       alert(data.message || "Failed to send message.");
