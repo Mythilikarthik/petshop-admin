@@ -16,20 +16,12 @@ router.post("/", async (req, res) => {
     }
 
     
-    // const transporter = nodemailer.createTransport({
-    //   host: "smtp.gmail.com",
-    //   port: 587,
-    //   secure: false,
-    //   auth: {
-    //     user: process.env.SMTP_USER, 
-    //     pass: process.env.SMTP_PASS,
-    //   },
-    // });
-
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
       auth: {
-        user: process.env.SMTP_USER,
+        user: process.env.SMTP_USER, // e.g. your gmail
         pass: process.env.SMTP_PASS,
       },
     });
@@ -69,22 +61,15 @@ if (!name || !email || !message) {
     }
 
     
-    // const transporter = nodemailer.createTransport({
-    //   host: "smtp.gmail.com",
-    //   port: 587,
-    //   secure: false,
-    //   auth: {
-    //     user: process.env.SMTP_USER, 
-    //     pass: process.env.SMTP_PASS,
-    //   },
-    // });
     const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER, // e.g. your gmail
+        pass: process.env.SMTP_PASS,
+      },
+    });
     
     const mailOptions = {
       from: admin.email,             
@@ -105,7 +90,7 @@ if (!name || !email || !message) {
     return res.json({ success: true, message: "Message sent to admin successfully" });
   } catch (err) {
     console.error("Error sending admin mail:", err);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: "Server error sending mail" });
   }
 });
 
