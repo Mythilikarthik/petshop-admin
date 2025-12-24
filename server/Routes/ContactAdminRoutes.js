@@ -114,7 +114,7 @@ const sendEmail = async (templateData) => {
 };
 
 
-rourouter.post("/", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { shopName, email, description } = req.body;
 
