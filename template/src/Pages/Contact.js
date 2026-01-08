@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Form, Button, Alert, Container, Row, Col } from "react-bootstrap";
+import { Form, Button, Alert, Container, Row, Col, Image } from "react-bootstrap";
+import banner from "../contact.jpg";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -46,69 +47,74 @@ console.log(data);
   };
 
   return (
-    <Container className="mt-5 mb-5">
-      <Row className="justify-content-center">
-        <Col lg={6} md={8}>
-          
-          <h2>Contact Us</h2>
+    <div className="contact-page">
+      <div className="banner">
+        <Image className="img-responsive" src={banner} alt="Contact Us" />
+      </div>
+      <Container className="mt-5 mb-5">
+        <Row className="justify-content-center">
+          <Col lg={6} md={8}>
+            
+            <h2>Contact Us</h2>
 
-      {status.success && <Alert variant="success">{status.success}</Alert>}
-      {status.error && <Alert variant="danger">{status.error}</Alert>}
+        {status.success && <Alert variant="success">{status.success}</Alert>}
+        {status.error && <Alert variant="danger">{status.error}</Alert>}
 
-      <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Name</Form.Label>
-          <Form.Control 
-            type="text" 
-            name="name" 
-            value={formData.name} 
-            onChange={handleChange} 
-            required 
-          />
-        </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Name</Form.Label>
+            <Form.Control 
+              type="text" 
+              name="name" 
+              value={formData.name} 
+              onChange={handleChange} 
+              required 
+            />
+          </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Email</Form.Label>
-          <Form.Control 
-            type="email" 
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required 
-          />
-        </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Email</Form.Label>
+            <Form.Control 
+              type="email" 
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required 
+            />
+          </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Phone</Form.Label>
-          <Form.Control 
-            type="text" 
-            name="phone" 
-            value={formData.phone}
-            onChange={handleChange}
-          />
-        </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Phone</Form.Label>
+            <Form.Control 
+              type="text" 
+              name="phone" 
+              value={formData.phone}
+              onChange={handleChange}
+            />
+          </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Message</Form.Label>
-          <Form.Control 
-            as="textarea" 
-            rows={4} 
-            name="message"
-            value={formData.message}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Message</Form.Label>
+            <Form.Control 
+              as="textarea" 
+              rows={4} 
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+              required
+            />
+          </Form.Group>
 
-        <Button variant="primary" type="submit">
-          Send Message
-        </Button>
+          <Button variant="primary" type="submit">
+            Send Message
+          </Button>
 
-      </Form>
-        </Col>
-      </Row>
-    </Container>
+        </Form>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

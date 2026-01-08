@@ -43,6 +43,7 @@ const [existingBanner, setExistingBanner] = useState(null);
     metaKeyword: '',
     metaDescription: '',
     status: false,
+    isVerified: false, 
     u_name: '',
   });
 
@@ -142,6 +143,7 @@ const [existingBanner, setExistingBanner] = useState(null);
             : [],
             metaDescription: data.listing.metaDescription || '',
             status: data.listing.status === 'approved',
+            isVerified: data.listing.isVerified || false, // 
           });
         } else {
           alert('Failed to fetch listing');
@@ -165,6 +167,12 @@ const [existingBanner, setExistingBanner] = useState(null);
     }
   }, [loading, listing]);
 
+  const handleVerifiedToggle = () => {
+  setFormData(prev => ({
+    ...prev,
+    isVerified: !prev.isVerified
+  }));
+};
   // ✅ Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -243,6 +251,7 @@ const [existingBanner, setExistingBanner] = useState(null);
         metaKeyword: formData.metaKeyword.join(','),
         metaDescription: formData.metaDescription,
         status: formData.status ? 'approved' : 'pending',
+        isVerified: formData.isVerified, 
         createdBy: formData.createdBy,
       }).forEach(([key, val]) => formDataToSend.append(key, val));
 
@@ -326,6 +335,17 @@ const [existingBanner, setExistingBanner] = useState(null);
             {formData.u_name && (
               <h3 className="mb-4">Created by : {formData.u_name.toUpperCase()}</h3>
             )}
+
+            {/* Verified Toggle */}
+            <Form.Group className="mb-3">
+              <Form.Check
+                type="switch"
+                id="verified-switch"
+                label={formData.isVerified ? "Verified Listing" : "Not Verified"}
+                checked={formData.isVerified}
+                onChange={handleVerifiedToggle}
+              />
+            </Form.Group>
 
             {/* Status Toggle */}
             <Form.Group className="mb-3">
@@ -446,7 +466,7 @@ const [existingBanner, setExistingBanner] = useState(null);
   />
 ) : existingBanner ? (
   <img
-    src={existingBanner.startsWith("http") ? existingBanner : `${API_BASE}${existingBanner}`}
+    src={existingBanner.startsWith("http") ? existingBanner : `${API_BASE}/${existingBanner}`}
     alt="Existing Banner"
     style={{
       width: "100%",
@@ -479,7 +499,7 @@ const [existingBanner, setExistingBanner] = useState(null);
                     : `${url}`;
                   return (
                     <Col key={idx} xs={6} md={4} lg={3} className="mb-2">
-                      <Image src={imageUrl} thumbnail fluid />
+                      <Image src={`${API_BASE}/${imageUrl}`} thumbnail fluid />
                     </Col>
                   );
                 })}

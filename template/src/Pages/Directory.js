@@ -1,11 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Css/Directory.css';
-import { Row, Col, Card, Button, Container } from "react-bootstrap";
+import { Row, Col, Card, Button, Container, Image } from "react-bootstrap";
 import { BsGeoAltFill, BsStarFill } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 import dummyImage from '../dummy.jpg';
 import AdSlider from '../Components/AdSlider';
+import { FaStar } from 'react-icons/fa';
+import { TiTick } from "react-icons/ti";
 
 // Example data (replace with API data)
 
@@ -25,6 +27,25 @@ const Directory = () => {
     const [bottomHomeAds, setBottomHomeAds] = useState([]);
     const [middleHomeAds, setMiddleHomeAds] = useState([]);
   const [adSettings, setAdSettings] = useState({ slideInterval: 5, maxImages: 5 });
+  const [selectedPet, setSelectedPet] = useState("");
+const [petCategories, setPetCategories] = useState([]);
+const [quickFilter, setQuickFilter] = useState(""); // topRated | verified
+const [sortBy, setSortBy] = useState("relevance");  // relevance | rating | popular | distance
+const [minRating, setMinRating] = useState(0);      // 0 | 3.5 | 4 | 4.5 | 5
+
+const petCategoriesList = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/pet-category/show`);
+    const data = await res.json();
+    if (data.success) {
+      setPetCategories(data.petCategories);
+      // console.log(petCategories);
+    }
+  } catch (err) {
+    console.error("Error fetching pet categories:", err);
+  }
+};
+
   // console.log("routeCity:",routeCity);
 
 
@@ -68,65 +89,140 @@ const [categories, setCategories] = useState([]);
 useEffect(() => {
     citiesList();
     categoriesList();
+    petCategoriesList();
   }, []);
 
 
 const PAGE_SIZE = 20;
 
   // Filtered listings
-  const filteredListings = useMemo(() => {
-  const searchLower = search.toLowerCase();
+//   const filteredListings = useMemo(() => {
+//   const searchLower = search.toLowerCase();
 
-  // return allListings.filter(l => {
-  //   const cat = l.categories?.[0]?.categoryName?.toLowerCase() || "";
-  //   const cityName = l.city?.city?.toLowerCase() || "";
-  //   const shop = l.shopName?.toLowerCase() || "";
-  //   const pet = l.petCategories?.[0]?.categoryName?.toLowerCase() || "";  
+//   // return allListings.filter(l => {
+//   //   const cat = l.categories?.[0]?.categoryName?.toLowerCase() || "";
+//   //   const cityName = l.city?.city?.toLowerCase() || "";
+//   //   const shop = l.shopName?.toLowerCase() || "";
+//   //   const pet = l.petCategories?.[0]?.categoryName?.toLowerCase() || "";  
 
-  //   return (
-  //     (!selectedCategory || cat === selectedCategory.toLowerCase()) &&
-  //     (!selectedCity || cityName === selectedCity.toLowerCase()) &&
-  //     (!routePet || pet === routePet.toLowerCase()) &&
-  //     (shop.includes(searchLower) ||
-  //       cat.includes(searchLower) ||
-  //       pet.includes(searchLower) ||
-  //       cityName.includes(searchLower))
-  //   );
+//   //   return (
+//   //     (!selectedCategory || cat === selectedCategory.toLowerCase()) &&
+//   //     (!selectedCity || cityName === selectedCity.toLowerCase()) &&
+//   //     (!routePet || pet === routePet.toLowerCase()) &&
+//   //     (shop.includes(searchLower) ||
+//   //       cat.includes(searchLower) ||
+//   //       pet.includes(searchLower) ||
+//   //       cityName.includes(searchLower))
+//   //   );
 
-  // });
-  return allListings.filter(l => {
-    const cat = (l.categories?.[0]?.categoryName || "").toLowerCase();
-    const cityName = (l.city?.city || "").toLowerCase();
-    // const pet = (l.petCategories?.[0]?.categoryName || "").toLowerCase();
-    const petNames = (l.petCategories || [])
-  .map(p => p.categoryName.toLowerCase());
+//   // });
+//   return allListings.filter(l => {
+//     const cat = (l.categories?.[0]?.categoryName || "").toLowerCase();
+//     const cityName = (l.city?.city || "").toLowerCase();
+//     // const pet = (l.petCategories?.[0]?.categoryName || "").toLowerCase();
+//     const petNames = (l.petCategories || [])
+//   .map(p => p.categoryName.toLowerCase());
+//     const shop = (l.shopName || "").toLowerCase();
+
+//     const categoryMatch =
+//       !selectedCategory ||
+//       selectedCategory.toLowerCase() === "all" ||
+//       cat === selectedCategory.toLowerCase();
+
+//     const cityMatch =
+//       !selectedCity ||
+//       selectedCity.toLowerCase() === "all" ||
+//       cityName === selectedCity.toLowerCase();
+
+//     const petMatch =
+//       !search ||
+//       search.toLowerCase() === "all" ||
+//         petNames.some(p => p.includes(searchLower));
+
+//     const searchMatch =
+//       shop.includes(searchLower) ||
+//       cat.includes(searchLower) ||
+//       petNames.some(p => p.includes(searchLower));
+//       cityName.includes(searchLower);
+
+//     return categoryMatch && cityMatch && petMatch && searchMatch;
+//   });
+
+// }, [allListings, selectedCategory, selectedCity, routeCity, routeCategory, routePet, search]);
+
+const filteredListings = useMemo(() => {
+  let result = allListings.filter(l => {
+    // console.log("Views" , l.views);
+    const category = (l.categories?.[0]?.categoryName || "").toLowerCase();
+    const city = (l.city?.city || "").toLowerCase();
     const shop = (l.shopName || "").toLowerCase();
+    const rating = Number(l.rating || 0);
+
+    const petNames = (l.petCategories || []).map(p =>
+      p.categoryName.toLowerCase()
+    );
 
     const categoryMatch =
-      !selectedCategory ||
-      selectedCategory.toLowerCase() === "all" ||
-      cat === selectedCategory.toLowerCase();
+      !selectedCategory || category === selectedCategory.toLowerCase();
 
     const cityMatch =
-      !selectedCity ||
-      selectedCity.toLowerCase() === "all" ||
-      cityName === selectedCity.toLowerCase();
+      !selectedCity || city === selectedCity.toLowerCase();
 
     const petMatch =
-      !search ||
-      search.toLowerCase() === "all" ||
-        petNames.some(p => p.includes(searchLower));
+      !selectedPet || petNames.includes(selectedPet.toLowerCase());
 
     const searchMatch =
-      shop.includes(searchLower) ||
-      cat.includes(searchLower) ||
-      petNames.some(p => p.includes(searchLower));
-      cityName.includes(searchLower);
+      shop.includes(search.toLowerCase()) ||
+      category.includes(search.toLowerCase()) ||
+      city.includes(search.toLowerCase()) ||
+      petNames.some(p => p.includes(search.toLowerCase()));
 
-    return categoryMatch && cityMatch && petMatch && searchMatch;
+    const ratingMatch = rating >= minRating;
+
+    const quickFilterMatch =
+      !quickFilter ||
+      (quickFilter === "topRated" && rating >= 4.5) ||
+      (quickFilter === "verified" && l.isVerified === true);
+
+    return (
+      categoryMatch &&
+      cityMatch &&
+      petMatch &&
+      searchMatch &&
+      ratingMatch &&
+      quickFilterMatch
+    );
   });
 
-}, [allListings, selectedCategory, selectedCity, routeCity, routeCategory, routePet, search]);
+  // 🔃 SORTING
+  switch (sortBy) {
+    case "rating":
+      result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      break;
+
+    case "popular":
+      result.sort((a, b) => (b.views || 0) - (a.views || 0));
+      break;
+
+    case "distance":
+      result.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+      break;
+
+    default:
+      break; // relevance (API order)
+  }
+
+  return result;
+}, [
+  allListings,
+  selectedCategory,
+  selectedCity,
+  selectedPet,
+  search,
+  quickFilter,
+  sortBy,
+  minRating
+]);
 
 
   // Pagination
@@ -145,7 +241,7 @@ const PAGE_SIZE = 20;
   const handleSearchChange = e => {
     setSearch(e.target.value);
     setPage(1);
-    console.log("called");
+    // console.log("called");
   };
   const handlePageChange = newPage => setPage(newPage);
   const fetchListings = async () => {
@@ -154,7 +250,7 @@ const PAGE_SIZE = 20;
       const data = await res.json();
       if(data.success) {
         setAllListings(data.listings);
-        console.log("Listings fetched:", data.listings);
+        // console.log("Listings fetched:", data.listings);
       }
     }
     catch (err) {
@@ -224,6 +320,18 @@ const fetchMiddleHomeAds = async () => {
 // }, [routeCity, routeCategory, routePet]);
 
 useEffect(() => {
+  // PET CATEGORY
+  if (petCategories.length && routePet) {
+    if (routePet.toLowerCase() === "all") {
+      setSelectedPet("");
+    } else {
+      const match = petCategories.find(
+        p => p.categoryName.toLowerCase() === routePet.toLowerCase()
+      );
+      setSelectedPet(match ? match.categoryName : "");
+    }
+  }
+
   // CATEGORY
   if (categories.length && routeCategory) {
     if (routeCategory.toLowerCase() === "all") {
@@ -252,13 +360,54 @@ useEffect(() => {
   if (routePet) {
     setSearch(routePet.toLowerCase() === "all" ? "" : routePet);
   }
-}, [routeCity, routeCategory, routePet, categories, cities]);
+}, [routeCity, routeCategory, routePet, categories, cities, petCategories]);
 
+
+const [banner, setBanner] = useState(null);
+
+const Banner = async () => {
+  try {
+    const url = routeCity
+      ? `${API_BASE}/api/city-banner/name/${routeCity}`
+      : `${API_BASE}/api/directory-banner`;
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch banner");
+    }
+
+    const data = await res.json();
+// console.log(data);
+    if (data.success) {
+      setBanner(data.banner); // ✅ correct
+    }
+    
+  } catch (err) {
+    console.error("Banner error:", err.message);
+  }
+};
+
+useEffect(() => {
+  Banner();
+}, [routeCity]);
+
+useEffect(() => {
+  Banner();
+}, [routeCity]);
 
 
 // console.log("all:",allListings)
   return (
     <>
+    {banner?.banner && (
+      <Image
+        className='img-responsive'
+        src={`${API_BASE}/${banner.banner}`}
+        alt="Banner"
+        style={{ width: "100%", height: "300px", objectFit: "cover" }}
+      />
+    )}
     {topHomeAds.length > 0 && (
       <AdSlider ads={topHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
     )}
@@ -267,7 +416,9 @@ useEffect(() => {
       side="right" />
     )}
     <section className="directory-inner-section">
+      
       <Container>
+
         <div className="directory-header">
         <h2>
           {/* {console.log("selcat:",selectedCategory)} */}
@@ -275,31 +426,7 @@ useEffect(() => {
         </h2>
         <p>Browse top-rated pet services by category and city</p>
       </div>
-      <div className="directory-filters">
-        <input
-          type="text"
-          placeholder="Search ..."
-          value={search}
-          onChange={handleSearchChange}
-        />
-        <select value={selectedCategory} onChange={handleCategoryChange}>
-          <option value="">All Categories</option>
-          {categories.map(cat => (
-            <option value={cat.categoryName} key={cat._id}>
-              {cat.categoryName}
-            </option>
-          ))}
-        </select>
-        <select value={selectedCity} onChange={handleCityChange}>
-          <option value="">All Cities</option>
-          {cities.map(c => (
-            <option value={c.city} key={c._id}>
-              {c.city}
-            </option>
-          ))}
-        </select>
-        
-      </div>
+      
       {/* <div className="directory-listings">
         {paginatedListings.length === 0 ? (
           <div className="no-results">No listings found.</div>
@@ -325,7 +452,117 @@ useEffect(() => {
           ))
         )}
       </div> */}
-      <Row className="justify-content-center">
+      <Row>
+        <Col md={3} className='bg-grey'>
+          <div className="directory-filters sticky-top shadow-sm  rounded p-3" style={{"top": "70px"}}>
+            <Row className=" shadow-sm m-4 rounded  mb-0  ">
+            <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Apply Filter</h5>
+            <div className=' d-flex gap-3 flex-column p-4'>
+            <input
+              type="text"
+              placeholder="Search ..."
+              value={search}
+              onChange={handleSearchChange}
+            />
+            <select value={selectedPet} onChange={e => {
+              setSelectedPet(e.target.value);
+              setPage(1);
+            }}>
+              <option value="">All Pets</option>
+              
+              {petCategories.map(pet => (
+                <option key={pet._id} value={pet.categoryName}>
+                  {pet.categoryName}
+                </option>
+              ))}
+            </select>
+
+            <select value={selectedCategory} onChange={handleCategoryChange}>
+              <option value="">All Categories</option>
+              {categories.map(cat => (
+                <option value={cat.categoryName} key={cat._id}>
+                  {cat.categoryName}
+                </option>
+              ))}
+            </select>
+            {!routeCity && (
+              <select value={selectedCity} onChange={handleCityChange}>
+                <option value="">All Cities</option>
+                {cities.map(c => (
+                  <option value={c.city} key={c._id}>
+                    {c.city}
+                  </option>
+                ))}
+              </select>
+            )}
+            </div>
+            </Row>
+            <Row className='shadow-sm m-4 rounded  mb-0 '>
+              <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Quick Filters</h5>
+          <div className=' d-flex gap-3 flex-column p-4'>
+            <Button
+              size="sm"
+              variant={quickFilter === "topRated" ? "primary" : "outline-secondary"}
+              onClick={() => setQuickFilter("topRated")}
+            >
+              <FaStar fill="#ff8800" /> Top Rated
+            </Button>
+
+            <Button
+              size="sm"
+              variant={quickFilter === "verified" ? "primary" : "outline-secondary"}
+              onClick={() => setQuickFilter("verified")}
+            >
+              <TiTick /> Verified
+            </Button>
+
+            {quickFilter && (
+              <Button size="sm" variant="link" onClick={() => setQuickFilter("")}>
+                Clear
+              </Button>
+            )}
+          </div>
+          
+            </Row>
+            <Row className='shadow-sm m-4 rounded  mb-0 '>
+              <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Sort by</h5>
+          <div className=' d-flex gap-3 flex-column p-4'>
+            {["relevance", "rating", "popular"].map(type => (
+              <Button
+                key={type}
+                size="sm"
+                variant={sortBy === type ? "dark" : "outline-secondary"}
+                onClick={() => setSortBy(type)}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Button>
+            ))}
+          </div>
+            </Row>
+            <Row className='shadow-sm m-4 rounded '>
+              
+          <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Ratings</h5>
+          <div className="d-flex flex-wrap gap-2 p-4">
+            {[0, 3, 4, 5].map(r => (
+              <Button
+                key={r}
+                size="sm"
+                variant={minRating === r ? "warning" : "outline-secondary"}
+                onClick={() => setMinRating(r)}
+              >
+                {r === 0 ? "Any" : r === 5 ? `${r}` : `${r}+`}
+              </Button>
+            ))}
+          </div>
+            </Row>
+            
+          </div>
+          
+
+
+        </Col>
+        <Col md={9}>
+            <Row className="justify-content-center">
   {paginatedListings.length === 0 ? (
     <div className="no-results">No listings found.</div>
   ) : (
@@ -339,16 +576,16 @@ useEffect(() => {
             .replace(/[^a-z0-9-]/g, "");
 
       return(
-        <Col key={listing._id} md={3} className="mb-4 d-flex">
+        <Col key={listing._id} md={4} className="mb-4 d-flex">
   <Card className="provider-card w-100 h-100 d-flex flex-column">
 
-    <Card.Header className="card-top-rated">
-      {console.log("Listing image:", listing.photos)  }
+    <Card.Header className="card-top-rated p-0">
+      
       <Card.Img
         variant="top"
         src={
-    listing.photos?.[0]
-      ? `${API_BASE}${listing.photos[0]}`
+    listing.bannerImage
+      ? `${API_BASE}/${listing.bannerImage}`
       : dummyImage
   }
         alt={listing.shopName}
@@ -356,9 +593,9 @@ useEffect(() => {
     </Card.Header>
 
     <Card.Body className="pos-rel d-flex flex-column flex-grow-1">
-      <Card.Title>{listing.shopName}</Card.Title>
+      <Card.Title>{listing.shopName && listing.shopName.length >10 ? listing.shopName.slice(0,10) + "..." : listing.shopName}</Card.Title>
       <div className="service-tags mt-2">
-        {console.log("petcats:",listing.petCategories)}
+        
      {listing.petCategories?.length > 0 && (
         listing.petCategories.map((cat, index) => (
           <span key={index} className="badge badge-top-rated">
@@ -374,8 +611,8 @@ useEffect(() => {
       </div>
 
       <Card.Text className="mt-2">
-        {listing.description.length > 30
-          ? listing.description.slice(0, 30) + "..."
+        {listing.description.length > 50
+          ? listing.description.slice(0, 50) + "..."
           : listing.description}
       </Card.Text>
 
@@ -416,6 +653,9 @@ useEffect(() => {
 })
   )}
 </Row>
+        </Col>
+      </Row>
+      
 
       {totalPages > 1 && (
         <div className="directory-pagination">

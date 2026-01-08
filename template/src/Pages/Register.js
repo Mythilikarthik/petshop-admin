@@ -15,12 +15,14 @@ const LOGIM_URI =
 const Register = () => {
   /* ---------------- USER ---------------- */
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [form, setForm] = useState({
     name: "",
     username: "",
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
   });
 
   /* ---------------- LISTING ---------------- */
@@ -142,6 +144,9 @@ const Register = () => {
   if (!form.email) return "Email required";
   if (!form.phone) return "Phone required";
   if (!form.password) return "Password required";
+  if (!form.confirmPassword) return "Confirm your password";
+  if (form.password !== form.confirmPassword)
+    return "Passwords do not match";
   if (!listing.shopName) return "Shop name required";
   if (!listing.city) return "City required";
   if (!listing.petCategories.length) return "Type required";
@@ -246,7 +251,7 @@ const Register = () => {
               <h3 className="text-center mb-2 text-orange-500">
                 Register & Create Listing
               </h3>
-              <small className="d-block text-center mb-4 text-muted">Already have an account? <a href={LOGIM_URI}>Login</a></small>
+              <small className="d-block text-center mb-4 text-muted">Already have an account? <a href={LOGIM_URI}><b>Login</b></a></small>
 
               {alert.show && (
                 <Alert variant={alert.type} dismissible onClose={() => setAlert({ show: false })}>
@@ -308,6 +313,35 @@ const Register = () => {
     </span>
   </div>
 </Form.Group>
+<Form.Group className="mb-4">
+  <Form.Label>Confirm Password *</Form.Label>
+
+  <div className="position-relative">
+    <Form.Control
+      type={showConfirmPassword ? "text" : "password"}
+      name="confirmPassword"
+      value={form.confirmPassword}
+      onChange={handleUserChange}
+      style={{ paddingRight: "45px" }}
+      autoComplete="off"
+    />
+
+    <span
+      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+      style={{
+        position: "absolute",
+        top: "50%",
+        right: "12px",
+        transform: "translateY(-50%)",
+        cursor: "pointer",
+        color: "#f97316",
+      }}
+    >
+      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+    </span>
+  </div>
+</Form.Group>
+
 
 
                 {/* LISTING */}

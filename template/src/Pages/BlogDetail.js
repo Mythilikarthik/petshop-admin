@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Container, Row, Col, Spinner, Alert } from "react-bootstrap";
+import { Container, Row, Col, Spinner, Alert, Modal } from "react-bootstrap";
 import { DiscussionEmbed } from "disqus-react";   // <-- ADD THIS
 
 const API_BASE =
@@ -13,6 +13,8 @@ const BlogDetail = () => {
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -60,60 +62,109 @@ const BlogDetail = () => {
   // -----------------------------------------------------------------------
 
   return (
-    <div className="blog-detail py-5">
-      <Container>
-        {/* Banner Image */}
+    <div className="blog-detail pb-5">
+      <div className="banner-section">
         {blog.bannerImage && (
           <Row className="mb-4">
             <Col className="d-flex justify-content-center">
               <img
-                src={`/${blog.bannerImage}`}
+                src={`${API_BASE}/${blog.bannerImage}`}
                 alt={blog.title}
-                className="img-fluid rounded"
+                className="img-responsive"
               />
             </Col>
           </Row>
         )}
+      </div>
+      <Container>
+        {/* Banner Image */}
+        
 
-        <Row className="justify-content-center">
+        <Row className="">
           <Col md={8}>
-            {/* Title */}
-            <h1 className="mb-3">{blog.title}</h1>
-
+            {/* {new Date(blog.date).toLocaleDateString()} */}
             {/* Author + Date */}
-            <p className="text-muted">
-              By <strong>{blog.author}</strong> •{" "}
-              {new Date(blog.date).toLocaleDateString()}
-            </p>
+<div className="listing-type">
+          <span  className="">
+            By {blog.author} - {new Date(blog.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "2-digit",
+                year: "numeric"
+            }).replace(" ", " ").replace(",", ",")}
+          </span>
+          </div>
+           
+            {/* Title */}
+            <h1 className="mb-2">{blog.title}</h1>
+
+            
 
             {/* Category */}
-            {blog.category?.length > 0 && (
-              <p className="mb-3">
-                <strong>Category:</strong>{" "}
-                {blog.category.map((c) => c.categoryName).join(", ")}
-              </p>
-            )}
 
-            {/* Excerpt */}
-            <h5 className="mt-4 text-secondary">{blog.excerpt}</h5>
-
-            {/* Content Image */}
-            {blog.contentImage && (
-              <img
-                src={`/${blog.contentImage}`}
-                alt="content"
-                className="img-fluid rounded my-4"
-              />
+            <div class="listing-category">
+              {blog.category?.length > 0 && (
+                blog.category.map((c) => 
+                  <span class="service-tag tag-blue">{c.categoryName}</span>
+                )           
             )}
+              
+            </div>
+            
 
             {/* Main Content */}
             <div
               className="mt-4"
               dangerouslySetInnerHTML={{ __html: blog.content }}
             ></div>
+            
 
-            {/* ---------------- DISQUS COMMENT BOX ---------------- */}
-            <div className="mt-5 pt-4">
+            {/* Excerpt */}
+            {/* <h5 className="mt-4 text-secondary">{blog.excerpt}</h5> */}
+            {blog.contentImage?.length > 0 && (
+              <div className="listing-gallery mt-4">
+            
+                <Row>
+                    <Col md={4} sm={6} xs={12} className="mb-3">
+                      <div
+                        className="gallery-item"
+                        onClick={() => {
+                          setShowGalleryModal(true);
+                        }}
+                      >
+                        <img
+                          src={`${API_BASE}/${blog.contentImage}`}
+                          alt={`${blog.title}`}
+                          className="gallery-img"
+                        />
+                      </div>
+                    </Col>
+                </Row>
+              </div>
+            )}
+            
+                    <Modal
+              show={showGalleryModal}
+              onHide={() => setShowGalleryModal(false)}
+              centered
+              size="lg"
+            >
+              <Modal.Body className="p-0">
+                <img
+                  src={`${API_BASE}/${blog.contentImage}`}
+                  alt="Gallery preview"
+                  className="w-100"
+                  style={{ maxHeight: "80vh", objectFit: "contain" }}
+                />
+              </Modal.Body>
+            </Modal>
+
+           
+
+            
+          </Col>
+          <Col md={4}>
+          {/* ---------------- DISQUS COMMENT BOX ---------------- */}
+            <div className=" bg-grey p-5">
               <DiscussionEmbed shortname={disqusShortname} config={disqusConfig} />
             </div>
             {/* ----------------------------------------------------- */}

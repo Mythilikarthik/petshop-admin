@@ -54,6 +54,10 @@ import ChangePassword from './Pages/ChangePassword';
 import SessionTimeoutHandler from './Hooks/SessionTimeoutHandler'; 
 import ForgotPassword from "./Pages/ForgotPassword";
 import ResetPassword from "./Pages/ResetPassword";
+import DirectoryBannerManagement from './Pages/DirectoryBannerManagement';
+import CityBannerManagement from './Pages/CityBannerManagement';
+import AddCityBanner from "./Pages/AddCityBanner";
+import BlogBannerManagement from './Pages/BlogBannerManagement';
 
 function App() {
   
@@ -130,6 +134,10 @@ function App() {
           <Route path='/ad-management/edit' element={<AdManagemnent/>} />
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/directory-banner-management" element={<DirectoryBannerManagement />} />
+          <Route path="/blog-banner-management" element={<BlogBannerManagement />} />
+          <Route path="/city-banner-management" element={<CityBannerManagement />} />
+          <Route path="/add-city-banner" element={<AddCityBanner />} />
         </Route>
         
 

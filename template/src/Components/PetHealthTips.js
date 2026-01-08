@@ -14,7 +14,7 @@ const API_BASE =
 
 
 
-const PetHealthTips = ({ blog, showViewAll= true }) => (
+const PetHealthTips = ({ blog, showViewAll= true , banner=false}) => (
 
     <div className="featured-section bg-image" style={{ backgroundImage: `url(${backgroundImage})` }}>
         <Container>
@@ -32,13 +32,22 @@ const PetHealthTips = ({ blog, showViewAll= true }) => (
                     blog.map((item) => (
                         <Col key={item._id} md={4} className="mb-4">
                             <Card className="pethealth-card w-100 h-100">
-
-                                {/* Blog Image */}
+{console.log(item)}
+                             {item.bannerImage && item.bannerImage.length > 0 ? (
+                                <Card.Header className="blog-card-header p-0">
+                                   <img src={item.bannerImage} alt="" className='img-responsive' />
+                                    
+                                </Card.Header>
+                                
+                            ) : (
                                 <Card.Header className="blog-card-header">
-                                    <div className="service-icon">
+                                   <div className="service-icon">
                                         <BsLightningFill size={100} color="#3b82f6" />
                                     </div>
+                                    
                                 </Card.Header>
+                            )}
+                                
 
                                 <Card.Body className='pos-rel'>
 

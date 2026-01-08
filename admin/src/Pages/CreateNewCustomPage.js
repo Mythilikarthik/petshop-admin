@@ -24,12 +24,61 @@ const PageManagement = () => {
     metaDescription: listing?.metaDescription || '',
     content: listing?.content || '',        
     paraWordCount: 0,                 
-    photos: []
+    photos: [],
+    banner: null, 
   });
   const [categoryList, setCategoryList] = useState([]);
   const [cityList, setCityList] = useState([]);
   const {shouldBlockNavigation, markAsSaved, confirmLeave, resetInitialSnapshot} = useUnsavedChanges(formData);
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
+  const [bannerPreview, setBannerPreview] = useState(null);
+  const [removeBanner, setRemoveBanner] = useState(false);
+
+//   const handleBannerChange = (e) => {
+//   const file = e.target.files[0];
+//   if (!file) return;
+
+//   // Optional client-side validation
+//   const img = new Image();
+//   img.src = URL.createObjectURL(file);
+//   img.onload = () => {
+//     if (img.width !== 1200 || img.height !== 300) {
+//       alert("Banner image must be exactly 1200 x 300 pixels");
+//       e.target.value = "";
+//       return;
+//     }
+
+//     setFormData((prev) => ({
+//       ...prev,
+//       banner: file,
+//     }));
+//   };
+// };
+
+const handleBannerChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const img = new Image();
+  img.src = URL.createObjectURL(file);
+
+  img.onload = () => {
+    if (img.width !== 1200 || img.height !== 300) {
+      alert("Banner must be exactly 1200 × 300");
+      e.target.value = "";
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      banner: file
+    }));
+
+    setRemoveBanner(false); // ✅ cancel removal
+    setBannerPreview(URL.createObjectURL(file));
+  };
+};
+
 
   const handleChange = (e) => {
   let name = e.target.name;
@@ -46,8 +95,42 @@ const PageManagement = () => {
 };
 
 
-  const handleSubmit = async (e) => {
+//   const handleSubmit = async (e) => {
+//   e.preventDefault();
+//   if (formData.paraWordCount < 0 || formData.paraWordCount > 400) {
+//     alert("One Para Content must be between 0 and 400 words.");
+//     return;
+//   }
+
+//   try {
+//     const method = isEdit ? "PATCH" : "POST";
+//     const url = isEdit
+//       ? `${API_BASE}/api/custom-page/${id}`
+//       : `${API_BASE}/api/custom-page`;
+
+//     const req = await fetch(url, {
+//       method,
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify(formData),
+//     });
+
+//     const data = await req.json();
+//     console.log(data);
+
+//     if (data.success) {
+//       alert("Changes saved successfully!");
+//       markAsSaved();
+//       navigate("/custom-pages");
+//     } else {
+//       alert(data.message || "Failed to save changes.");
+//     }
+//   } catch (err) {
+//     console.error("Error: ", err);
+//   }
+// };
+const handleSubmit = async (e) => {
   e.preventDefault();
+
   if (formData.paraWordCount < 0 || formData.paraWordCount > 400) {
     alert("One Para Content must be between 0 and 400 words.");
     return;
@@ -59,14 +142,47 @@ const PageManagement = () => {
       ? `${API_BASE}/api/custom-page/${id}`
       : `${API_BASE}/api/custom-page`;
 
+    // const fd = new FormData();
+    // Object.keys(formData).forEach((key) => {
+    //   if (key === "category") {
+    //     formData.category.forEach((c) => fd.append("category[]", c));
+    //   } else if (key === "banner" && formData.banner) {
+    //     fd.append("banner", formData.banner);
+    //   } else {
+    //     fd.append(key, formData[key]);
+    //   }
+    // });
+    const fd = new FormData();
+
+Object.keys(formData).forEach((key) => {
+  if (key === "category") {
+    formData.category.forEach((c) => fd.append("category[]", c));
+  }
+  else if (key === "banner") {
+    // ❌ DO NOTHING HERE
+  }
+  else {
+    fd.append(key, formData[key]);
+  }
+});
+
+// ✅ Only append banner if user selected one
+if (formData.banner) {
+  fd.append("banner", formData.banner);
+}
+
+// ✅ Explicit remove flag
+if (removeBanner) {
+  fd.append("removeBanner", "true");
+}
+
+
     const req = await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: fd,
     });
 
     const data = await req.json();
-    console.log(data);
 
     if (data.success) {
       alert("Changes saved successfully!");
@@ -79,6 +195,7 @@ const PageManagement = () => {
     console.error("Error: ", err);
   }
 };
+
 
   
 
@@ -119,7 +236,7 @@ useEffect(() => {
         const res = await fetch(`${API_BASE}/api/custom-page/${id}`);
         const data = await res.json();
         
-
+        console.log(data.page);
         if (data.success && data.page) {
           const content = data.page.content || '';
           const wordCount = content
@@ -136,8 +253,12 @@ useEffect(() => {
             metaDescription: data.page.metaDescription || '',
             content: data.page.content || '',
             paraWordCount: wordCount || 0,
-            photos: data.page.photos || []
-          });          
+            photos: data.page.photos || [],
+            banner : null,
+          });        
+          if (data.page.banner) {
+            setBannerPreview(`${API_BASE}/${data.page.banner}`);
+          }  
         } else {
           alert("Failed to load page data");
         }
@@ -259,6 +380,29 @@ const handleGoBack = () => {
                 onChange={handleChange} 
               />
             </Form.Group>
+            <Form.Group className="mb-4">
+              <Form.Label>Banner (1200 × 300)</Form.Label>
+              <Form.Control type="file" accept="image/*" onChange={handleBannerChange} />
+
+              {bannerPreview && (
+                <div className="mt-2">
+                  <img src={bannerPreview} alt="Banner" style={{ width: "100%", height: 300 }} />
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => {
+                      setBannerPreview(null);
+                      setFormData((p) => ({ ...p, banner: null }));
+                      setRemoveBanner(true);
+                    }}
+                  >
+                    Remove Banner
+                  </Button>
+                </div>
+              )}
+            </Form.Group>
+
 
             {/* Meta Keyword */}
             <Form.Group className='mb-4'>

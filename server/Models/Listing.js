@@ -35,7 +35,18 @@ const ListingSchema = new mongoose.Schema({
   isClaimed: { type: Boolean, default: false },
   claimedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   claimedAt: { type: Date, default: null },
+
+  isVerified: { type: Boolean, default: false },
+  verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
+  verifiedAt: { type: Date, default: null },
 });
+// ListingSchema.pre("save", function (next) {
+//   if (this.created_by_type === "admin" && this.isNew) {
+//     this.isVerified = true;
+//     this.verifiedAt = new Date();
+//   }
+//   next();
+// });
 
 ListingSchema.pre("save", function (next) {
   if (this.isModified("shopName")) {

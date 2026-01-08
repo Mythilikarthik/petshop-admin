@@ -16,7 +16,8 @@
 #basic-navbar-nav a {
   color: rgb(75 85 99);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: bold;
+  font-size: 15px;
 }
 .border-orange-500 {
   border-color: rgb(249 115 22);
@@ -60,6 +61,7 @@
   border: 2px solid;
   font-weight: 600;
   cursor: pointer;
+  font-size: 15px;
 }
 .text-white {
   color: rgb(255 255 255 );
@@ -68,3 +70,29 @@
   background-color: rgb(249 115 22 ) !important;
 }
 button { background: #fff; border: none; padding: 0 20px; font: inherit; color: inherit; cursor: pointer; }
+.nav-link.active {
+  color: rgb(249 115 22 ) !important;
+}
+/* Mobile dropdown absolute */
+@media (max-width: 991px) {
+  .mobile-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    padding: 15px 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    z-index: 999;
+  }
+
+  .mobile-menu .nav-link {
+    padding: 10px 0;
+    width: 100%;
+    text-align: left;
+  }
+  .d-flex.mobile-align-center {
+  justify-content: center !important;
+  margin-bottom: 15px;
+}
+}

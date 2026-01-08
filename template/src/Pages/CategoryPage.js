@@ -216,7 +216,52 @@ const CategoryPage = () => {
   return (
     <div className="category-page">
       {/* Hero Section */}
-      <section className="category-hero" style={{ backgroundColor: `${currentCategory.color}20` }}>
+      <section
+  className="category-hero"
+  style={{
+    backgroundImage: `linear-gradient(
+      rgba(0,0,0,0.55),
+      rgba(0,0,0,0.55)
+    ), url(${API_BASE}${currentCategory.image})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat"
+  }}
+>
+  <Container>
+    <Row className="align-items-center min-vh-50">
+      <Col lg={8}>
+        <div
+          className="category-hero-icon mb-3"
+          style={{ color: currentCategory.color }}
+        >
+          {getIconComponent(currentCategory.icon)}
+        </div>
+
+        <h1 className="text-white">
+          {currentCategory.name} Services
+        </h1>
+
+        <p className="hero-description text-white">
+          {currentCategory.description}
+        </p>
+
+        <Button
+          className="cta-button"
+          style={{
+            backgroundColor: currentCategory.color,
+            borderColor: currentCategory.color
+          }}
+          onClick={() => navigate("/directory")}
+        >
+          Find Services Near You
+        </Button>
+      </Col>
+    </Row>
+  </Container>
+</section>
+
+      {/* <section className="category-hero" style={{ backgroundColor: `${currentCategory.color}20` }}>
         <Container>
           <Row className="align-items-center">
             <Col lg={6}>
@@ -236,7 +281,7 @@ const CategoryPage = () => {
             <Col lg={6}>
               <div className="hero-image">
                 <img 
-                  src={`${currentCategory.image}`} 
+                  src={`${API_BASE}${currentCategory.image}`}
                   alt={`${currentCategory.name} services`}
                   className="img-fluid rounded" width={300}
                 />
@@ -244,7 +289,7 @@ const CategoryPage = () => {
             </Col>
           </Row>
         </Container>
-      </section>
+      </section> */}
 
       {/* Services Grid */}
       <section className="services-grid-section">
@@ -340,13 +385,23 @@ const CategoryPage = () => {
           </Row> */}
           <Row>
             {/* {console.log("featuredListing in CategoryPage:", featuredListing)   } */}
-  {featuredListing.map((provider) => (
+  {featuredListing.map((provider) => {
+    const safeSlug = provider.slug && provider.slug !== "undefined"
+                                    ? provider.slug
+                                    : provider.title
+                                        ?.toLowerCase()
+                                        .trim()
+                                        .replace(/\s+/g, "-")
+                                        .replace(/[^a-z0-9-]/g, "");
+  return(
+
+    
     <Col lg={4} md={6} className="mb-4" key={provider.id}>
       <Card className="provider-card h-100">
-        {provider.photos && provider.photos.length > 0 ? (
+        {provider.bannerImage && provider.bannerImage.length > 0 ? (
           <Card.Img 
           variant="top" 
-          src={provider.photos[0]}
+          src={`${API_BASE}/${provider.bannerImage}`}
           alt={provider.shopName}
         />
         ) : (
@@ -360,7 +415,7 @@ const CategoryPage = () => {
           <Card.Title>{provider.shopName}</Card.Title>
 
           {/* Description */}
-          <p className="text-muted">{provider.description}</p>
+          <p className="text-muted">{provider.description && provider.description.length > 100 ? (provider.description.slice(0,100) + "...") : (provider.description)}</p>
 
           {/* Info Section */}
           <div className="provider-info">
@@ -412,7 +467,7 @@ const CategoryPage = () => {
               backgroundColor: currentCategory.color,
               borderColor: currentCategory.color,
             }}
-            onClick={() => navigate(`/listing/${provider._id}`)}
+            onClick={() => navigate(`/listings/${safeSlug}-${provider._id}`)}
           >
             Contact Provider
           </Button>
@@ -420,7 +475,7 @@ const CategoryPage = () => {
         </Card.Body>
       </Card>
     </Col>
-  ))}
+  )})}
 </Row>
 
         </Container>
@@ -429,7 +484,7 @@ const CategoryPage = () => {
       {/* Care Tips */}
       <section className="care-tips-section" style={{ backgroundColor: `${currentCategory.color}10` }}>
         <Container>
-          <h2 className="section-title">{currentCategory.name} Related Blogs</h2>
+          <h2 className="section-title"> Blogs</h2>
           <Row>
             {blog.map((blogPost, index) => (
               <Col md={4} className="mb-4" key={index}>
@@ -437,7 +492,7 @@ const CategoryPage = () => {
                   {blogPost.bannerImage && blogPost.bannerImage.length > 0 ? (
                     <Card.Img 
                     variant="top" 
-                    src={`/${blogPost.bannerImage}`}
+                    src={`${API_BASE}/${blogPost.bannerImage}`}
                     alt={blogPost.title}
                   />
                   ) : (

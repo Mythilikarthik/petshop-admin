@@ -105,6 +105,34 @@ const ViewReviewDetail = () => {
               {new Date(review.created_at).toLocaleDateString()}
             </Col>
           </Row>
+          {review.photos?.length > 0 && (
+  <Row className="mt-4">
+    <Col>
+      <strong>Uploaded Photos:</strong>
+
+      <Row className="mt-2">
+        {review.photos.map((img, index) => (
+          <Col md={12} sm={12} xs={12} key={index} className="mb-3">
+            <Card className="shadow-sm">
+              <Card.Img
+              className="img-responsive"
+                variant="top"
+                src={`${API_BASE}${img}`}
+                alt={`Review-${index}`}
+                style={{
+                  height: "150px",
+                  objectFit: "cover",
+                  cursor: "pointer",
+                }}
+              />
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </Col>
+  </Row>
+)}
+
 
           <Row>
             <Col>

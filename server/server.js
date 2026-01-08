@@ -19,6 +19,9 @@ const AdRoutes = require("./Routes/AdRoutes");
 const ChartRoutes = require("./Routes/ChartRoutes");
 const MessageRoutes = require('./Routes/MessageRoutes');
 const contactAdminRoutes = require("./Routes/ContactAdminRoutes");
+const DirectoryBannerRoutes = require("./Routes/DirectoryBanner");
+const BlogBannerRoutes = require("./Routes/BlogBanner");
+const CityBannerRoutes = require("./Routes/CityBannerRoutes");
 
 
 const http = require("http");
@@ -62,6 +65,9 @@ app.use("/api/stats", ChartRoutes);
 app.use("/api/messages", MessageRoutes);
 app.use("/api/contact-admin", contactAdminRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/directory-banner", DirectoryBannerRoutes);
+app.use("/api/blog-banner", BlogBannerRoutes);
+app.use("/api/city-banner", CityBannerRoutes);
 
 
 

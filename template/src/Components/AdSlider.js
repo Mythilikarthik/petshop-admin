@@ -4,6 +4,11 @@ const AdSlider = ({ ads, maxImages, interval, float = false, side = "right" }) =
   const [index, setIndex] = useState(0);
   const [closed, setClosed] = useState(false); // <-- NEW (for all)
 
+  const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
+
   const visibleAds = ads.slice(0, maxImages);
 
   useEffect(() => {
@@ -25,7 +30,7 @@ const AdSlider = ({ ads, maxImages, interval, float = false, side = "right" }) =
             ×
         </button>
         <a href={visibleAds[index].url || "#"} target="_blank" rel="noopener noreferrer">
-          <img src={visibleAds[index].image} className="ad-slide-img" alt="Ad" />
+          <img src={`${API_BASE}${visibleAds[index].image}`} className="ad-slide-img" alt="Ad" />
         </a>
 
         <div className="ad-indicators">

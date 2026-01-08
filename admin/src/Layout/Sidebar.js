@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import { 
    MdLogout, MdAttachMoney,  MdLocationCity, MdPlace, 
   
-  MdCampaign,
-  MdOutlinePages,
+  MdCampaign,MdOutlineCategory ,
+  MdOutlinePages, MdOutlineStoreMallDirectory ,
   MdPets
 } from 'react-icons/md';
 import { GiJumpingDog , GiDogHouse, GiNestBirds , GiRabbit, GiDogBowl } from "react-icons/gi";
@@ -30,6 +30,7 @@ const menuItems = [
       { name: "Blog Listing", path: "/blog-listing", icon: <FaNewspaper  /> },
       { name: "FAQ", path: "/faq-listing", icon: <FaQuestionCircle /> },
       { name: "Review Management", path: "/review-management", icon: <MdCampaign /> },
+      
     ]
   },
   // { name: "User Management", path: "/user-management", icon: <MdPeople /> },
@@ -37,7 +38,10 @@ const menuItems = [
     children: [
       { name: "Custom Pages", path: "/custom-pages", icon: <FaPagelines /> },
       { name: "Home Page", path: "/home-page", icon: <FaDesktop  /> },
-      { name: "Category Pages", path: "/category-pages", icon: <FaDesktop  /> },
+      { name: "Category Pages", path: "/category-pages", icon: <MdOutlineCategory  /> },
+      { name: "Directory Banner", path: "/directory-banner-management", icon: <MdOutlineStoreMallDirectory  /> },
+      { name: "City Banners", path: "/city-banner-management", icon: <MdOutlineStoreMallDirectory  /> },
+      { name: "Blog Banner", path: "/blog-banner-management", icon: <MdOutlineStoreMallDirectory  /> },
     ]
    },
   { name: "Ad Management", path: "/ad-management", icon: <MdCampaign />, 

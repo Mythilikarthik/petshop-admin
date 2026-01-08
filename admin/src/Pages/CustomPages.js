@@ -138,7 +138,7 @@ const CustomPages = () => {
                 <tr key={p._id}>
                   <td>{currentPage * itemsPerPage + i + 1}</td>
                   <td>{p.page}</td>
-                  <td>{p.category || "—"}</td>
+                  <td>{Array.isArray(p.category) ? p.category.join(", ") : "—"}</td>
                   <td>{p.city || "—"}</td>
                   <td>{p.pageTitle}</td>
                   <td>{p.metaKeyword || "—"}</td>

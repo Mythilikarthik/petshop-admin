@@ -38,6 +38,7 @@
   outline: none;
   min-width: 160px;
   transition: border 0.2s;
+  width: 100%;
 }
 
 .directory-filters select:focus,

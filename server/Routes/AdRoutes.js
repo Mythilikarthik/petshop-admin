@@ -15,7 +15,33 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) =>
     cb(null, file.fieldname + "-" + Date.now() + path.extname(file.originalname))
 });
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fileSize: 2 * 1024 * 1024 } });
+const uploadSingleWithError = (fieldName) => (req, res, next) => {
+  upload.single(fieldName)(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({
+          success: false,
+          message: "Image too large (max 2MB allowed)"
+        });
+      }
+
+      return res.status(400).json({
+        success: false,
+        message: err.message
+      });
+    }
+
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message || "Image upload failed"
+      });
+    }
+
+    next();
+  });
+};
 
 
 // 🧠 Custom Ad Settings
@@ -71,7 +97,7 @@ router.get("/:id", async (req, res) => {
 });
 
 
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", uploadSingleWithError("image"), async (req, res) => {
   try {
     console.log("📩 Incoming ad data:", req.body);
     console.log("📷 Uploaded file:", req.file);
@@ -101,7 +127,7 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 
-router.patch("/:id", upload.single("image"), async (req, res) => {
+router.patch("/:id", uploadSingleWithError("image"), async (req, res) => {
   try {
     const updateData = {};
 
@@ -182,63 +208,154 @@ router.get("/earnings/:id", async (req, res) => {
   const earnings = (ad.impressions / 1000) * CPM_RATE + ad.clicks * CPC_RATE;
   res.json({ earnings });
 });
+
+
+
+
+
+// without shuffle
+// router.get("/top/:pgname", async (req, res) => {
+//   try {
+//     const {pgname } = req.params;
+//     const ads = await Ad.find({ page: pgname, position: "top" })
+//       .populate("category", "categoryName")
+//       .populate("city", "city");
+
+//     const setting = await AdSetting.findOne() || { slideInterval: 5, maxImages: 5 };
+
+//     res.json({
+//       success: true,
+//       ads,
+//       settings: setting
+//     });
+//   } catch (err) {
+//     console.error("Error loading home ads:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
+// router.get("/bottom/:pgname", async (req, res) => {
+//   try {
+//     const {pgname } = req.params;
+//     const ads = await Ad.find({ page: pgname, position: "bottom" })
+//       .populate("category", "categoryName")
+//       .populate("city", "city");
+
+//     const setting = await AdSetting.findOne() || { slideInterval: 5, maxImages: 5 };
+
+//     res.json({
+//       success: true,
+//       ads,
+//       settings: setting
+//     });
+//   } catch (err) {
+//     console.error("Error loading home ads:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
+// router.get("/middle/:pgname", async (req, res) => {
+//   try {
+//     const {pgname } = req.params;
+//     const ads = await Ad.find({ page: pgname, position: "middle" })
+//       .populate("category", "categoryName")
+//       .populate("city", "city");
+
+//     const setting = await AdSetting.findOne() || { slideInterval: 5, maxImages: 5 };
+
+//     res.json({
+//       success: true,
+//       ads,
+//       settings: setting
+//     });
+//   } catch (err) {
+//     console.error("Error loading home ads:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
+
+// with shuffle
 router.get("/top/:pgname", async (req, res) => {
   try {
-    const {pgname } = req.params;
-    const ads = await Ad.find({ page: pgname, position: "top" })
-      .populate("category", "categoryName")
-      .populate("city", "city");
+    const { pgname } = req.params;
 
-    const setting = await AdSetting.findOne() || { slideInterval: 5, maxImages: 5 };
+    const ads = await Ad.aggregate([
+      { $match: { page: pgname, position: "top" } },
+      { $sample: { size: 50 } } // adjust size if needed
+    ]);
+
+    const populatedAds = await Ad.populate(ads, [
+      { path: "category", select: "categoryName" },
+      { path: "city", select: "city" }
+    ]);
+
+    const setting =
+      (await AdSetting.findOne()) || { slideInterval: 5, maxImages: 5 };
 
     res.json({
       success: true,
-      ads,
+      ads: populatedAds,
       settings: setting
     });
   } catch (err) {
-    console.error("Error loading home ads:", err);
+    console.error("Error loading top ads:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 router.get("/bottom/:pgname", async (req, res) => {
   try {
-    const {pgname } = req.params;
-    const ads = await Ad.find({ page: pgname, position: "bottom" })
-      .populate("category", "categoryName")
-      .populate("city", "city");
+    const { pgname } = req.params;
 
-    const setting = await AdSetting.findOne() || { slideInterval: 5, maxImages: 5 };
+    const ads = await Ad.aggregate([
+      { $match: { page: pgname, position: "bottom" } },
+      { $sample: { size: 50 } } // adjust size if needed
+    ]);
+
+    const populatedAds = await Ad.populate(ads, [
+      { path: "category", select: "categoryName" },
+      { path: "city", select: "city" }
+    ]);
+
+    const setting =
+      (await AdSetting.findOne()) || { slideInterval: 5, maxImages: 5 };
 
     res.json({
       success: true,
-      ads,
+      ads: populatedAds,
       settings: setting
     });
   } catch (err) {
-    console.error("Error loading home ads:", err);
+    console.error("Error loading top ads:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 router.get("/middle/:pgname", async (req, res) => {
   try {
-    const {pgname } = req.params;
-    const ads = await Ad.find({ page: pgname, position: "middle" })
-      .populate("category", "categoryName")
-      .populate("city", "city");
+    const { pgname } = req.params;
 
-    const setting = await AdSetting.findOne() || { slideInterval: 5, maxImages: 5 };
+    const ads = await Ad.aggregate([
+      { $match: { page: pgname, position: "middle" } },
+      { $sample: { size: 50 } } // adjust size if needed
+    ]);
+
+    const populatedAds = await Ad.populate(ads, [
+      { path: "category", select: "categoryName" },
+      { path: "city", select: "city" }
+    ]);
+
+    const setting =
+      (await AdSetting.findOne()) || { slideInterval: 5, maxImages: 5 };
 
     res.json({
       success: true,
-      ads,
+      ads: populatedAds,
       settings: setting
     });
   } catch (err) {
-    console.error("Error loading home ads:", err);
+    console.error("Error loading top ads:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+
 
 
 module.exports = router;

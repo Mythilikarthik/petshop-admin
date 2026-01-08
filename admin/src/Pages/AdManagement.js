@@ -187,7 +187,7 @@ console.log(catData);
               </Form.Select>
             </Form.Group>
             {/* Category */}
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
               <Form.Label>Category</Form.Label>
               <Select
                 name="category"
@@ -212,10 +212,10 @@ console.log(catData);
                   }))
                 }
               />
-            </Form.Group>
+            </Form.Group> */}
 
             {/* City */}
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
               <Form.Label>City</Form.Label>
               <Select
                 name="city"
@@ -240,7 +240,7 @@ console.log(catData);
                   }))
                 }
               />
-            </Form.Group>
+            </Form.Group> */}
 
             {/* Position */}
             <Form.Group className="mb-3">
@@ -278,6 +278,7 @@ console.log(catData);
                 accept="image/*"
                 onChange={handleBannerFile}
               />
+              <Form.Text>Note: Max 2MB allowed</Form.Text>
               {formData.image && !bannerFile && (
                 <div className="mt-2 text-center">
                   <Image

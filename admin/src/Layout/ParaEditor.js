@@ -19,16 +19,17 @@ const ParaEditor = ({ value, onChange }) => {
       init={{
         height: 300,
         menubar: false,
-        plugins: [
-          "advlist autolink lists link charmap preview anchor",
-          "searchreplace visualblocks code fullscreen",
-          "insertdatetime media table paste help wordcount"
-        ],
+
+        plugins:
+          "advlist autolink lists link charmap preview anchor " +
+          "searchreplace visualblocks code fullscreen " +
+          "insertdatetime media table paste help wordcount",
+
         toolbar:
-          "undo redo | formatselect | " +
-          "bold italic underline | alignleft aligncenter " +
-          "alignright alignjustify | bullist numlist outdent indent | " +
-          "removeformat | help",
+          "undo redo | formatselect | bold italic underline | " +
+          "alignleft aligncenter alignright alignjustify | " +
+          "bullist numlist outdent indent | " +
+          "link | removeformat | help",
       }}
       onEditorChange={handleEditorChange}
     />

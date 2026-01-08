@@ -10,6 +10,7 @@ import Login from './Pages/Login';
 import Logout from './Pages/Logout';
 import Theme from './Theme'; 
 import './App.css';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 
 import RequireAuth from './RequireAuth';
@@ -38,6 +39,7 @@ function App() {
       return <Loader />;
     }
   return (
+    <GoogleOAuthProvider clientId="932728880850-okmd8gvva3mv1vc00lsiqsjkambs2gol.apps.googleusercontent.com">
     <Router>
       <SessionTimeoutHandler />
       <Routes>
@@ -70,6 +72,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
+    </GoogleOAuthProvider>
   );
 }
 

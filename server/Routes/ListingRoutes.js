@@ -143,8 +143,8 @@ router.post(
         petCategories,
         created_by_id: req.userId,
         created_by_type: req.userType,
-        bannerImage: bannerFile ? bannerFile.filename : null,
-        photos: photoFiles.map(file => file.filename),
+        bannerImage: bannerFile ? `${uploadDir}/`+bannerFile.filename : null,
+        photos: photoFiles.map(file => `${uploadDir}/`+file.filename),
         metaTitle,
         metaKeyword,
         metaDescription,
@@ -355,6 +355,7 @@ router.get("/featured-services", async (req, res) => {
       rating: ratingMap[listing._id.toString()] || 0,
       tags: listing.petCategories?.map(c => c.categoryName) || [],
       image: listing.photos?.[0] || null,
+      bannerImage: listing.bannerImage || null,
     }));
 
     res.json({ success: true, services: result });
@@ -590,7 +591,7 @@ router.post("/image", upload.array("image", 10), (req, res) => {
     // Prepare the list of uploaded file paths
     const uploadedFiles = req.files.map((file) => ({
       filename: file.filename,
-      path: path.join("uploads/listings", file.filename),
+      path: path.join(uploadDir + "/", file.filename),
     }));
 
     res.json({ success: true, files: uploadedFiles, message: "Images uploaded successfully" });
@@ -957,6 +958,19 @@ router.put(
       const data = req.body;
       console.log("Update data received:", data);
 
+      /* -------------------- Verified toggle -------------------- */
+      if (typeof data.isVerified !== "undefined") {
+        data.isVerified = data.isVerified === "true" || data.isVerified === true;
+
+        if (data.isVerified) {
+          data.verifiedAt = new Date();
+          data.verifiedBy = req.userType === "admin" ? req.userId : null;
+        } else {
+          data.verifiedAt = null;
+          data.verifiedBy = null;
+        }
+      }
+
       /* -------------------- Parse categories -------------------- */
       if (data["categories[]"]) {
         data.categories = Array.isArray(data["categories[]"])
@@ -976,7 +990,7 @@ router.put(
       let uploadedPhotos = [];
       if (req.files?.photos) {
         uploadedPhotos = req.files.photos.map(
-          f => `/uploads/listings/${f.filename}`
+          f => `${uploadDir}/${f.filename}`
         );
       }
 
@@ -992,7 +1006,7 @@ router.put(
       /* -------------------- Banner Image (IMPORTANT FIX) -------------------- */
       if (req.files?.bannerImage?.[0]) {
         // New banner uploaded → replace
-        data.bannerImage = `/uploads/listings/${req.files.bannerImage[0].filename}`;
+        data.bannerImage = `${uploadDir}/${req.files.bannerImage[0].filename}`;
       } else {
         // No new banner → keep existing
         const currentListing = await Listing.findById(req.params.id);
@@ -1119,7 +1133,7 @@ router.put(
       // --- Uploaded photos ---
       let uploadedPhotos = [];
       if (req.files && req.files.photos) {
-        uploadedPhotos = req.files.photos.map(f => `/uploads/listings/${f.filename}`);
+        uploadedPhotos = req.files.photos.map(f => `${uploadDir}/${f.filename}`);
       }
 
       // --- Preserve old photos if nothing sent ---
@@ -1133,7 +1147,7 @@ router.put(
 
       // --- Handle banner image ---
       if (req.files && req.files.bannerImage && req.files.bannerImage[0]) {
-        data.bannerImage = `/uploads/listings/${req.files.bannerImage[0].filename}`;
+        data.bannerImage = `${uploadDir}/${req.files.bannerImage[0].filename}`;
       } else if (currentListing && !data.bannerImage) {
         // preserve old banner if exists
         data.bannerImage = currentListing.bannerImage || null;

@@ -31,7 +31,7 @@ const BlogEditPage = () => {
 
   // Fetch categories
   useEffect(() => {
-    fetch(`${API_BASE}/api/category`)
+    fetch(`${API_BASE}/api/category/show`)
       .then(res => res.json())
       .then(data => {
         if (data && data.success && Array.isArray(data.categories)) {
@@ -53,7 +53,11 @@ const BlogEditPage = () => {
         .then(res => res.json())
         .then(data => {
           if (data && data.success && data.blog) {
-            setBlog(data.blog);
+            // setBlog(data.blog);      
+            setBlog({
+            ...data.blog,
+            category: data.blog.category.map(cat => cat._id), // ✅ FIX
+          });      
           } else if (data && !data.success) {
             console.warn('Fetch blog returned no success');
           }
@@ -62,6 +66,7 @@ const BlogEditPage = () => {
         .finally(() => setLoading(false));
     }
   }, [id, isNew]);
+  console.log("Blog:", blog);
 
   // ---------------------------
   // SAVE HANDLER (fixed)
@@ -213,7 +218,7 @@ const BlogEditPage = () => {
                   }
                 />
                 <Form.Text className="text-muted">
-                                Note : 1200x400 pixels.
+                                Note : 1200x300 pixels.
                               </Form.Text> <br />
                 {blog.bannerImage && typeof blog.bannerImage === "string" && (
                   <img

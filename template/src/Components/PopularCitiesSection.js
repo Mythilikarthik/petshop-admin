@@ -3,6 +3,7 @@ import './Css/PopularCitiesSection.css';
 import { Row, Col, Container } from 'react-bootstrap';
 import { AiFillHome } from "react-icons/ai";
 import { Link } from 'react-router-dom';
+import cityBg from '../city-bg-4.jpg';
 
 
 
@@ -34,7 +35,9 @@ const PopularCitiesSection = ({cities}) => (
                             role="img"
                             aria-label="home"
                         >
-                            <AiFillHome size={100} />
+                            <img className='img-responsive' src={cityBg} alt='' />
+                            {/* <AiFillHome size={100} /> */}
+
                         </span>
                         <div className="city-info">
                             <div className="city-name">{city.city}</div>

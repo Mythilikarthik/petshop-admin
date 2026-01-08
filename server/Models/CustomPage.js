@@ -8,6 +8,10 @@ const CustomPageSchema = new mongoose.Schema({
   metaKeyword: [String],
   metaDescription: String,
   content: String,
+  banner: {
+    type: String,
+    
+  },
   created_at: { type: Date, default: Date.now },
 });
 

@@ -378,3 +378,21 @@
 .city-link {
   text-decoration: none;
 }
+.category-hero {
+  padding: 80px 0;
+  position: relative;
+}
+
+.hero-description {
+  max-width: 600px;
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+.min-vh-50 {
+  min-height: 50vh;
+}
+
+.category-hero-icon svg {
+  font-size: 48px;
+}

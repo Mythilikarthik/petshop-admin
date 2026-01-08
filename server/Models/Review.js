@@ -20,6 +20,10 @@ const ReviewSchema = new mongoose.Schema({
   rating: { type: Number, min: 1, max: 5, required: true },
   comment: { type: String, trim: true },
   isGuest: { type: Boolean, default: false },
+  photos: {
+  type: [String], // array of image paths
+  default: []
+},
 
   // Moderation fields
   status: { 

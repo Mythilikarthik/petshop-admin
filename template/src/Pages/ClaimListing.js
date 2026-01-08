@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
-
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 const API_BASE =
   process.env.NODE_ENV === "production"
     ? "https://petshop-admin.onrender.com"
@@ -12,8 +12,12 @@ const ClaimListing = () => {
   const navigate = useNavigate();
   const [aler, setAlert] = useState({ show: false, type: "", message: "" });
   const [loading, setLoading] = useState(false);
-
+const [usernameError, setUsernameError] = useState("");
   const [listing, setListing] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+const [confirmPassword, setConfirmPassword] = useState("");
+const [passwordError, setPasswordError] = useState("");
   const [user, setUser] = useState({
     name: "",
     username: "",
@@ -41,13 +45,46 @@ const ClaimListing = () => {
     }
   };
 
+  // const handleUserChange = (e) => {
+  //   setUser({ ...user, [e.target.name]: e.target.value });
+  // };
   const handleUserChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  };
+  const { name, value } = e.target;
+
+  if (name === "username") {
+    const regex = /^[a-zA-Z0-9_]*$/; // allow typing
+    if (!regex.test(value)) {
+      setUsernameError("Username can contain only letters, numbers, and underscore");
+      return;
+    } else {
+      setUsernameError("");
+    }
+  }
+
+  setUser({ ...user, [name]: value });
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
+  if (!usernameRegex.test(user.username)) {
+    setAlert({
+      show: true,
+      type: "danger",
+      message: "Username can contain only letters, numbers, and underscore",
+    });
+    return;
+  }
+if (user.password !== confirmPassword) {
+  setAlert({
+    show: true,
+    type: "danger",
+    message: "Password and Confirm Password do not match",
+  });
+  return;
+}
     // 1. Register user
     const userRes = await fetch(`${API_BASE}/api/auth/user/register`, {
       method: "POST",
@@ -137,13 +174,27 @@ const ClaimListing = () => {
             />
             </Form.Group>
 
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
             <Form.Label>Username <span className="text-red">*</span></Form.Label>
             <Form.Control
                 name="username"
                 onChange={handleUserChange}
             />
             </Form.Group>
+             */}
+             <Form.Group className="mb-3">
+              <Form.Label>Username <span className="text-red">*</span></Form.Label>
+              <Form.Control
+                name="username"
+                value={user.username}
+                onChange={handleUserChange}
+                isInvalid={!!usernameError}
+              />
+              <Form.Control.Feedback type="invalid">
+                {usernameError}
+              </Form.Control.Feedback>
+            </Form.Group>
+
 
             <Form.Group className="mb-3">
             <Form.Label>Email <span className="text-red">*</span></Form.Label>
@@ -166,14 +217,70 @@ const ClaimListing = () => {
             />
             </Form.Group>
 
-            <Form.Group className="mb-4">
+            {/* <Form.Group className="mb-4">
             <Form.Label>Password <span className="text-red">*</span></Form.Label>
             <Form.Control
                 type="password"
                 name="password"
                 onChange={handleUserChange}
             />
-            </Form.Group>
+            </Form.Group> */}
+            <Form.Group className="mb-3">
+  <Form.Label>Password <span className="text-red">*</span></Form.Label>
+
+  <div className="position-relative">
+    <Form.Control
+      type={showPassword ? "text" : "password"}
+      name="password"
+      onChange={handleUserChange}
+    />
+
+    <span
+      onClick={() => setShowPassword(!showPassword)}
+      style={{
+        position: "absolute",
+        right: "12px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        cursor: "pointer",
+        color: "#666",
+      }}
+    >
+      {showPassword ? <FaEyeSlash /> : <FaEye />}
+    </span>
+  </div>
+</Form.Group>
+<Form.Group className="mb-4">
+  <Form.Label>Confirm Password <span className="text-red">*</span></Form.Label>
+
+  <div className="position-relative">
+    <Form.Control
+      type={showConfirmPassword ? "text" : "password"}
+      value={confirmPassword}
+      onChange={(e) => setConfirmPassword(e.target.value)}
+      isInvalid={passwordError}
+    />
+
+    <span
+      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+      style={{
+        position: "absolute",
+        right: "12px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        cursor: "pointer",
+        color: "#666",
+      }}
+    >
+      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+    </span>
+
+    <Form.Control.Feedback type="invalid">
+      Passwords do not match
+    </Form.Control.Feedback>
+  </div>
+</Form.Group>
+
 
             <div className="text-center">
             <Button type="submit" variant="primary" disabled={loading}>

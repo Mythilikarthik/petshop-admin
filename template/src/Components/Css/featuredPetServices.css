@@ -82,3 +82,24 @@
     border: none;
     color: #fff;
 }
+.service-rating .rating-wrap {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.service-rating .rating-value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.service-rating svg {
+  width: 14px;
+  height: 14px;
+}
+
+.service-rating .rating-count {
+  font-size: 11px;
+  color: #777;
+  line-height: 1;
+}

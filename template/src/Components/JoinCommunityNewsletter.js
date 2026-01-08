@@ -3,6 +3,11 @@ import './Css/JoinCommunityNewsletter.css';
 import { Row, Col, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
+const LOGIM_URI =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-user.onrender.com"
+    : "http://localhost:3001";
+
 const JoinCommunityNewsletter = ({home}) => {
   const navigate = useNavigate();
   return (
@@ -19,7 +24,7 @@ const JoinCommunityNewsletter = ({home}) => {
                         <div className="community-actions">
                         <button className="login-btn"
                           onClick={() => {
-                           window.open("https://petshop-user.onrender.com", "_blank");
+                            window.open(LOGIM_URI, "_self");
                           } }
                         >
                             Login

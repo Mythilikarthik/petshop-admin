@@ -3,6 +3,34 @@ const router = express.Router();
 const Review = require('../Models/Review');
 const Listing = require("../Models/Listing");
 const { verifyToken } = require('../middleware/authMiddleware');
+const multer = require("multer");
+const path = require("path");
+const fs = require('fs');
+
+const uploadDir = "uploads/reviews/";
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const fileFilter = (req, file, cb) => {
+  const allowed = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowed.includes(file.mimetype)) {
+    cb(new Error("Only JPG, PNG, and WEBP images are allowed"));
+  } else {
+    cb(null, true);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+});
 
 router.get("/list/:listingId", async (req, res) => {
   try {
@@ -20,12 +48,15 @@ router.get("/list/:listingId", async (req, res) => {
     });
   }
 });
-
-// POST /api/reviews
-router.post("/", async (req, res) => {
+//POST /api/reviews -with image
+router.post("/", upload.array("photos", 5), async (req, res) => {
   const { listingId, userId, userName, userEmail, rating, comment } = req.body;
 
   try {
+    const photos = req.files
+      ? req.files.map(file => `/uploads/reviews/${file.filename}`)
+      : [];
+
     const review = new Review({
       listingId,
       userId: userId || null,
@@ -33,16 +64,56 @@ router.post("/", async (req, res) => {
       userEmail,
       rating,
       comment,
+      photos,          // ✅ saved as array
       isGuest: !userId,
-      status: "pending"
+      status: "pending",
     });
 
     await review.save();
-    res.status(201).json({ success: true, message: "Review submitted for approval.", review });
+
+    res.status(201).json({
+      success: true,
+      message: "Review submitted for approval.",
+      review,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({
+          success: false,
+          message: "File too large (max 2MB per image)"
+        });
+      }
+    }
+
+    res.status(500).json({ success: false, message: err.message });
   }
 });
+
+
+// POST /api/reviews - without image
+// router.post("/", async (req, res) => {
+//   const { listingId, userId, userName, userEmail, rating, comment } = req.body;
+
+//   try {
+//     const review = new Review({
+//       listingId,
+//       userId: userId || null,
+//       userName,
+//       userEmail,
+//       rating,
+//       comment,
+//       isGuest: !userId,
+//       status: "pending"
+//     });
+
+//     await review.save();
+//     res.status(201).json({ success: true, message: "Review submitted for approval.", review });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 // PATCH /api/reviews/:id/status
 router.patch("/:id/status", async (req, res) => {
   const { status, adminId } = req.body; // status = "approved" or "rejected"

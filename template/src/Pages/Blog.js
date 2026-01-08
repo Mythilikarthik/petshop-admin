@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import PetHealthTips from '../Components/PetHealthTips';
 import AdSlider from '../Components/AdSlider';
+import { Image } from "react-bootstrap";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -74,14 +75,46 @@ const fetchMiddleHomeAds = async () => {
     console.error("Error fetching home ads:", err);
   }
 };
+const [banner, setBanner] = useState(null);
+
+const Banner = async () => {
+  try {
+    const url = `${API_BASE}/api/blog-banner`;
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch banner");
+    }
+
+    const data = await res.json();
+// console.log(data);
+    if (data.success) {
+      setBanner(data.banner); // ✅ correct
+    }
+    
+  } catch (err) {
+    console.error("Banner error:", err.message);
+  }
+};
+
     useEffect(() => {
       fetchTopHomeAds();
     fetchBottomHomeAds();
     fetchMiddleHomeAds();
     blogData();
+    Banner();
     }, []);
   return (
     <>
+    {banner?.banner && (
+      <Image
+        className='img-responsive'
+        src={`${API_BASE}/${banner.banner}`}
+        alt="Banner"
+        style={{ width: "100%", height: "300px", objectFit: "cover" }}
+      />
+    )}
     {topHomeAds.length > 0 && (
       <AdSlider ads={topHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
     )}
@@ -89,7 +122,7 @@ const fetchMiddleHomeAds = async () => {
             <AdSlider ads={middleHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} float={true}
       side="right" />
           )}
-    <PetHealthTips blog={blog} showViewAll={false} />
+    <PetHealthTips blog={blog} showViewAll={false} banner={true} />
      {bottomHomeAds.length > 0 && (
         <AdSlider ads={bottomHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
       )}

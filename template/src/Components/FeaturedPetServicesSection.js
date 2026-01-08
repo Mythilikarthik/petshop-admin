@@ -6,6 +6,7 @@ import './Css/featuredPetServices.css';
 import { BsLightningFill, BsTagFill, BsHouseFill, BsGeoAltFill, BsStarFill } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import dummyImage from '../dummy.jpg';
+import { FaStar } from 'react-icons/fa';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -82,6 +83,53 @@ const FeaturedPetServicesSection = () => {
         useEffect(() => {
             fetchServices();
         }, []);
+
+        useEffect(() => {
+  const fetchReviews = async () => {
+    try {
+      const responses = await Promise.all(
+        services.map(async (service) => {
+          const res = await fetch(`${API_BASE}/api/reviews/list/${service.id}`);
+          const data = await res.json();
+          return {
+            serviceId: service.id,
+            reviews: data.success ? data.reviews : [],
+          };
+        })
+      );
+
+      const reviewsMap = {};
+      responses.forEach(({ serviceId, reviews }) => {
+        reviewsMap[serviceId] = reviews;
+      });
+
+      setReviewsByService(reviewsMap);
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+    }
+  };
+
+  if (services.length) {
+    fetchReviews();
+  }
+}, [services]);
+const [reviewsByService, setReviewsByService] = useState({});
+const averageRating = (serviceId) => {
+  const reviews = reviewsByService[serviceId] || [];
+  if (!reviews.length) return 0;
+
+  return (
+    reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+  ).toFixed(1);
+};
+
+const renderAvgStarsCal = (value) => {
+  const full = Math.round(value);
+  return Array.from({ length: 5 }).map((_, i) => (
+    <FaStar key={i} color={i < full ? "#ffc107" : "#e4e5e9"} />
+  ));
+};
+
     return (
     <div className="featured-section">
         <Container>
@@ -94,21 +142,29 @@ const FeaturedPetServicesSection = () => {
                 </p>
             </div>
             <Row className="justify-content-center">
-                {services.map(service => (
+                {services.map(service => {
+                    console.log("service:", service);
+                    const safeSlug = service.slug && service.slug !== "undefined"
+                                    ? service.slug
+                                    : service.title
+                                        ?.toLowerCase()
+                                        .trim()
+                                        .replace(/\s+/g, "-")
+                                        .replace(/[^a-z0-9-]/g, "");
+
+                    return (
                     <Col key={service.id} md={4} className="mb-4">
                         <Card className={`service-card w-100 h-100 d-flex flex-column`}>
-                            <Card.Header className="card-top-rated">
-                                
-                                
+                            <Card.Header className="card-top-rated p-0">
                                     
                                 
                                 {/* <div className="service-icon">
                                     <BsTagFill size={100} color="#ff8800" />
                                 </div> */}
-                                {service.image && service.image.length > 0 ? (
+                                {service.bannerImage && service.bannerImage.length > 0 ? (
                                           <Card.Img 
                                           variant="top" 
-                                          src={service.image}
+                                          src={`${API_BASE}/${service.bannerImage}`}
                                           alt={service.shopName}
                                         />
                                         ) : (
@@ -118,13 +174,13 @@ const FeaturedPetServicesSection = () => {
                             </Card.Header>
                             <Card.Body className='pos-rel d-flex flex-grow-1 flex-column '>
                                 
-                                <Card.Title>{service.title}</Card.Title>
+                                <Card.Title>{service.title && service.title.length > 20 ? service.title.substring(0, 20) + "..." : service.title}</Card.Title>
                                 <div className="service-tags">
                                 {service.tags.map((tag, index) => (
                                         <span key={service.id + "-tag-" + index} className="badge badge-top-rated">{tag}</span>
                                     ))}
                                 </div>
-                                <Card.Text className='mt-4'>{service.description}</Card.Text>
+                                <Card.Text className='mt-4'>{service.description && service.description.length > 60 ? service.description.substring(0, 60) + "..." : service.description}</Card.Text>
                                 <div className="service-location">
                                     <span role="img" aria-label="location"> <BsGeoAltFill />  </span> {service.location}
                                 </div>
@@ -138,21 +194,37 @@ const FeaturedPetServicesSection = () => {
                                         </span>
                                     ))}
                                 </div>
-                                <div className="service-rating align-item-center d-flex gap-2">
+                                {/* <div className="service-rating align-item-center d-flex gap-2">
                                     <span className='d-block' role="img" aria-label="star" style={{"verticalAlign" : "unset"}}> <BsStarFill /> </span> 
                                     <span className='d-block'>{service.rating}</span>
-                                </div>
+                                </div> */}
+                                <div className="review-summary service-rating">
+  <div className="rating-wrap">
+    <div className="rating-value">
+      {averageRating(service.id)}
+    </div>
+    <div>
+      {renderAvgStarsCal(averageRating(service.id))}
+      <div className="rating-count">
+        {(reviewsByService[service.id] || []).length} review(s)
+      </div>
+    </div>
+  </div>
+</div>
+
+
                                 <Button
                                     variant={"primary"}
                                     className="details-btn mt-auto"
-                                    onClick={() => navigate(`/listing/${service.id}`)}
+                                    onClick={() => navigate(`/listings/${safeSlug}-${service.id}`)}
                                 >
                                     View Details
                                 </Button>
                             </Card.Body>
                         </Card>
                     </Col>
-                ))}
+                )
+                })}
             </Row>
             <div className="text-center mt-3">
                 <button variant="warning" className="orange-btn py-2 px-4 border-2 border-orange-500 bg-orange-500 text-white rounded-full"

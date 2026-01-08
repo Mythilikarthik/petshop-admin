@@ -13,6 +13,12 @@ const UserSchema = new mongoose.Schema({
   paymentId: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
   resetPasswordToken: String,
 resetPasswordExpires: Date,
+authProvider: {
+  type: String,
+  enum: ["local", "google"],
+  default: "local"
+},
+googleId: String,
 
   created_at: { type: Date, default: Date.now },
 });

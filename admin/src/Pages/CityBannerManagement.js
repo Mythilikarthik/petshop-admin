@@ -1,0 +1,204 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Table, Button, Form, Row, Col, Breadcrumb } from "react-bootstrap";
+import ReactPaginate from "react-paginate";
+import { useNavigate } from "react-router-dom";
+
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
+
+const itemsPerPage = 5;
+
+const CityBannerListings = () => {
+  const [listings, setListings] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const navigate = useNavigate();
+
+  /* ================= FETCH LISTINGS ================= */
+  const fetchListings = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/city-banner`);
+      const data = await res.json();
+
+      if (data.success && Array.isArray(data.listings)) {
+        setListings(data.listings); // ✅ keep full object
+      }
+    } catch (err) {
+      console.error("Error fetching listings:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
+  /* ================= FILTER + PAGINATION ================= */
+  const filteredListings = listings.filter((l) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      !term ||
+      (l.city?.city || "").toLowerCase().includes(term)
+    );
+  });
+
+  const pageCount = Math.ceil(filteredListings.length / itemsPerPage);
+  const displayedListings = filteredListings.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  /* ================= ACTIONS ================= */
+  const handleEdit = (cityId) => {
+    navigate("/add-city-banner", {
+      state: { cityId },
+    });
+  };
+
+  const handleDelete = async (bannerId) => {
+    if (!window.confirm("Are you sure you want to delete this city banner?"))
+      return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/city-banner/delete/${bannerId}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+
+      if (data.success) {
+        setListings((prev) =>
+          prev.filter((item) => item._id !== bannerId)
+        );
+      } else {
+        alert("Failed to delete banner");
+      }
+    } catch (err) {
+      console.error(err.message);
+      alert("Error deleting banner");
+    }
+  };
+
+  /* ================= RENDER ================= */
+  return (
+    <div className="container mt-4">
+      <div className="pl-3 pr-3">
+        <Row className="mb-3 align-items-center">
+          <Col>
+            <h2 className="main-title mb-0">City Banners Listing</h2>
+            <Breadcrumb className="top-breadcrumb">
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+              <Breadcrumb.Item active>City Banners</Breadcrumb.Item>
+            </Breadcrumb>
+          </Col>
+        </Row>
+
+        {/* Search + Add */}
+        <Row className="mb-3">
+          <Col md={8} className="p-0">
+            <Form.Control
+              type="text"
+              placeholder="Search by city name"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(0);
+              }}
+            />
+          </Col>
+          <Col md={4} className="d-flex justify-content-end p-0">
+            <Button
+              variant="primary"
+              onClick={() => navigate("/add-city-banner")}
+            >
+              + Add New
+            </Button>
+          </Col>
+        </Row>
+
+        {/* Table */}
+        <Table bordered hover responsive>
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>City</th>
+              <th>Banner</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayedListings.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="text-center">
+                  No banners found
+                </td>
+              </tr>
+            ) : (
+              displayedListings.map((listing, index) => (
+                <tr key={listing._id}>
+                  <td>{currentPage * itemsPerPage + index + 1}</td>
+                  <td>{listing.city?.city || "-"}</td>
+                  <td>
+                    {listing.banner && (
+                      <img
+                        src={`${API_BASE}/${listing.banner}`}
+                        alt="banner"
+                        style={{
+                          width: "120px",
+                          height: "40px",
+                          objectFit: "cover",
+                        }}
+                      />
+                    )}
+                  </td>
+                  <td>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => handleEdit(listing.city?._id)}
+                    >
+                      Edit
+                    </Button>{" "}
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => handleDelete(listing._id)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+
+        {/* Pagination */}
+        {pageCount > 1 && (
+          <ReactPaginate
+            pageCount={pageCount}
+            onPageChange={handlePageClick}
+            containerClassName="pagination justify-content-center"
+            pageClassName="page-item"
+            pageLinkClassName="page-link"
+            previousLabel="«"
+            nextLabel="»"
+            previousClassName="page-item"
+            nextClassName="page-item"
+            previousLinkClassName="page-link"
+            nextLinkClassName="page-link"
+            activeClassName="active"
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CityBannerListings;

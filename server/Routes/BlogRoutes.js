@@ -31,8 +31,8 @@ router.post('/', upload.fields([
   try {
     if (req.files.bannerImage) {
       const metadata = await sharp(req.files.bannerImage[0].path).metadata();
-      if (metadata.width !== 1200 || metadata.height !== 400) {
-        return res.status(400).json({ success: false, message: "Banner image must be 1200x400 pixels" });
+      if (metadata.width !== 1200 || metadata.height !== 300) {
+        return res.status(400).json({ success: false, message: "Banner image must be 1200x300 pixels" });
       }
     }
     if (req.files.contentImage) {
@@ -139,8 +139,8 @@ router.put('/:id', upload.fields([
   try {
     if (req.files.bannerImage) {
       const metadata = await sharp(req.files.bannerImage[0].path).metadata();
-      if (metadata.width !== 1200 || metadata.height !== 400) {
-        return res.status(400).json({ success: false, message: "Banner image must be 1200x400 pixels" });
+      if (metadata.width !== 1200 || metadata.height !== 300) {
+        return res.status(400).json({ success: false, message: "Banner image must be 1200x300 pixels" });
       }
     }
     if (req.files.contentImage) {
@@ -170,7 +170,7 @@ router.put('/:id', upload.fields([
     res.json({ success: true, blog: updatedBlog });
   } catch (error) {
     console.error('Error updating blog:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 

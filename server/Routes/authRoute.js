@@ -10,7 +10,8 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 
 const router = express.Router();
-
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const ADMIN_URL =
   process.env.NODE_ENV === "production"
     ? "https://petshop-admin-frontend.onrender.com"
@@ -314,6 +315,7 @@ router.post("/user/login", async (req, res) => {
       token,
       role: "user",
       id: user._id,
+      name: user.name,
       message: "User login successful",
       isPremium: user.isPremium,
       premiumPlan: user.premiumPlan,
@@ -478,6 +480,61 @@ router.post("/user/reset-password", async (req, res) => {
 
   res.json({ success: true, message: "Password reset successful" });
 });
+router.post("/user/google", async (req, res) => {
+  try {
+    console.log("Google login body:", req.body);
 
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Google token missing",
+      });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, sub } = payload;
+
+    let user = await User.findOne({ email });
+
+    // if (!user) {
+    //   user = await User.create({
+    //     name,
+    //     email,
+    //     username: email,          // IMPORTANT (matches normal login)
+    //     googleId: sub,
+    //     authProvider: "google",
+    //     isPremium: false,
+    //   });
+    // }
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    const jwtToken = generateToken(user._id, "user");
+
+    return res.json({
+      success: true,
+      token: jwtToken,
+      role: "user",
+      id: user._id,
+      name: user.name,
+      message: "Google login successful",
+      isPremium: user.isPremium,
+      premiumPlan: user.premiumPlan,
+      premiumEndDate: user.premiumEndDate,
+    });
+  } catch (err) {
+    console.error("Google auth error:", err);
+    return res.status(401).json({
+      success: false,
+      message: "Google auth failed",
+    });
+  }
+});
 
 module.exports = router;

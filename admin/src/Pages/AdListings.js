@@ -121,7 +121,7 @@ const AdListings = () => {
 
         {/* Filters */}
         <Row className="align-items-center mb-3">
-          <Col md={3}>
+          {/* <Col md={3}>
             <Form.Control
               type="text"
               placeholder="Search by city or category"
@@ -157,8 +157,8 @@ const AdListings = () => {
                 </option>
               ))}
             </Form.Select>
-          </Col>
-          <Col md={3} className="d-flex justify-content-end">
+          </Col> */}
+          <Col md={3} className="d-flex justify-content-start">
               <Button variant="primary" onClick={() => navigate('/ad-management')}>+ Add New</Button>
           </Col>
         </Row>
@@ -175,8 +175,8 @@ const AdListings = () => {
               <tr>
                 <th>#</th>
                 <th>Image</th>
-                <th>City</th>
-                <th>Type</th>
+                {/* <th>City</th>
+                <th>Type</th> */}
                 <th>Position</th>
                 <th>URL</th>
                 <th>Actions</th>
@@ -200,8 +200,8 @@ const AdListings = () => {
                         }}
                       />
                     </td>
-                    <td>{ad.city?.city || "-"}</td>
-                    <td>{ad.category?.categoryName || "-"}</td>
+                    {/* <td>{ad.city?.city || "-"}</td>
+                    <td>{ad.category?.categoryName || "-"}</td> */}
                     <td>{ad.position}</td>
                     <td>
                       {ad.url ? (

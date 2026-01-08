@@ -32,7 +32,15 @@ const handleExpand = async () => {
 const DashboardHeader = ({ onToggleMenu }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [username, setUsername] = useState("");
 
+  useEffect(() => {
+  const storedUsername = localStorage.getItem("name");
+  console.log("username", storedUsername);
+  if (storedUsername) {
+    setUsername(storedUsername);
+  }
+}, []);
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
@@ -101,7 +109,7 @@ const DashboardHeader = ({ onToggleMenu }) => {
           </div>
         </OverlayTrigger>
         <div className="mr-3 d-block">
-          <h5 className="mb-0">Welcome User</h5>
+          <h5 className="mb-0">Welcome {username || "User"}</h5>
         </div>
       </Col>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./Css/ListingDetailPage.css";
 import dummyImage from "../dummy.jpg";
@@ -11,10 +11,12 @@ const API_BASE =
     : "http://localhost:5000";
 
 const ListingDetailPage = () => {
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const [comment, setComment] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
+  const [photos, setPhotos] = useState([]);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
 const [selectedImage, setSelectedImage] = useState(null);
   // const { listingId } = useParams(); // from URL
@@ -137,17 +139,75 @@ const [rating, setRating] = useState(0);
   };
 
   // ============================================================
-  // 4️⃣ SUBMIT NEW REVIEW (GUEST)
+  // 4️⃣ SUBMIT NEW REVIEW (GUEST) without image
   // ============================================================
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   if (!rating) {
+  //     setAlert({ show: true, type: "danger", message: "Please select a rating." });
+  //     return;
+  //   }
+
+  //   if (!comment.trim()) {
+  //     setAlert({ show: true, type: "danger", message: "Please enter a comment." });
+  //     return;
+  //   }
+
+  //   if (!userName.trim() || !userEmail.trim()) {
+  //     setAlert({
+  //       show: true,
+  //       type: "danger",
+  //       message: "Name and Email are required for guest reviews.",
+  //     });
+  //     return;
+  //   }
+
+  //   setIsSubmitting(true);
+  //   try {
+  //     const res = await fetch(`${API_BASE}/api/reviews`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         listingId: id,
+  //         userName,
+  //         userEmail,
+  //         rating,
+  //         comment,
+  //         photos,
+  //       }),
+  //     });
+
+  //     const data = await res.json();
+  //     if (res.ok) {
+  //       setAlert({
+  //         show: true,
+  //         type: "success",
+  //         message: "Review submitted successfully! Awaiting admin approval.",
+  //       });
+  //       setRating(0);
+  //       setComment("");
+  //       setUserName("");
+  //       setUserEmail("");
+  //       setPhotos([]);
+        
+  //     } else {
+  //       setAlert({ show: true, type: "danger", message: data.message || "Error submitting review." });
+  //     }
+  //   } catch (err) {
+  //     setAlert({ show: true, type: "danger", message: "Network error while submitting review." });
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!rating) {
-      setAlert({ show: true, type: "danger", message: "Please select a rating." });
-      return;
-    }
-
-    if (!comment.trim()) {
+  e.preventDefault();
+  if (!rating) {
+    setAlert({ show: true, type: "danger", message: "Please select a rating." });
+    return;
+  }
+  if (!comment.trim()) {
       setAlert({ show: true, type: "danger", message: "Please enter a comment." });
       return;
     }
@@ -162,40 +222,47 @@ const [rating, setRating] = useState(0);
     }
 
     setIsSubmitting(true);
-    try {
-      const res = await fetch(`${API_BASE}/api/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          listingId: id,
-          userName,
-          userEmail,
-          rating,
-          comment,
-        }),
+
+  const formData = new FormData();
+  formData.append("listingId", id);
+  formData.append("userName", userName);
+  formData.append("userEmail", userEmail);
+  formData.append("rating", rating);
+  formData.append("comment", comment);
+
+  photos.forEach((file) => {
+    formData.append("photos", file);
+  });
+
+  try {
+    const res = await fetch(`${API_BASE}/api/reviews`, {
+      method: "POST",
+      body: formData, // ✅ NO headers
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setAlert({
+        show: true,
+        type: "success",
+        message: "Review submitted successfully! Awaiting approval.",
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        setAlert({
-          show: true,
-          type: "success",
-          message: "Review submitted successfully! Awaiting admin approval.",
-        });
-        setRating(0);
-        setComment("");
-        setUserName("");
-        setUserEmail("");
-        
-      } else {
-        setAlert({ show: true, type: "danger", message: data.message || "Error submitting review." });
-      }
-    } catch (err) {
-      setAlert({ show: true, type: "danger", message: "Network error while submitting review." });
-    } finally {
-      setIsSubmitting(false);
+      setRating(0);
+      setComment("");
+      setUserName("");
+      setUserEmail("");
+      setPhotos([]);
+      fileInputRef.current.value = "";
     }
-  };
+  } catch (err) {
+    setAlert({ show: true, type: "danger", message: err.message });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   if (loading) return <div>Loading...</div>;
   if (!listing) return <div>Listing not found.</div>;
@@ -205,7 +272,7 @@ const [rating, setRating] = useState(0);
       {listing.bannerImage && (
           <div className="mb-4">
             <img
-              src={`${API_BASE}${listing.bannerImage}`}
+              src={`${API_BASE}/${listing.bannerImage}`}
               alt={listing.shopName}
               style={{
                 width: "100%",
@@ -233,16 +300,7 @@ const [rating, setRating] = useState(0);
               </div>
             </div>
           </div>
-            <h2>{listing.shopName}</h2>
-        
-          
-
-        {/* TOP AREA */}
-        <Row className="mt-3">
-          <Col md={12}>
-
-            <p className="listing-description text-align-justify">{listing.description}</p>
-
+            <h2  className="mb-3">{listing.shopName}</h2>
             <div className="d-flex gap-2">
              {console.log("petcats:",listing.petCategories)}
      {listing.petCategories?.length > 0 && (
@@ -255,9 +313,19 @@ const [rating, setRating] = useState(0);
         ))
       )}
           </div>
+        
+          
+
+        {/* TOP AREA */}
+        <Row className="mt-3">
+          <Col md={12}>
+
+            <p className="listing-description text-align-justify">{listing.description}</p>
+
+            
         <div className="listing-category">
           {listing.categories?.map((cat, index) => (
-          <span key={index} className="service-tag tag-orange">
+          <span key={index} className="service-tag  bg-primary text-white">
             {cat.categoryName}
           </span>
         ))}
@@ -343,7 +411,7 @@ const [rating, setRating] = useState(0);
             }}
           >
             <img
-              src={`${API_BASE}${img}`}
+              src={`${API_BASE}/${img}`}
               alt={`${listing.shopName}-${i}`}
               className="gallery-img"
             />
@@ -362,7 +430,7 @@ const [rating, setRating] = useState(0);
 >
   <Modal.Body className="p-0">
     <img
-      src={`${API_BASE}${selectedImage}`}
+      src={`${API_BASE}/${selectedImage}`}
       alt="Gallery preview"
       className="w-100"
       style={{ maxHeight: "80vh", objectFit: "contain" }}
@@ -421,6 +489,20 @@ const [rating, setRating] = useState(0);
                 onChange={(e) => setUserEmail(e.target.value)}
                 required
               />
+            </Form.Group>
+            <Form.Group className="mb-4">
+              <Form.Label>Upload Photos</Form.Label>
+              <Form.Control
+                type="file"
+                name="photos"
+                multiple
+                accept="image/*"
+                onChange={(e) => setPhotos(Array.from(e.target.files))}
+                ref = {fileInputRef}
+              />
+              <Form.Text className="text-muted">
+                Note : You can upload multiple images (JPG, PNG, WEBP) up to 2MB each.
+              </Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3">

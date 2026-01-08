@@ -6,6 +6,10 @@ import { Link } from 'react-router-dom'
 import { HiOutlineLocationMarker, HiOutlineMail, HiOutlinePhone, HiOutlineClock} from "react-icons/hi";
 import CategoryPage from '../Pages/CategoryPage'
 
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-admin.onrender.com"
+    : "http://localhost:5000";
 
 const Footer = ({home, categoryPage}) => {
   return (
@@ -21,7 +25,7 @@ const Footer = ({home, categoryPage}) => {
                                 </span>
                                 <b>PetPals</b><span className='highlight'><b>India</b></span>
                                  */}
-                                 <img src={`/${home.siteLogoLight}`} alt="PetPals India" className='site-logo' width={250} />
+                                 <img src={`${API_BASE}/${home.siteLogoLight}`} alt="PetPals India" className='site-logo' width={250} />
                             </div>
                             <p class="text-gray-400 mb-6 mt-4">
                                 {home.footerDescription}
