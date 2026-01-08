@@ -35,7 +35,7 @@ const PetHealthTips = ({ blog, showViewAll= true , banner=false}) => (
 {console.log(item)}
                              {item.bannerImage && item.bannerImage.length > 0 ? (
                                 <Card.Header className="blog-card-header p-0">
-                                   <img src={`{${API_BASE}/${item.bannerImage}`} alt="" className='img-responsive' />
+                                   <img src={`${API_BASE}/${item.bannerImage}`} alt="" className='img-responsive' />
                                     
                                 </Card.Header>
                                 
