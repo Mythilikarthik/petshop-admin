@@ -96,3 +96,10 @@ button { background: #fff; border: none; padding: 0 20px; font: inherit; color: 
   margin-bottom: 15px;
 }
 }
+.navbar-collapse {
+  height: auto !important;
+}
+
+body {
+  overflow-x: hidden;
+}

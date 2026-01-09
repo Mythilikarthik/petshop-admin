@@ -4,6 +4,8 @@ import { Row, Col, Container } from 'react-bootstrap';
 import { AiFillHome } from "react-icons/ai";
 import { Link } from 'react-router-dom';
 import cityBg from '../city-bg-4.jpg';
+import cityBgChennai from '../city-bg-final.jpg';
+import cityBgDelhi from '../city-bg-delhi.jpg';
 
 
 
@@ -34,8 +36,20 @@ const PopularCitiesSection = ({cities}) => (
                             style={{ color: "#F97316" }}
                             role="img"
                             aria-label="home"
+                            
                         >
-                            <img className='img-responsive' src={cityBg} alt='' />
+                            <img
+                            className="img-responsive"
+                            src={
+                                city.city === "Chennai"
+                                ? cityBgChennai
+                                : city.city === "Delhi"
+                                ? cityBgDelhi
+                                : cityBg
+                            }
+                            alt=""
+                            />
+
                             {/* <AiFillHome size={100} /> */}
 
                         </span>
