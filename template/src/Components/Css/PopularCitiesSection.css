@@ -112,6 +112,9 @@
   left: 0;
   color: #ff9800;
 }
-.city-listings-new, .city-name-new {
+.city-listings-new {
   color: #ff9800;
+}
+.city-name-new {
+  color: #000;
 }
