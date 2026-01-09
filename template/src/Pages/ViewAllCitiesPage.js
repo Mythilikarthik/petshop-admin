@@ -72,7 +72,7 @@ fetchCityData();
           <div
             className="city-card"
             key={city.city}
-            onClick={() => navigate(`/city/${city.city}`)}
+            onClick={() => navigate(`/directory/${city.city.toLowerCase()}`)}
             role="button"
             tabIndex={0}
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && navigate(`/directory/${city.city.toLowerCase()}`)}
