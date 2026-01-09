@@ -78,7 +78,7 @@ const PopularCitiesSection = ({cities}) => (
             
         ))}
         </Row>
-        <Link to="/cities" className="view-all-btn">View All Cities</Link>
+        <Link to="/directory" className="view-all-btn">View All Cities</Link>
     </Container>
   </section>
 );
