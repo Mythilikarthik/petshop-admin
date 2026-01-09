@@ -12,7 +12,7 @@ import { HiOutlineArrowLongRight } from "react-icons/hi2";
 
 const PopularCitiesSection = ({cities}) => (
 
-  <section className="popular-cities-section">
+  <section className="popular-cities-section bg-grey">
     <Container>
         <h2>
         Popular <span className="highlight">Cities</span>
