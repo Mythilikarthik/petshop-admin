@@ -78,7 +78,7 @@ fetchCityData();
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && navigate(`/directory/${city.city.toLowerCase()}`)}
           >
             <div className="city-name">{city.city}</div>
-            <div className="city-listings">{city.listingsCount}+ listings</div>
+            <div className="city-listings">{city.listingsCount}+ listings</div> 
           </div>
         ))}
       </div>
