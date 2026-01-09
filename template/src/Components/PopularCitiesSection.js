@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import cityBg from '../city-bg-4.jpg';
 import cityBgChennai from '../city-bg-final.jpg';
 import cityBgDelhi from '../city-bg-delhi.jpg';
+import { HiOutlineArrowLongRight } from "react-icons/hi2";
 
 
 
@@ -21,7 +22,7 @@ const PopularCitiesSection = ({cities}) => (
             {cities.map((city) => (
             <Col key={city.city} xs={3} className="d-none d-md-block mb-4">
                 <Link to={`/directory/${city.city.toLowerCase()}`} style={{ textDecoration: 'none' }}>
-                <div className="cities-grid" 
+                {/* <div className="cities-grid" 
                     style={{
                         background: '#FDBA74',
                         borderRadius: '18px', marginBottom: '20px'
@@ -52,13 +53,26 @@ const PopularCitiesSection = ({cities}) => (
 
                             {/* <AiFillHome size={100} /> */}
 
-                        </span>
+                       {/* </span>
                         <div className="city-info">
                             <div className="city-name">{city.city}</div>
                             <div className="city-listings">{city.listingsCount}+ listings</div>
                         </div>
                         </div>
-                </div>
+                </div> */}
+                <div className="cities-grid-new pos-rel" 
+                    style={{
+                        background: '#fff', boxShadow: "0 0px 2px rgba(0,0,0,0.6)",
+                        borderRadius: '0', marginBottom: '20px', textAlign: "left", padding: "1rem 1.5rem"
+                    }}>
+                        <div className="">
+                            <h5 className='city-name-new'>{city.city}</h5>
+                        </div>
+                        <div className="city-listings-new">{city.listingsCount}+ listings</div>
+                        <div className='pos-abs icon-arrow'>
+                            <HiOutlineArrowLongRight />
+                        </div>
+                    </div>
                     </Link>
             </Col>
             

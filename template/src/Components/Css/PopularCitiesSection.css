@@ -97,3 +97,21 @@
   background: #ff9800;
   color: #fff;
 }
+.pos-abs.icon-arrow {
+  position: absolute;
+  right: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  text-align: right;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  height: 100%;
+  left: 0;
+  color: #ff9800;
+}
+.city-listings-new, .city-name-new {
+  color: #ff9800;
+}
