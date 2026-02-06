@@ -1,0 +1,152 @@
+// const express = require("express");
+// const router = express.Router();
+// const ListingEnquiry = require("../Models/ListingEnquiry");
+// const Listing = require("../Models/Listing");
+// const mongoose = require("mongoose");
+
+// router.post("/", async (req, res) => {
+//   try {
+//     const { listingId, userName, userEmail, action } = req.body;
+
+//     // ✅ Basic validation
+//     if (!listingId || !userName || !userEmail) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Missing required fields",
+//       });
+//     }
+
+//     // ✅ Validate Mongo ObjectId
+//     if (!mongoose.Types.ObjectId.isValid(listingId)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid listing ID",
+//       });
+//     }
+
+//     // ✅ Check listing exists
+//     const listing = await Listing.findById(listingId);
+//     if (!listing) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Listing not found",
+//       });
+//     }
+
+//     // ✅ Create enquiry
+//     await ListingEnquiry.create({
+//       listingId,
+//       userName,
+//       userEmail,
+//       action: action || "view",
+//       ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+//     });
+
+//     // ✅ Increment enquiry count safely
+//     await Listing.findByIdAndUpdate(listingId, {
+//       $inc: { enquiries: 1 },
+//     });
+
+//     return res.json({
+//       success: true,
+//       message: "Enquiry submitted successfully",
+//     });
+//   } catch (err) {
+//     console.error("Enquiry error:", err);
+
+//     if (err.code === 11000) {
+//         return res.json({
+//         success: true,
+//         duplicate: true,
+//         message: "Already recorded",
+//         });
+//     }
+//     return res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//     });
+//   }
+// });
+
+// module.exports = router;
+const express = require("express");
+const router = express.Router();
+const ListingEnquiry = require("../Models/ListingEnquiry");
+const Listing = require("../Models/Listing");
+const mongoose = require("mongoose");
+
+router.post("/", async (req, res) => {
+  try {
+    const { listingId, userName, userEmail, action } = req.body;
+
+    if (!listingId || !userName || !userEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(listingId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid listing ID",
+      });
+    }
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
+    }
+
+    const enquiryAction = action || "phone_view";
+
+    // ⏱️ 24 hours window
+    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    // 🔒 DUPLICATE CHECK
+    const exists = await ListingEnquiry.findOne({
+      listingId,
+      userEmail,
+      action: enquiryAction,
+      createdAt: { $gte: last24Hours },
+    });
+
+    if (exists) {
+      return res.json({
+        success: true,
+        duplicate: true,
+        message: "Enquiry already recorded",
+      });
+    }
+
+    // ✅ CREATE
+    await ListingEnquiry.create({
+      listingId,
+      userName,
+      userEmail,
+      action: enquiryAction,
+      ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+    });
+
+    await Listing.findByIdAndUpdate(listingId, {
+      $inc: { enquiries: 1 },
+    });
+
+    return res.json({
+      success: true,
+      duplicate: false,
+      message: "Enquiry submitted successfully",
+    });
+  } catch (err) {
+    console.error("Enquiry error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+module.exports = router;

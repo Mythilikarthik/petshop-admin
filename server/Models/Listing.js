@@ -39,6 +39,32 @@ const ListingSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
   verifiedAt: { type: Date, default: null },
+
+
+  // Claim metadata
+claimRole: {
+  type: String,
+  enum: ["owner", "manager", "staff"],
+  default: null,
+},
+
+verificationMethod: {
+  type: String,
+  enum: ["email", "document"],
+  default: null,
+},
+
+verificationDocs: {
+  type: [String], // uploaded file paths
+  default: [],
+},
+
+claimStatus: {
+  type: String,
+  enum: ["pending", "approved", "rejected"],
+  default: "pending",
+},
+
 });
 // ListingSchema.pre("save", function (next) {
 //   if (this.created_by_type === "admin" && this.isNew) {

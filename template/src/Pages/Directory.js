@@ -1,21 +1,31 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Css/Directory.css';
-import { Row, Col, Card, Button, Container, Image } from "react-bootstrap";
+import { Row, Col, Card, Button, Container, Image, Badge, Modal } from "react-bootstrap";
 import { BsGeoAltFill, BsStarFill } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 import dummyImage from '../dummy.jpg';
 import AdSlider from '../Components/AdSlider';
 import { FaStar } from 'react-icons/fa';
 import { TiTick } from "react-icons/ti";
+import { MdVerified } from "react-icons/md";
+import { GiLaurelsTrophy, GiTrophy } from "react-icons/gi";
+import { useEngagementGate } from "../hooks/useEngagementGate";
+import { useAuth } from "../contexts/AuthContext";
+import AuthGateModal from "../hooks/AuthGateModel";
 
 // Example data (replace with API data)
+
 
 const API_BASE =
   process.env.NODE_ENV === "production"
     ? "https://petshop-admin.onrender.com"
     : "http://localhost:5000";
 const Directory = () => {
+  const { user, authLoading  } = useAuth();
+  const engagementGate = useEngagementGate(user);
+const [showAuthGate, setShowAuthGate] = useState(false);
+
   const pgname = "directory";
   const navigate = useNavigate();
   const { city: routeCity, category: routeCategory, pet: routePet } = useParams();
@@ -181,7 +191,7 @@ const filteredListings = useMemo(() => {
 
     const quickFilterMatch =
       !quickFilter ||
-      (quickFilter === "topRated" && rating >= 4.5) ||
+      (quickFilter === "topRated" && rating >= 4) ||
       (quickFilter === "verified" && l.isVerified === true);
 
     return (
@@ -306,6 +316,16 @@ const fetchMiddleHomeAds = async () => {
     console.error("Error fetching home ads:", err);
   }
 };
+useEffect(() => {
+  if (!authLoading && !user && engagementGate) {
+    setShowAuthGate(true);
+  }
+}, [authLoading, user, engagementGate]);
+useEffect(() => {
+  if (user) {
+    setShowAuthGate(false);
+  }
+}, [user]);
 
   useEffect(() => {
     fetchListings();
@@ -395,11 +415,20 @@ useEffect(() => {
 useEffect(() => {
   Banner();
 }, [routeCity]);
+useEffect(() => {
+  if (!localStorage.getItem("entryTime")) {
+    localStorage.setItem("entryTime", Date.now());
+  }
+}, []);
 
 
 // console.log("all:",allListings)
   return (
     <>
+    <AuthGateModal
+  show={showAuthGate}
+  onClose={() => setShowAuthGate(false)}
+/>
     {banner?.banner && (
       <Image
         className='img-responsive'
@@ -564,7 +593,15 @@ useEffect(() => {
         <Col md={9}>
             <Row className="justify-content-center">
   {paginatedListings.length === 0 ? (
-    <div className="no-results">No listings found.</div>
+    <div className="no-results mt-5 d-flex align-items-center justify-content-center">
+      <span className='stylish-text'>
+        <strong>
+          <i className='animation text-orange-500'>
+            Coming Soon 
+          </i>
+        </strong>
+      </span>
+    </div>
   ) : (
     paginatedListings.map(listing => {
       const safeSlug = listing.slug && listing.slug !== "undefined"
@@ -610,6 +647,8 @@ useEffect(() => {
           <span className='d-block'>{listing.rating}</span>
       </div>
 
+      
+
       <Card.Text className="mt-2">
         {listing.description.length > 50
           ? listing.description.slice(0, 50) + "..."
@@ -635,6 +674,27 @@ useEffect(() => {
         </div>
       )} */}
 
+
+      <div className='status-updates mt-auto mb-2 d-flex gap-2'>
+        {listing.isVerified && (
+          <div className='verified-identification'>
+            <Badge pill bg="success" className='gap-1 d-flex'>
+              <MdVerified />
+              Verified
+            </Badge>
+          </div>
+          
+        )}
+        {listing.rating >=4 && (
+          <div className='top-rated-identification'>
+            <Badge pill bg="success" className='gap-1 d-flex'>
+              <GiTrophy  />
+              Top Rated
+            </Badge>
+          </div>
+        )}
+        
+      </div>
       {/* Button pushed to bottom */}
       <Button
         variant="primary"

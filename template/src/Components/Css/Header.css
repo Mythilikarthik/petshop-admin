@@ -103,3 +103,35 @@ button { background: #fff; border: none; padding: 0 20px; font: inherit; color: 
 body {
   overflow-x: hidden;
 }
+.login-modal {
+  border-radius: 20px;
+}
+
+.modal-backdrop {
+  backdrop-filter: blur(6px);
+}
+.logged-in-user img,
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.user-dropdown .dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+}
+
+.user-dropdown .dropdown-toggle::after {
+  margin-left: 6px;
+}
+
+.user-name {
+  font-weight: 500;
+  white-space: nowrap;
+}
+

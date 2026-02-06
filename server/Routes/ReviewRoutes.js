@@ -54,7 +54,7 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
 
   try {
     const photos = req.files
-      ? req.files.map(file => `/uploads/reviews/${file.filename}`)
+      ? req.files.map(file => `uploads/reviews/${file.filename}`)
       : [];
 
     const review = new Review({

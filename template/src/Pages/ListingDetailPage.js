@@ -3,7 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import "./Css/ListingDetailPage.css";
 import dummyImage from "../dummy.jpg";
 import { FaStar } from "react-icons/fa";
-import { Form, Button, Container, Row, Col, Alert, Modal  } from "react-bootstrap";
+import { Form, Button, Container, Row, Col, Alert, Modal } from "react-bootstrap";
+import { useAuth } from "../contexts/AuthContext";
+import { incrementListingViews } from "../utils/engagementTracker";
+import { useEngagementGate } from "../hooks/useEngagementGate";
+import AuthGateModal from "../hooks/AuthGateModel";
+
+
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -11,6 +17,12 @@ const API_BASE =
     : "http://localhost:5000";
 
 const ListingDetailPage = () => {
+  
+const [showAuthGate, setShowAuthGate] = useState(false);
+
+  const { user, authLoading } = useAuth();
+    const engagementGate = useEngagementGate(user);
+  
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const [comment, setComment] = useState("");
@@ -36,6 +48,9 @@ const [isSubmitting, setIsSubmitting] = useState(false);
 const [rating, setRating] = useState(0);
   // --- Review states ---
   const [reviews, setReviews] = useState([]);
+ const [showPhone, setShowPhone] = useState(false);
+const [isTracking, setIsTracking] = useState(false);
+
   const [form, setForm] = useState({
     userName: "",
     rating: 5,
@@ -62,6 +77,27 @@ const [rating, setRating] = useState(0);
     }
     return stars;
   };
+useEffect(() => {
+  if (!authLoading && !user && engagementGate) {
+    setShowAuthGate(true);
+  }
+}, [authLoading, user, engagementGate]);
+useEffect(() => {
+  if (user) {
+    setShowAuthGate(false);
+  }
+}, [user]);
+
+  useEffect(() => {
+  incrementListingViews();
+}, []);
+
+  useEffect(() => {
+  if (user) {
+    setUserName(user.name || "");
+    setUserEmail(user.email || "");
+  }
+}, [user]);
   // ============================================================
   // 1️⃣ FETCH LISTING DETAILS
   // ============================================================
@@ -212,7 +248,15 @@ const [rating, setRating] = useState(0);
       return;
     }
 
-    if (!userName.trim() || !userEmail.trim()) {
+    // if (!userName.trim() || !userEmail.trim()) {
+    //   setAlert({
+    //     show: true,
+    //     type: "danger",
+    //     message: "Name and Email are required for guest reviews.",
+    //   });
+    //   return;
+    // }
+    if (!user && (!userName.trim() || !userEmail.trim())) {
       setAlert({
         show: true,
         type: "danger",
@@ -267,8 +311,37 @@ const [rating, setRating] = useState(0);
   if (loading) return <div>Loading...</div>;
   if (!listing) return <div>Listing not found.</div>;
 
+  const handleShowPhone = async () => {
+    if (!user) {
+      window.google.accounts.id.prompt(); // force login
+      return;
+    }
+    setIsTracking(true);
+
+    await fetch(`${API_BASE}/api/enquiry`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        listingId: listing._id,
+        userName: user.name,
+        userEmail: user.email,
+        action: "phone_view",
+      }),
+    });
+
+    setShowPhone(true);
+  };
+
+
   return (
+   
+
     <section className="listing-detail-section p-0 mt-0">
+      
+       <AuthGateModal
+        show={showAuthGate}
+        onClose={() => setShowAuthGate(false)}
+      />
       {listing.bannerImage && (
           <div className="mb-4">
             <img
@@ -335,8 +408,26 @@ const [rating, setRating] = useState(0);
               
               <ul>
                 <li>
-                  <strong>Phone:</strong>{" "}
-                  <a href={`tel:${listing.phone}`}>{listing.phone}</a>
+                  {/* <strong>Phone:</strong>{" "} */}
+                  {/* <a href={`tel:${listing.phone}`}>{listing.phone}</a> */}
+                  <li>
+                    <strong>Phone:</strong>{" "}
+                    {!showPhone ? (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        onClick={handleShowPhone}
+                        disabled={isTracking}
+                      >
+                        {isTracking ? "Please wait..." : "Show Number"}
+                      </Button>
+                    ) : (
+                      <a href={`tel:${listing.phone}`} className="ms-2">
+                        {listing.phone}
+                      </a>
+                    )}
+                  </li>
+
                 </li>
                 <li>
                   <strong>Email:</strong>{" "}
@@ -439,7 +530,52 @@ const [rating, setRating] = useState(0);
 </Modal>
         {/* REVIEWS SUMMARY */}
         
-        
+        {/* REVIEW LIST */}
+        <div className="review-list ">
+          <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Customer Reviews</h5>
+          {console.log(reviews)}
+          {reviews.length === 0 ? (
+            <p>No reviews yet.</p>
+          ) : (
+            
+            reviews.map((r) => (
+              <div
+                key={r._id}
+                className="review-item"
+                style={{
+                  borderBottom: "1px solid #ddd",
+                  padding: "10px 0",
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: "bold",
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span>{r.userName}</span>
+                  <span style={{ color: "#888" }}>
+                    {new Date(r.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <div>{renderStarsCal(r.rating)}</div>
+                {/* {console.log("Review :",r.rating)} */}
+                <p>{r.comment}</p>
+                {r.photos && r.photos.length > 0 &&
+                  r.photos.map((item, index) => (
+                    <img className="img-responsive"
+                      key={index}
+                      src={`${API_BASE}/${item}`}
+                      alt={`Review-${index}`}
+                    />
+                  ))
+                }
+
+              </div>
+            ))
+          )}
+        </div>
 
         
 
@@ -465,11 +601,39 @@ const [rating, setRating] = useState(0);
 
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3 text-center">
-              <Form.Label><strong>Rating:</strong></Form.Label>
+              <Form.Label><strong>Rating  <span className="text-red">*</span></strong></Form.Label>
               <div>{renderStars()}</div>
             </Form.Group>
 
-            <Form.Group className="mb-3">
+            {user ? (
+              <>
+              <Form.Group className="mb-3">
+                {/* <Form.Label>Your Name</Form.Label> */}
+                <Form.Control
+                  type="text"
+                  placeholder="Enter your name"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  required
+                  hidden
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-3">
+                {/* <Form.Label>Your Email</Form.Label> */}
+                <Form.Control
+                  type="email"
+                  placeholder="Enter your email"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  required
+                  hidden
+                />
+              </Form.Group>
+              </>
+            ) : (
+              <>
+              <Form.Group className="mb-3">
               <Form.Label>Your Name</Form.Label>
               <Form.Control
                 type="text"
@@ -477,6 +641,7 @@ const [rating, setRating] = useState(0);
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 required
+                
               />
             </Form.Group>
 
@@ -488,10 +653,15 @@ const [rating, setRating] = useState(0);
                 value={userEmail}
                 onChange={(e) => setUserEmail(e.target.value)}
                 required
+                
               />
             </Form.Group>
+            </>
+            )}
+
+            
             <Form.Group className="mb-4">
-              <Form.Label>Upload Photos</Form.Label>
+              <Form.Label>Upload Photos [Optional]</Form.Label>
               <Form.Control
                 type="file"
                 name="photos"
@@ -506,7 +676,7 @@ const [rating, setRating] = useState(0);
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Comment</Form.Label>
+              <Form.Label>Comment <span className="text-red">*</span></Form.Label>
               <Form.Control
                 as="textarea"
                 rows={4}
@@ -529,46 +699,14 @@ const [rating, setRating] = useState(0);
           </Form>
         </Col>
       </Row>
-      {/* REVIEW LIST */}
-        <div className="review-list m-4">
-          <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Customer Reviews</h5>
-          {reviews.length === 0 ? (
-            <p>No reviews yet.</p>
-          ) : (
-            reviews.map((r) => (
-              <div
-                key={r._id}
-                className="review-item"
-                style={{
-                  borderBottom: "1px solid #ddd",
-                  padding: "10px 0",
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: "bold",
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span>{r.userName}</span>
-                  <span style={{ color: "#888" }}>
-                    {new Date(r.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <div>{renderStarsCal(r.rating)}</div>
-                {/* {console.log("Review :",r.rating)} */}
-                <p>{r.comment}</p>
-              </div>
-            ))
-          )}
-        </div>
+      
           </Col>
         </Row>
 
         
       </Container>
     </section>
+    
   );
 };
 

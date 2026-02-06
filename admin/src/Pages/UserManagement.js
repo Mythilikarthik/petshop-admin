@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, Badge, Row, Col, Breadcrumb } from 'react-bootstrap';
 import ReactPaginate from 'react-paginate';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
+
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-user.onrender.com"
+    : "http://localhost:5000";
 
 const UserManagement = () => {
-  const initialListings = [
-    { id: 1, name: 'John Doe', type: "Premium", email: 'john@example.com', roll: "Admin", status: "Active" },
-    { id: 2, name: 'Jane Smith', type: "Free", email: 'jane@example.com', roll: "User", status: "Active" },
-    { id: 3, name: 'Michael Scott', type: "Premium", email: 'michael@dundermifflin.com', roll:  "User", status: "Active" },
-    { id: 4, name: 'Dwight Schrute', type: "Free", email: 'dwight@dundermifflin.com', roll:  "User", status: "Active" },
-    { id: 5, name: 'Pam Beesly', type: "Premium", email: 'pam@dundermifflin.com', roll:  "User", status: "Inactive" },
-    { id: 6, name: 'Jim Halpert', type: "Premium", email: 'jim@dundermifflin.com', roll:  "User", status: "Active" },
-    { id: 7, name: 'Ryan Howard', type: "Premium", email: 'ryan@dundermifflin.com', roll:  "User", status: "Active" },
-    { id: 8, name: 'Kelly Kapoor', type: "Free", email: 'kelly@dundermifflin.com', roll:  "User", status: "Active" }
-  ];
+  // const initialListings = [
+  //   { id: 1, name: 'John Doe', type: "Premium", email: 'john@example.com', roll: "Admin", status: "Active" },
+  //   { id: 2, name: 'Jane Smith', type: "Free", email: 'jane@example.com', roll: "User", status: "Active" },
+  //   { id: 3, name: 'Michael Scott', type: "Premium", email: 'michael@dundermifflin.com', roll:  "User", status: "Active" },
+  //   { id: 4, name: 'Dwight Schrute', type: "Free", email: 'dwight@dundermifflin.com', roll:  "User", status: "Active" },
+  //   { id: 5, name: 'Pam Beesly', type: "Premium", email: 'pam@dundermifflin.com', roll:  "User", status: "Inactive" },
+  //   { id: 6, name: 'Jim Halpert', type: "Premium", email: 'jim@dundermifflin.com', roll:  "User", status: "Active" },
+  //   { id: 7, name: 'Ryan Howard', type: "Premium", email: 'ryan@dundermifflin.com', roll:  "User", status: "Active" },
+  //   { id: 8, name: 'Kelly Kapoor', type: "Free", email: 'kelly@dundermifflin.com', roll:  "User", status: "Active" }
+  // ];
 
-  const [listings, setListings] = useState(initialListings);
+  // const [listings, setListings] = useState(initialListings);
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 5;
@@ -40,15 +50,85 @@ const UserManagement = () => {
     navigate('/edit-listing', { state: { listing } });
   };
 
-  const handleView = (listing) => {
-    console.log('Navigating to view:', listing);
-    navigate('/view-listing', { state: { listing } });
+  const handleView = (listingId) => {
+    navigate(`/user-details/${listingId}`);
   };
-const handleDelete = (id) => {
-  if (window.confirm("Are you sure you want to delete this listing?")) {
-    setListings((prevListings) => prevListings.filter(l => l.id !== id));
+
+const handleDelete = async (id) => {
+  if (!window.confirm("Are you sure to delete?")) return;
+
+  try {
+    await fetch(
+      `${API_BASE}/api/auth/user/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    setListings(prev => prev.filter(u => u._id !== id));
+  } catch (err) {
+    console.error(err);
   }
 };
+
+useEffect(() => {
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/auth/user/all`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+      if (data.success) {
+        setListings(data.users);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchUsers();
+}, []);
+const handleDownload = () => {
+  if (!listings.length) return;
+
+  const formattedData = listings.map((user, index) => ({
+    SNo: index + 1,
+    Name: user.name,
+    Email: user.email,
+    Type: user.isPremium ? "Premium" : "Free",
+    CreatedAt: user.created_at
+      ? new Date(user.created_at).toLocaleDateString()
+      : "",
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(formattedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "array",
+  });
+
+  const file = new Blob([excelBuffer], {
+    type:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+  });
+
+  saveAs(file, "users.xlsx");
+};
+
   return (
     <div className="container mt-4">
       <div className='pl-3 pr-3'>
@@ -65,7 +145,7 @@ const handleDelete = (id) => {
       </Row>
 
         {/* Search Input */}
-        <Form.Control
+        {/* <Form.Control
             type="text"
             placeholder="Search by name or email"
             className="mb-3"
@@ -74,7 +154,27 @@ const handleDelete = (id) => {
             setSearchTerm(e.target.value);
             setCurrentPage(0); // reset to first page
             }}
-        />
+        /> */}
+        <Row className="mb-3">
+          <Col>
+            <Form.Control
+              type="text"
+              placeholder="Search by name or email"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(0);
+              }}
+            />
+          </Col>
+
+          <Col xs="auto">
+            <Button variant="primary" onClick={handleDownload}>
+              Download Excel
+            </Button>
+          </Col>
+        </Row>
+
 
         {/* Table */}
         <Table  bordered hover responsive>
@@ -84,57 +184,55 @@ const handleDelete = (id) => {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Type</th>
-                <th>Roll</th>
-                <th>Status</th>
                 <th>Actions</th>
             </tr>
             </thead>
             <tbody>
-            {displayedListings.map((listing, index) => (
+              {loading ? (
+                <p className="text-center">Loading users...</p>
+              ) : (
+            displayedListings.map((listing, index) => (
                 <tr key={listing.id}>
                 <td>{currentPage * itemsPerPage + index + 1}</td>
                 <td>{listing.name}</td>
                 <td>{listing.email}</td>
                 <td>
-                  {listing.type && listing.type === "Premium" ? (
-                    <Badge bg="success">{listing.type}</Badge>
+                  {listing.isPremium ? (
+                    <Badge bg="success">Premium</Badge>
                   ) : (
-                    <Badge bg="warning">{listing.type}</Badge>
+                    <Badge bg="secondary">Free</Badge>
                   )}
-                  </td>
-                <td>{listing.roll}</td>
-                <td>
-                    {listing.status}
-                    
-                    </td>
+                </td>
+                
+                
                 <td>
                     
                     <Button
                         variant="success"
                         size="sm"
                         className="me-2"
-                        onClick={() => handleView(listing)}
+                        onClick={() => handleView(listing._id)}
                         >
                         View
                         </Button>
-                        <Button
+                        {/* <Button
                         variant="primary"
                         size="sm"
                         className="me-2"
                         onClick={() => handleEdit(listing)}
                         >
                         Edit
-                        </Button>
+                        </Button> */}
                         <Button
                         variant="danger"
                         size="sm"
-                        onClick={() => handleDelete(listing.id)}
+                        onClick={() => handleDelete(listing._id)}
                         >
                         Delete
                         </Button>
                 </td>
                 </tr>
-            ))}
+            )))}
             </tbody>
         </Table>
 

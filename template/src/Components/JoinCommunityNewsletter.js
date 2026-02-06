@@ -1,7 +1,9 @@
-import React from 'react';
+import React, {useState} from 'react';
+
 import './Css/JoinCommunityNewsletter.css';
 import { Row, Col, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import AuthGateModal from "../hooks/AuthGateModel";
 
 const LOGIM_URI =
   process.env.NODE_ENV === "production"
@@ -9,6 +11,9 @@ const LOGIM_URI =
     : "http://localhost:3001";
 
 const JoinCommunityNewsletter = ({home}) => {
+    const [showAuth, setShowAuth] = useState(false);
+const [authMode, setAuthMode] = useState("login");
+
   const navigate = useNavigate();
   return (
   <section className="join-newsletter-section">
@@ -22,14 +27,36 @@ const JoinCommunityNewsletter = ({home}) => {
                         {home.loginDescription}
                         </p>
                         <div className="community-actions">
-                        <button className="login-btn"
+                        {/* <button className="login-btn"
                           onClick={() => {
                             window.open(LOGIM_URI, "_self");
                           } }
                         >
                             Login
                         </button>
-                        <button className="register-btn" onClick={() => navigate("/register")}>Register</button>
+                        <button className="register-btn" onClick={() => navigate("/register")}>Register</button> */}
+                        <button
+                            className="login-btn"
+                            onClick={() => {
+                                setAuthMode("login");
+                                setShowAuth(true);
+                                console.log(authMode);
+                            }}
+                            >
+                            Login
+                            </button>
+
+                            <button
+                            className="register-btn"
+                            onClick={() => {
+                                setAuthMode("signup");
+                                setShowAuth(true);
+                                console.log(authMode);
+                            }}
+                            >
+                            Register
+                            </button>
+
                         </div>
                     </div>
                 </Col>
@@ -50,6 +77,12 @@ const JoinCommunityNewsletter = ({home}) => {
         
         
         </div>
+        <AuthGateModal
+  show={showAuth}
+  onClose={() => setShowAuth(false)}
+  defaultMode={authMode}
+/>
+
     </Container>
   </section>
 );

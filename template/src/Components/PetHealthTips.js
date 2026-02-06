@@ -50,6 +50,15 @@ const PetHealthTips = ({ blog, showViewAll= true , banner=false}) => (
                                 
 
                                 <Card.Body className='pos-rel'>
+                                    <div className='d-flex gap-2 mb-3'>
+                                        {item.category?.length > 0 && (
+                                            item.category.map((cat, index) => (
+                                            <span key={index} className="badge badge-top-rated">
+                                                {cat.categoryName}
+                                            </span>
+                                            ))
+                                        )}
+                                    </div>
 
                                     {/* Blog Date */}
                                     <span className="category-badge mb-3 d-block">
@@ -61,14 +70,20 @@ const PetHealthTips = ({ blog, showViewAll= true , banner=false}) => (
 
 
                                     </span>
+                                    
 
                                     {/* Blog Title */}
                                     <Card.Title>{item.title}</Card.Title>
+
+                                    
+                                    
 
                                     {/* Blog Excerpt */}
                                     <Card.Text>
                                         {item.excerpt ? item.excerpt.slice(0, 100) + "..." : ""}
                                     </Card.Text>
+
+                                    
 
                                     {/* Blog Link */}
                                     <Link 

@@ -23,6 +23,9 @@ import Register from './Pages/Register';
 import ClaimListing from './Pages/ClaimListing';
 import BlogDetail from './Pages/BlogDetail';
 import { FaArrowUp } from "react-icons/fa";
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { AuthProvider } from "./contexts/AuthContext";
+import VerifyOtp from "./Pages/VerifyOtp";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -86,6 +89,8 @@ function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   return (
+  <GoogleOAuthProvider clientId="932728880850-okmd8gvva3mv1vc00lsiqsjkambs2gol.apps.googleusercontent.com">
+    <AuthProvider>
     <div className="App">
       
       <BrowserRouter>
@@ -112,6 +117,7 @@ function App() {
           <Route path="/listing/:listingId" element={<ListingDetailPage />} />
           <Route path="/directory/:city?/:category?/:pet?" element={<Directory />} />
           <Route path="/listings/:slugId" element={<ListingDetailPage />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
         </Routes>        
         <Footer home={home} categoryPage={categoryPage} />
          {showScroll && (
@@ -121,6 +127,8 @@ function App() {
           )}
       </BrowserRouter>
     </div>
+    </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

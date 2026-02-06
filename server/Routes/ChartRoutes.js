@@ -147,6 +147,80 @@ router.get("/user-activity", async (req, res) => {
     res.status(500).json({ success: false, message: err.message || "Server error" });
   }
 });
+router.get("/listings", async (req, res) => {
+  const { startDate, endDate } = req.query;
+  const filter = {};
+
+  if (startDate && endDate) {
+    filter.created_at = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    };
+  }
+
+  const count = await Listing.countDocuments(filter);
+  res.json({ success: true, count });
+});
+router.get("/pending-listings", async (req, res) => {
+  const { startDate, endDate } = req.query;
+  const filter = { status: "pending" };
+
+  if (startDate && endDate) {
+    filter.created_at = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    };
+  }
+
+  const count = await Listing.countDocuments(filter);
+  res.json({ success: true, count });
+});
+router.get("/users", async (req, res) => {
+  const { startDate, endDate } = req.query;
+  const filter = {
+    site: "1",
+  };
+
+  if (startDate && endDate) {
+    filter.created_at = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    };
+  }
+
+  const count = await User.countDocuments(filter);
+  res.json({ success: true, count });
+});
+router.get("/reviews", async (req, res) => {
+  const { startDate, endDate } = req.query;
+  const filter = {};
+
+  if (startDate && endDate) {
+    filter.created_at = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    };
+  }
+
+  const count = await Review.countDocuments(filter);
+  res.json({ success: true, count });
+});
+router.get("/new-shop-owners", async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  const match = { created_by_type: "user" };
+
+  if (startDate && endDate) {
+    match.created_at = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    };
+  }
+
+  const count = await Listing.distinct("user_id", match);
+  res.json({ success: true, count: count.length });
+});
+
 
 
 

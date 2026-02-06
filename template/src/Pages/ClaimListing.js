@@ -18,6 +18,10 @@ const [usernameError, setUsernameError] = useState("");
 const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 const [confirmPassword, setConfirmPassword] = useState("");
 const [passwordError, setPasswordError] = useState("");
+const [claimRole, setClaimRole] = useState("");
+const [verificationMethod, setVerificationMethod] = useState("");
+const [documents, setDocuments] = useState([]);
+
   const [user, setUser] = useState({
     name: "",
     username: "",
@@ -65,27 +69,94 @@ const [passwordError, setPasswordError] = useState("");
 };
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
+//   if (!usernameRegex.test(user.username)) {
+//     setAlert({
+//       show: true,
+//       type: "danger",
+//       message: "Username can contain only letters, numbers, and underscore",
+//     });
+//     return;
+//   }
+// if (user.password !== confirmPassword) {
+//   setAlert({
+//     show: true,
+//     type: "danger",
+//     message: "Password and Confirm Password do not match",
+//   });
+//   return;
+// }
+//     // 1. Register user
+//     const userRes = await fetch(`${API_BASE}/api/auth/user/register`, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify(user),
+//     });
+
+//     const userData = await userRes.json();
+//     if (!userData.success) {
+//       alert(userData.message);
+//       return;
+//     }
+
+//     const token = userData.token;
+//     const userId = userData.id;
+
+//     // 2. Mark listing as claimed
+//     await fetch(`${API_BASE}/api/listing/claim/${listingId}`, {
+//       method: "PUT",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${token}`,
+//       },
+//       body: JSON.stringify({ claimedBy: userId }),
+//     });
+
+//     alert("Listing claimed successfully!");
+//     navigate("/directory");
+//   };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
-  if (!usernameRegex.test(user.username)) {
-    setAlert({
-      show: true,
-      type: "danger",
-      message: "Username can contain only letters, numbers, and underscore",
-    });
-    return;
-  }
-if (user.password !== confirmPassword) {
-  setAlert({
-    show: true,
-    type: "danger",
-    message: "Password and Confirm Password do not match",
-  });
-  return;
-}
-    // 1. Register user
+    if (!usernameRegex.test(user.username)) {
+      setAlert({
+        show: true,
+        type: "danger",
+        message: "Username can contain only letters, numbers, and underscore",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (user.password !== confirmPassword) {
+      setAlert({
+        show: true,
+        type: "danger",
+        message: "Password and Confirm Password do not match",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!claimRole || !verificationMethod) {
+      setAlert({
+        show: true,
+        type: "danger",
+        message: "Please select role and verification method",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Register
     const userRes = await fetch(`${API_BASE}/api/auth/user/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -93,27 +164,72 @@ if (user.password !== confirmPassword) {
     });
 
     const userData = await userRes.json();
+
     if (!userData.success) {
-      alert(userData.message);
+      setAlert({
+        show: true,
+        type: "danger",
+        message: userData.message,
+      });
+      setLoading(false);
       return;
     }
 
-    const token = userData.token;
-    const userId = userData.id;
+    const { token, id: userId } = userData;
 
-    // 2. Mark listing as claimed
-    await fetch(`${API_BASE}/api/listing/claim/${listingId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ claimedBy: userId }),
+    // Claim
+    const formData = new FormData();
+    formData.append("claimRole", claimRole);
+    formData.append("verificationMethod", verificationMethod);
+
+    documents?.forEach((file) => {
+      formData.append("documents", file);
     });
 
-    alert("Listing claimed successfully!");
-    navigate("/thank-you");
-  };
+    const claimRes = await fetch(
+      `${API_BASE}/api/listing/claim/${listingId}`,
+      {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      }
+    );
+
+    const claimData = await claimRes.json();
+    console.log(claimData);
+    if (!claimData.success) {
+      setAlert({
+        show: true,
+        type: "danger",
+        message: claimData.message || "Failed to claim listing",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (verificationMethod === "email") {
+      navigate("/verify-otp", {
+        state: {
+          userId,
+          token,
+          email: user.email,
+        },
+      });
+    } else {
+      navigate("/directory");
+    }
+  } catch (err) {
+    setAlert({
+      show: true,
+      type: "danger",
+      message: "Something went wrong. Please try again.",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   if (!listing) return <p>Loading...</p>;
 
@@ -216,6 +332,57 @@ if (user.password !== confirmPassword) {
                 disabled
             />
             </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Role <span className="text-danger">*</span></Form.Label>
+              <Form.Select
+                value={claimRole}
+                onChange={(e) => setClaimRole(e.target.value)}
+                required
+              >
+                <option value="">Select role</option>
+                <option value="owner">Owner</option>
+                <option value="manager">Manager</option>
+                <option value="staff">Staff</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Preferred Verification Method <span className="text-danger">*</span></Form.Label>
+
+              <Form.Check
+                type="radio"
+                label="Business Email Verification"
+                name="verificationMethod"
+                value="email"
+                checked={verificationMethod === "email"}
+                onChange={(e) => setVerificationMethod(e.target.value)}
+              />
+
+              <Form.Check
+                type="radio"
+                label="Document Upload (optional)"
+                name="verificationMethod"
+                value="document"
+                checked={verificationMethod === "document"}
+                onChange={(e) => setVerificationMethod(e.target.value)}
+              />
+            </Form.Group>
+            {verificationMethod === "document" && (
+              <Form.Group className="mb-4">
+                <Form.Label>Upload Verification Documents</Form.Label>
+                <Form.Control
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf"
+                  onChange={(e) => setDocuments(Array.from(e.target.files))}
+                />
+                <Form.Text muted>
+                  Business license, ID, utility bill, etc.
+                </Form.Text>
+              </Form.Group>
+            )}
+
+
 
             {/* <Form.Group className="mb-4">
             <Form.Label>Password <span className="text-red">*</span></Form.Label>

@@ -24,6 +24,7 @@ const BlogBannerRoutes = require("./Routes/BlogBanner");
 const CityBannerRoutes = require("./Routes/CityBannerRoutes");
 
 
+
 const http = require("http");
 const { Server } = require("socket.io");
 
@@ -46,6 +47,7 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log('MongoDB connected'))
 .catch(err => console.error('MongoDB error:', err));
 const paymentRoutes = require("./Routes/paymentRoutes");
+const ListingEnquiry = require('./Routes/ListingEnquiry');
 app.use("/api/", AdminRoutes);
 
 app.use("/api/user", UserRoutes);
@@ -68,6 +70,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/directory-banner", DirectoryBannerRoutes);
 app.use("/api/blog-banner", BlogBannerRoutes);
 app.use("/api/city-banner", CityBannerRoutes);
+app.use("/api/enquiry", ListingEnquiry);
 
 
 

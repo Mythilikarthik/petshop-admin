@@ -252,7 +252,7 @@ const CategoryPage = () => {
             backgroundColor: currentCategory.color,
             borderColor: currentCategory.color
           }}
-          onClick={() => navigate("/directory")}
+          onClick={() => navigate(`/directory/all/all/${categoryName}`)}
         >
           Find Services Near You
         </Button>

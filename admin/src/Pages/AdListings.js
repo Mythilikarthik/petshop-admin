@@ -174,6 +174,7 @@ const AdListings = () => {
             <thead>
               <tr>
                 <th>#</th>
+                <th>Page</th>
                 <th>Image</th>
                 {/* <th>City</th>
                 <th>Type</th> */}
@@ -188,6 +189,8 @@ const AdListings = () => {
                 displayedAds.map((ad, index) => (
                   <tr key={ad._id}>
                     <td>{currentPage * itemsPerPage + index + 1}</td>
+                    <td>{ad.page.charAt(0).toUpperCase() + ad.page.slice(1)}</td>
+
                     <td>
                       <img
                         src={ad.image}

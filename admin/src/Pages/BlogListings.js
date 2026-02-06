@@ -27,7 +27,9 @@ const BlogListings = () => {
       // backend: { success: true, blogs: [...] } or return array
       const list = data?.blogs || (Array.isArray(data) ? data : []);
       setBlogs(list);
-      const cats = Array.from(new Set(list.map(b => b.category).filter(Boolean)));
+      const cats = Array.from(new Set(list.flatMap(b => Array.isArray(b.category)
+            ? b.category.map(c => c.categoryName)
+            : [])));
       setCategoryList(cats);
     } catch (err) {
       console.error('fetchBlogs error', err);
@@ -43,9 +45,14 @@ const BlogListings = () => {
       (b.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (b.author || '').toLowerCase().includes(searchTerm.toLowerCase());
 
+      const blogCategories = Array.isArray(b.category)
+    ? b.category.map(c => c.categoryName)
+    : [];
+
     const matchesCategory =
       selectedCategories.length === 0 ||
-      selectedCategories.includes(b.category);
+      // selectedCategories.includes(b.category);
+          selectedCategories.some(cat => blogCategories.includes(cat));
 
     return matchesSearch && matchesCategory;
   });

@@ -124,7 +124,7 @@ const DashboardHeader = ({ onToggleMenu }) => {
         </OverlayTrigger>
 
         {/* Notification */}
-        <OverlayTrigger placement="bottom" overlay={<Tooltip id="notification">Notifications</Tooltip>}>
+        {/* <OverlayTrigger placement="bottom" overlay={<Tooltip id="notification">Notifications</Tooltip>}>
           <Navbar bg="light" expand="lg" className="px-3">
             <Nav className="ms-auto align-items-center">
               <Dropdown show={dropdownOpen} onToggle={() => setDropdownOpen(!dropdownOpen)}>
@@ -162,7 +162,7 @@ const DashboardHeader = ({ onToggleMenu }) => {
               </Dropdown>
             </Nav>
           </Navbar>
-        </OverlayTrigger>
+        </OverlayTrigger> */}
 
         {/* Expand */}
         <OverlayTrigger placement="bottom" overlay={<Tooltip id="expand">Expand</Tooltip>}>

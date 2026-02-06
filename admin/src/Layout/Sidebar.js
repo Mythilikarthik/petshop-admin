@@ -6,7 +6,8 @@ import {
   
   MdCampaign,MdOutlineCategory ,
   MdOutlinePages, MdOutlineStoreMallDirectory ,
-  MdPets
+  MdPets,
+  MdPeople
 } from 'react-icons/md';
 import { GiJumpingDog , GiDogHouse, GiNestBirds , GiRabbit, GiDogBowl } from "react-icons/gi";
 import { FaChartArea, FaChevronDown, FaChevronUp, FaDeskpro, FaDesktop, FaNewspaper, FaPage4, FaPagelines, FaQuestionCircle } from 'react-icons/fa';
@@ -33,7 +34,7 @@ const menuItems = [
       
     ]
   },
-  // { name: "User Management", path: "/user-management", icon: <MdPeople /> },
+  { name: "User Management", path: "/user-management", icon: <MdPeople /> },
   { name: "Page Management", path: "/page-management", icon: <MdOutlinePages />, 
     children: [
       { name: "Custom Pages", path: "/custom-pages", icon: <FaPagelines /> },
@@ -66,7 +67,7 @@ const Sidebar = () => {
 
   return (
     <div className="sidebar bg-cblue text-white vh-100">
-      <h4 className="text-white mb-4 sidebar-border-bottom p-20">Pet Directory</h4>
+      <h4 className="text-white mb-4 sidebar-border-bottom p-20">Vet and Pets</h4>
       <ul className="list-unstyled">
         {menuItems.map((item, index) => (
           <li key={index}>

@@ -35,7 +35,7 @@ router.post('/login', async (req, res) => {
 });
 router.get("/", async (req, res) => {
   try {
-    const users = await User.find().sort({ created_at: -1 }).lean();
+    const users = await User.countDocuments({site: "1"}).sort({ created_at: -1 }).lean();
     res.json({ success: true, users });
   } catch (err) {
     console.error("Error : ", err)

@@ -38,7 +38,7 @@ const Sidebar = () => {
 
   return (
     <div className="sidebar bg-cblue text-white vh-100">
-      <h4 className="text-white mb-4 sidebar-border-bottom p-20">Pet Directory</h4>
+      <h4 className="text-white mb-4 sidebar-border-bottom p-20">Vet and Pets</h4>
       <ul className="list-unstyled">
         {menuItems.map((item, index) => (
           <li key={index}>

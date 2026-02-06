@@ -155,3 +155,36 @@
   font-size: 1.1rem;
   margin: 48px 0;
 }
+.animation {
+  display: inline-block;
+  animation: fadeUp 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0.4;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ---blog */
+.blog-filter .filter-btn {
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1px solid #f97316;
+  background: transparent;
+  color: #f97316;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.blog-filter .filter-btn.active,
+.blog-filter .filter-btn:hover {
+  background: #f97316;
+  color: #fff;
+}

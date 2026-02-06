@@ -40,7 +40,11 @@ const fraudData = [
 
 
 const Dashboard = () => {
-  
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+const [claimedPendingCount, setClaimedPendingCount] = useState(0);
+const [signupCount, setSignupCount] = useState(0);
+
   const [businessListing, setBusinessListing] = useState();
   const [pendingListing, setPendingListing] = useState();
   const [ userList,setUserList] = useState();
@@ -80,6 +84,35 @@ const Dashboard = () => {
     console.error("Error fetching new shop owners:", err.message);
   }
 };
+const fetchClaimedPendingCount = async () => {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/listing/claimed/pending-count`
+    );
+    const data = await res.json();
+
+    if (data.success) {
+      setClaimedPendingCount(data.count);
+    }
+  } catch (err) {
+    console.error("Error fetching claimed pending count:", err);
+  }
+};
+
+const fetchSignupCount = async () => {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/listing/signup/pending-count`
+    );
+    const data = await res.json();
+
+    if (data.success) {
+      setSignupCount(data.count);
+    }
+  } catch (err) {
+    console.error("Error fetching claimed pending count:", err);
+  }
+};
 
   const fetchListings = async () => {
     try {
@@ -112,7 +145,7 @@ const Dashboard = () => {
       const data = await res.json();
       if(data.success && data.users) {
         //console.log(data);
-        setUserList(data.users.length);
+        setUserList(data.users);
       }
     } catch (err) {
       console.error("Error: " , err);
@@ -160,6 +193,8 @@ const getCities = async () => {
 };
 fetchUserStats();
     // fetchCategoryStats();
+    fetchSignupCount();
+    fetchClaimedPendingCount();
   fetchUsers();
   fetchListings();
   fetchPending();
@@ -191,6 +226,44 @@ useEffect(() => {
   };
   fetchCategoryStats();
 }, [selectedCity]);
+useEffect(() => {
+  const fetchStats = async () => {
+    const params = new URLSearchParams();
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+
+    const query = params.toString() ? `?${params}` : "";
+
+    try {
+      const [
+        listingsRes,
+        pendingRes,
+        usersRes,
+        reviewsRes,
+        newOwnersRes
+      ] = await Promise.all([
+        fetch(`${API_BASE}/api/stats/listings${query}`),
+        fetch(`${API_BASE}/api/stats/pending-listings${query}`),
+        fetch(`${API_BASE}/api/stats/users${query}`),
+        fetch(`${API_BASE}/api/stats/reviews${query}`),
+        fetch(`${API_BASE}/api/stats/new-shop-owners${query}`)
+      ]);
+
+      setBusinessListing((await listingsRes.json()).count);
+      setPendingListing((await pendingRes.json()).count);
+      setUserList((await usersRes.json()).count);
+      setReviewCount((await reviewsRes.json()).count);
+      setNewShopOwners((await newOwnersRes.json()).count);
+
+    } catch (err) {
+      console.error("Stats error:", err);
+    }
+  };
+
+  fetchStats();
+}, [startDate, endDate]);
+
+
 
   return (
     <div className='dashboard pl-3 pr-3'>
@@ -207,37 +280,90 @@ useEffect(() => {
         </Col>
       </Row>
 
+      <Row className="mb-3">
+        <Col md={4}>
+          <Form.Label>Start Date</Form.Label>
+          <Form.Control
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </Col>
+
+        <Col md={4}>
+        <Form.Label>End Date</Form.Label>
+          <Form.Control
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </Col>
+
+        <Col md={4}>
+          <Form.Label>Quick Filter</Form.Label>
+          <Form.Select
+            onChange={(e) => {
+              const today = new Date();
+              const past = new Date();
+              past.setDate(today.getDate() - e.target.value);
+
+              setStartDate(past.toISOString().split("T")[0]);
+              setEndDate(today.toISOString().split("T")[0]);
+            }}
+          >
+            <option value="">Quick Filter</option>
+            <option value="0">Today</option>
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+          </Form.Select>
+        </Col>
+      </Row>
+
       {/* === Stats Cards === */}
-      <Row className="mb-4">
+      <Row className="mb-4 align-items-stretch">
         {[
           { text: 'text-white', bg: 'bg-info', number: `${businessListing}`, linkto : '/business-listing', label: 'Business Listings', icon: <AiOutlineShopping size={80} /> },
-          { text: 'text-white', bg: 'bg-success', number: `${pendingListing}`, linkto : '/business-listing', label: 'Pending Listings', icon: <AiFillSignal size={80} /> },
-          { text: '', bg: 'bg-warning', number: `${userList}`, label: 'Users', linkto : '/business-listing', icon: <AiOutlineUserAdd size={80} /> },
+          { text: 'text-white', bg: 'bg-success', number: `${pendingListing}`, signupCount: signupCount, claimedPendingCount: claimedPendingCount, linkto : '/business-listing', label: 'Pending Listings', icon: <AiFillSignal size={80} /> },
+          { text: '', bg: 'bg-warning', number: `${userList}`, label: 'Users', linkto : '/user-management', icon: <AiOutlineUserAdd size={80} /> },
           {
   text: 'text-white',
   bg: 'bg-primary',
   number: newShopOwners,
   linkto: '/business-listing',
-  label: 'New Shop Owners Today',
+  label: 'Service Providers',
   icon: <AiOutlineShop size={80} />
 },         { text: 'text-white', bg: 'bg-danger', number: `${reviewCount}`, linkto : '/review-management', label: 'Total Reviews', icon: <AiOutlineMessage size={80} /> },
+// {
+//   text: "text-white",
+//   bg: "bg-secondary",
+//   number: claimedPendingCount,
+//   linkto: "/business-listing",
+//   label: "Claimed (Waiting Approval)",
+//   icon: <AiOutlinePieChart size={80} />,
+// },
 
         ].map((stat, i) => (
           <Col className='mb-3' lg={4} md={6} sm={6} key={i}>
             <Link to={`${stat.linkto}`}>
-              <Card className={`${stat.text} ${stat.bg}`}>
+              <Card className={`${stat.text} ${stat.bg}  h-100`}>
                 <Card.Body className='pl-0 pr-0 pb-0'>
                   <div className='pos-rel d-flex justify-content-between align-items-center'>
                     <div className='pl-3'>
                       <h2><b>{stat.number}</b></h2>
-                      <p>{stat.label}</p>
+                      <p>{stat.label}
+                        {stat.signupCount != null && stat.claimedPendingCount != null && (
+                          <span className="d-block small mt-1">
+                            [ Signup: {stat.signupCount}, Claimed: {stat.claimedPendingCount} ]
+                          </span>
+                        )}
+                      </p>
                     </div>
                     <div className="icon">{stat.icon}</div>
                   </div>
-                  <Card.Footer className={`bg-transparent border-top  ${stat.number}`}>
+                </Card.Body>
+                <Card.Footer className={`bg-transparent border-top  ${stat.number}`}>
                     More Info <AiFillRightCircle size={24} />
                   </Card.Footer>
-                </Card.Body>
               </Card>
             </Link>
           </Col>

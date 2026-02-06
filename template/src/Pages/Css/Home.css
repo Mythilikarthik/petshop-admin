@@ -28,6 +28,16 @@
   box-shadow: 0 6px 18px rgba(0,0,0,0.12);
   background: #f8f9fa;
 }
+.footer-ad-slider {
+  width: 100%;
+  max-width: 100%;     /* Center width */
+  height: 150px;        /* Fixed banner height */
+  position: relative;
+  /* overflow: hidden; */
+  border-radius: 20px; 
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  background: #f8f9fa;
+}
 
 .ad-slide-img {
   width: 100%;
@@ -115,7 +125,7 @@
   background: #d40000;
 }
 .service-card .card-img-top {
-  height: auto;
-  object-fit: contain;
+  height: 100px;
+  object-fit: cover;
   transition: all 0.6s ease;
 }

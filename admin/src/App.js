@@ -58,6 +58,7 @@ import DirectoryBannerManagement from './Pages/DirectoryBannerManagement';
 import CityBannerManagement from './Pages/CityBannerManagement';
 import AddCityBanner from "./Pages/AddCityBanner";
 import BlogBannerManagement from './Pages/BlogBannerManagement';
+import UserDetails from "./Pages/UserDetails";
 
 function App() {
   
@@ -138,6 +139,7 @@ function App() {
           <Route path="/blog-banner-management" element={<BlogBannerManagement />} />
           <Route path="/city-banner-management" element={<CityBannerManagement />} />
           <Route path="/add-city-banner" element={<AddCityBanner />} />
+          <Route path="/user-details/:id" element={<UserDetails />} />
         </Route>
         
 

@@ -30,11 +30,11 @@ const DashboardHeader = ({ onToggleMenu }) => {
         </OverlayTrigger>
       </Col>
       <Col className='d-flex justify-content-end align-items-center'>
-        <OverlayTrigger placement='bottom' overlay={<Tooltip id="Notification">Notification</Tooltip>}>
+        {/* <OverlayTrigger placement='bottom' overlay={<Tooltip id="Notification">Notification</Tooltip>}>
         <div className="me-3 d-flex justify-content-center align-items-center text-black" onClick={handleExpand}>
           <AiOutlineBell size={24} />
         </div>
-        </OverlayTrigger>
+        </OverlayTrigger> */}
         <OverlayTrigger placement='bottom' overlay={<Tooltip id="expand">Expand</Tooltip>}>
         <div className="me-3 d-flex justify-content-center align-items-center text-black" onClick={handleExpand}>
           <AiOutlineExpand size={24} />

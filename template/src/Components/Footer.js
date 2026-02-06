@@ -27,7 +27,7 @@ const Footer = ({home, categoryPage}) => {
                                  */}
                                  <img src={`${API_BASE}/${home.siteLogoLight}`} alt="PetPals India" className='site-logo' width={250} />
                             </div>
-                            <p class="text-gray-400 mb-6 mt-4">
+                            <p class="text-gray-400 mb-6 mt-4 text-justify">
                                 {home.footerDescription}
                             </p>
                             <ul className="social-links list-unstyled d-flex gap-2">
@@ -77,7 +77,7 @@ const Footer = ({home, categoryPage}) => {
                 <div className="bottom-footer">
                     <Row className='align-items-center'>
                         <Col>
-                            <p className='m-0'>&copy; {new Date().getFullYear()} PetPals India. All rights reserved.</p>
+                            <p className='m-0'>&copy; {new Date().getFullYear()} Vet and Pets. All rights reserved.</p>
                         </Col>
                         <Col>
                             <ul className="list-unstyled d-flex gap-4 mb-0 justify-content-end">

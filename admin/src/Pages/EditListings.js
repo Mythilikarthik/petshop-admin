@@ -45,6 +45,10 @@ const [existingBanner, setExistingBanner] = useState(null);
     status: false,
     isVerified: false, 
     u_name: '',
+    claimStatus: "pending",
+    verificationMethod: "",
+    verificationDocs: [],
+    isClaimed: false,
   });
 
   const { confirmLeave, markAsSaved, resetInitialSnapshot } =
@@ -144,6 +148,10 @@ const [existingBanner, setExistingBanner] = useState(null);
             metaDescription: data.listing.metaDescription || '',
             status: data.listing.status === 'approved',
             isVerified: data.listing.isVerified || false, // 
+            claimStatus: data.listing.claimStatus || "pending",
+            verificationMethod: data.listing.verificationMethod || "",
+            verificationDocs: data.listing.verificationDocs || [],
+            isClaimed: data.listing.isClaimed || false,
           });
         } else {
           alert('Failed to fetch listing');
@@ -260,9 +268,12 @@ const [existingBanner, setExistingBanner] = useState(null);
       formData.photos.forEach(photo => formDataToSend.append('photos', photo));
       formData.existingPhotos.forEach(photo => formDataToSend.append('existingPhotos[]', photo));
       if (banner) {
-  formDataToSend.append("bannerImage", banner);
+  formDataToSend.append("bannerImage", banner);  
 }
-
+if (formData.isClaimed) {
+  formDataToSend.append("claimStatus", formData.claimStatus);
+}
+console.log("Submitting claimStatus:", formData.claimStatus);
       const res = await fetch(`${API_BASE}/api/listing/${id}`, {
         method: 'PUT',
         headers: {
@@ -334,6 +345,28 @@ const [existingBanner, setExistingBanner] = useState(null);
           <Form onSubmit={handleSubmit}>
             {formData.u_name && (
               <h3 className="mb-4">Created by : {formData.u_name.toUpperCase()}</h3>
+            )}
+
+            {formData.isClaimed && (
+              <Form.Group className="mb-3">
+                <Form.Check
+                  type="switch"
+                  id="claim-status-switch"
+                  label={
+                    formData.claimStatus === "approved"
+                      ? "Claim Approved"
+                      : "Claim Pending"
+                  }
+                  checked={formData.claimStatus === "approved"}
+                  onChange={() =>
+                    setFormData(prev => ({
+                      ...prev,
+                      claimStatus: prev.claimStatus === "approved" ? "pending" : "approved"
+                    }))
+                  }
+                />
+              </Form.Group>
+
             )}
 
             {/* Verified Toggle */}
@@ -563,6 +596,62 @@ const [existingBanner, setExistingBanner] = useState(null);
               <Form.Label>Meta Description</Form.Label>
               <Form.Control as="textarea" rows={3} name="metaDescription" value={formData.metaDescription} onChange={handleChange} />
             </Form.Group>
+
+            {formData.isClaimed && (
+              <Form.Group className="mb-3">
+                <Form.Label>Verification Method</Form.Label>
+                <Form.Select
+                  value={formData.verificationMethod}
+                  disabled
+                >
+                  <option value="">Not selected</option>
+                  <option value="email">Email OTP</option>
+                  <option value="document">Document Verification</option>
+                </Form.Select>
+              </Form.Group>
+
+
+            )}
+
+              {formData.isClaimed && formData.verificationMethod === "document" &&
+                formData.verificationDocs.length > 0 && (
+                  <Form.Group className="mb-4">
+                    <Form.Label>Verification Documents</Form.Label>
+
+                    <Row>
+                      {formData.verificationDocs.map((doc, idx) => {
+                        const docUrl = doc.startsWith("http")
+                          ? doc
+                          : `${API_BASE}/${doc}`;
+
+                        const isPdf = doc.endsWith(".pdf");
+
+                        return (
+                          <Col key={idx} md={4} className="mb-3">
+                            {isPdf ? (
+                              <iframe
+                                src={docUrl}
+                                title={`doc-${idx}`}
+                                width="100%"
+                                height="250"
+                                style={{ border: "1px solid #ddd" }}
+                              />
+                            ) : (
+                              <a
+                                href={docUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="btn btn-outline-primary w-100"
+                              >
+                                View Document {idx + 1}
+                              </a>
+                            )}
+                          </Col>
+                        );
+                      })}
+                    </Row>
+                  </Form.Group>
+              )}
 
             <Button variant="primary" type="submit">
               Save Changes

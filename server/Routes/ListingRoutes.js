@@ -5,9 +5,23 @@ const fs = require("fs");
 const Listing = require("../Models/Listing");
 const Message = require("../Models/Message");
 const Review = require("../Models/Review");
+const User = require("../Models/User");
 const { verifyToken } = require("../middleware/authMiddleware");
 const PetCategory = require("../Models/PetCategory");
 const mongoose = require("mongoose");
+const emailjs = require("@emailjs/nodejs");
+
+const sendOtpEmail = async (templateData) => {
+  return emailjs.send(
+    process.env.EMAILJS_SERVICE_ID_2,
+    process.env.EMAILJS_TEMPLATE_ID_2,
+    templateData,
+    {
+      publicKey: process.env.EMAILJS_PUBLIC_KEY_2,
+      privateKey: process.env.EMAILJS_PRIVATE_KEY_2,
+    }
+  );
+};
 
 const router = express.Router();
 
@@ -35,6 +49,37 @@ const upload = multer({
   limits: { fileSize: 2 * 1024 * 1024 },
  });
 
+
+ const uploadDocDir = "uploads/documents";
+if (!fs.existsSync(uploadDocDir)) fs.mkdirSync(uploadDocDir, { recursive: true });
+
+// Multer config
+const docStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDocDir),
+  filename: (req, file, cb) =>
+    cb(null, Date.now() + path.extname(file.originalname)),
+});
+const docFileFilter = (req, file, cb) => {
+  const allowedMime = [
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/pdf"
+  ];
+
+  const allowedExt = [".doc", ".docx", ".pdf"];
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  if (!allowedMime.includes(file.mimetype) || !allowedExt.includes(ext)) {
+    cb(new Error("Only doc, docx and pdf files are allowed"), false);
+  } else {
+    cb(null, true);
+  }
+};
+const docUpload = multer({ 
+  storage: docStorage,
+  fileFilter: docFileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+ });
 // router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
 //   try {
 //     const { shopName, email, phone, address, city, country, mapUrl, description, categories, petCategories, metaTitle, metaKeyword, metaDescription } = req.body;
@@ -186,26 +231,212 @@ router.post(
   }
 );
 
-router.put("/claim/:id", verifyToken, async (req, res) => {
+// router.put("/claim/:id", verifyToken, async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     const listing = await Listing.findByIdAndUpdate(
+//       id,
+//       {
+//         isClaimed: true,
+//         claimedBy: req.body.claimedBy,
+//         claimedAt: new Date(),
+//         user_id: req.body.claimedBy,
+//       },
+//       { new: true }
+//     );
+
+//     res.json({ success: true, message: "Listing claimed successfully!", listing });
+//   } catch (err) {
+//     res.json({ success: false, message: err.message });
+//   }
+// });
+// router.put(
+//   "/claim/:id",
+//   verifyToken,
+//   upload.array("documents"), // ✅ REQUIRED for FormData
+//   async (req, res) => {
+//     try {
+//       const { id } = req.params;
+
+//       const {
+//         claimedBy,
+//         claimRole,
+//         verificationMethod,
+//       } = req.body;
+
+//       if (!claimedBy) {
+//         return res.json({
+//           success: false,
+//           message: "claimedBy is required",
+//         });
+//       }
+
+//       const verificationDocs = req.files
+//         ? req.files.map((f) => f.path)
+//         : [];
+
+//       const listing = await Listing.findByIdAndUpdate(
+//         id,
+//         {
+//           isClaimed: true,
+//           claimedBy,
+//           claimedAt: new Date(),
+//           user_id: claimedBy,
+
+//           claimRole,
+//           verificationMethod,
+//           verificationDocs,
+//           claimStatus: "pending",
+
+//           status: "pending",
+//         },
+//         { new: true }
+//       );
+
+//       res.json({
+//         success: true,
+//         message: "Claim submitted. Awaiting verification.",
+//         listing,
+//       });
+//     } catch (err) {
+//       res.json({ success: false, message: err.message });
+//     }
+//   }
+// );
+router.put(
+  "/claim/:id",
+  verifyToken,
+  (req, res, next) => {
+    docUpload.array("documents")(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+        });
+      }
+      next();
+    });
+  },
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { claimRole, verificationMethod } = req.body;
+      const claimedBy = req.userId;
+
+      if (!claimRole || !verificationMethod) {
+        return res.json({ success: false, message: "Missing fields" });
+      }
+
+      const listing = await Listing.findById(id);
+      if (!listing) {
+        return res.json({ success: false, message: "Listing not found" });
+      }
+
+      if (listing.isClaimed) {
+        return res.json({
+          success: false,
+          message: "Listing already claimed and under verification",
+        });
+      }
+
+      listing.isClaimed = true;
+      listing.claimedBy = claimedBy;
+      listing.claimRole = claimRole;
+      listing.verificationMethod = verificationMethod;
+      listing.claimStatus = "pending";
+      listing.status = "pending";
+      listing.claimedAt = new Date();
+
+      if (req.files?.length) {
+        listing.verificationDocs = req.files.map((f) => f.path);
+      }
+
+      await listing.save();
+
+      const isEmail = verificationMethod.toLowerCase() === "email";
+
+      if (isEmail) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const user = await User.findById(claimedBy);
+
+        if (!user) {
+          return res
+            .status(404)
+            .json({ success: false, message: "User not found" });
+        }
+
+        user.otp = otp;
+        user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        await user.save();
+
+        await sendOtpEmail({
+          email: user.email,
+          name: user.username,
+          otp: otp,
+        });
+      }
+
+      res.json({
+        success: true,
+        requiresOtp: isEmail,
+        message: isEmail
+          ? "OTP sent to email"
+          : "Claim submitted for document verification",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, message: err.message });
+    }
+  }
+);
+
+// routes/listing.js (or controller file)
+
+router.get("/claimed/pending-count", async (req, res) => {
   try {
-    const { id } = req.params;
+    const count = await Listing.countDocuments({
+      isClaimed: true,
+      // claimStatus: "pending",
+      status: "pending",
+    });
 
-    const listing = await Listing.findByIdAndUpdate(
-      id,
-      {
-        isClaimed: true,
-        claimedBy: req.body.claimedBy,
-        claimedAt: new Date(),
-        user_id: req.body.claimedBy,
-      },
-      { new: true }
-    );
-
-    res.json({ success: true, message: "Listing claimed successfully!", listing });
+    res.json({
+      success: true,
+      count,
+    });
   } catch (err) {
-    res.json({ success: false, message: err.message });
+    console.error("Claimed pending count error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch claimed pending count",
+    });
   }
 });
+router.get("/signup/pending-count", async (req, res) => {
+  try {
+    const count = await Listing.countDocuments({
+      isClaimed: false,
+      created_by_type : "user",
+      // claimStatus: "pending",
+      status: "pending",
+    });
+
+    res.json({
+      success: true,
+      count,
+    });
+  } catch (err) {
+    console.error("Signup pending count error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch signup pending count",
+    });
+  }
+});
+
+
+
 
 router.post("/simple", verifyToken, async (req, res) => {
   try {
@@ -771,10 +1002,21 @@ const listing_id = listings[0]._id;
 
 router.get("/user/:id", async (req, res) => {
   try {
-    const listing = await Listing.findOne({user_id : req.params.id})
+    const listing = await Listing.findOne({
+  $or: [
+    { user_id: req.params.id },
+    { claimedBy: req.params.id }
+  ]
+})
     .populate("categories", "categoryName")
       .populate("petCategories", "categoryName")
       .populate("city", "city").sort({ created_at: -1 }); 
+      if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found"
+      });
+    }
     res.json({ success: true, listing });
   } catch (err) {
     console.error(err);
@@ -970,6 +1212,15 @@ router.put(
           data.verifiedBy = null;
         }
       }
+      /* -------------------- claim verified toggle -------------------- */
+      // if (data.claimStatus) data.claimStatus = data.claimStatus.toString();
+      if (data.claimStatus === "approved" && req.userType !== "admin") {
+  return res.status(403).json({ message: "Not authorized" });
+}
+      if (data.claimStatus && ["approved", "pending"].includes(data.claimStatus)) {
+  data.claimStatus = data.claimStatus;
+}
+
 
       /* -------------------- Parse categories -------------------- */
       if (data["categories[]"]) {

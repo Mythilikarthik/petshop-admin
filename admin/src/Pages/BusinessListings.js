@@ -47,6 +47,7 @@ const BusinessListings = () => {
           city: item.city || null,
           status: item.status || 'pending',
           created_by_type : item.created_by_type,
+          isClaimed: item.isClaimed || false,
         }));
         setListings(normalized);
       }
@@ -492,7 +493,16 @@ if (!mapped.length) {
             {displayedListings.map((listing, index) => (
               <tr key={listing._id}>
                 <td>{currentPage * itemsPerPage + index + 1}</td>
-                <td>{listing.shopName}</td>
+                <td>{listing.shopName}
+                  {listing.isClaimed && (
+                    <span
+                      className="badge bg-warning text-dark ms-2"
+                      style={{ fontSize: "0.75rem" }}
+                    >
+                      Claimed
+                    </span>
+                  )}
+                </td>
                 <td>{listing.petCategories?.join(",")}</td>
                 <td>{listing.categories?.join(", ")}</td>
                 <td>{listing.city?.city}</td>

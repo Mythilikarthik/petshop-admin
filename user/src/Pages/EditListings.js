@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Form, Button, Container, Row, Col, Image, Breadcrumb } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Image, Breadcrumb, Alert, Spinner } from 'react-bootstrap';
 import Select from "react-select";
 import useUnsavedChanges from "../Hooks/useUnsavedChanges";
 
@@ -14,7 +14,7 @@ const EditListing = () => {
   const navigate = useNavigate();
   const id = localStorage.getItem("userId");
   console.log(id);
-
+  const [noListing, setNoListing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [listing, setListing] = useState(null);
   const [categoryList, setCategoryList] = useState([]);
@@ -107,6 +107,12 @@ const [existingBanner, setExistingBanner] = useState(null);
         const res = await fetch(`${API_BASE}/api/listing/user/${id}`);
         const data = await res.json();
 console.log(data);
+if (res.status === 404) {
+          setNoListing(true);
+          setLoading(false);
+          return;
+        }
+        if (!res.ok) throw new Error(data.message);
         if (res.ok && data.success) {
   setListing(data.listing);
   setExistingBanner(data.listing.bannerImage || null);
@@ -138,7 +144,7 @@ console.log(data);
 
       } catch (err) {
         console.error('Error fetching listing:', err);
-        alert('Error fetching listing');
+        alert(err.message);
         navigate('/business-listing');
       } finally {
         setLoading(false);
@@ -287,8 +293,66 @@ const handleBannerChange = (e) => {
   };
 
   
-  if (loading) return <p className="text-center mt-4">Loading listing details...</p>;
   
+  if (loading) {
+    return (
+      <Container className="mt-5 text-center">
+        <Spinner animation="border" />
+      </Container>
+    );
+  }
+
+  // No listing
+  if (noListing) {
+    return (
+      <Container className="mt-5">
+        <div className='pl-3 pr-3'>
+        <Row className="mb-3 justify-content-end align-items-center">
+          <Col>
+            <h2 className="main-title mb-0">Edit Listing</h2>
+            <Breadcrumb className="top-breadcrumb">
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+              <Breadcrumb.Item active>Edit Listing</Breadcrumb.Item>
+            </Breadcrumb>
+          </Col>
+          
+        </Row>
+        <div className='form-container'>
+        <Alert variant="secondary" className='text-center'>
+          <h5>You don’t have a listing yet.</h5>          
+        </Alert>
+        </div>
+        </div>
+      </Container>
+    );
+  }
+
+  // Under review
+  if (listing?.status === "pending") {
+    return (
+      
+      <Container className="mt-5">
+        <div className='pl-3 pr-3'>
+        <Row className="mb-3 justify-content-end align-items-center">
+          <Col>
+            <h2 className="main-title mb-0">Edit Listing</h2>
+            <Breadcrumb className="top-breadcrumb">
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+              <Breadcrumb.Item active>Edit Listing</Breadcrumb.Item>
+            </Breadcrumb>
+          </Col>
+          
+        </Row>
+        <div className='form-container'>
+        <Alert variant="warning" className='text-center'>
+          <h5>Your listing is under review</h5>
+          <p>Please wait for admin approval.</p>
+        </Alert>
+        </div>
+        </div>
+      </Container>
+    );
+  }
   return (
     <Container className="mt-4">
       <div className='pl-3 pr-3'>

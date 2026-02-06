@@ -193,7 +193,7 @@ const ReviewManagement = () => {
                 <tr key={r._id}>
                   <td>{currentPage * itemsPerPage + index + 1}</td>
                   <td>{r.listingId?.shopName || "—"}</td>
-                  <td>{r.userId?.name || r.guestName || "Guest"}</td>
+                  <td>{r.userId?.name || r.userName || "Guest"}</td>
                   <td>{r.userEmail || "—"}</td>
                   <td>
                     <Badge bg="info">{r.rating}★</Badge>
@@ -216,6 +216,13 @@ const ReviewManagement = () => {
                   <td>
                     {r.status === "pending" && (
                       <>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => navigate(`/reviews/${r._id}`)}
+                      >
+                        View
+                      </Button>{" "}
                         <Button
                           size="sm"
                           variant="success"
@@ -233,13 +240,22 @@ const ReviewManagement = () => {
                       </>
                     )}
                     {r.status !== "pending" && (
+                      <>
                       <Button
                         size="sm"
                         variant="secondary"
                         onClick={() => navigate(`/reviews/${r._id}`)}
                       >
                         View
-                      </Button>
+                      </Button> { " " }
+                      <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => handleStatusChange(r._id, "rejected")}
+                        >
+                          Reject
+                        </Button>
+                        </>
                     )}
                   </td>
                 </tr>

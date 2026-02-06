@@ -19,8 +19,17 @@ authProvider: {
   default: "local"
 },
 googleId: String,
+site: {type: String,  enum: ["0", "1"], default: "0"},
 
   created_at: { type: Date, default: Date.now },
+  otp: String,
+  otpExpiresAt: Date,
+  isVerified: {
+    type: Boolean,
+    default: false,
+  }
+
 });
+
 
 module.exports = mongoose.model("User", UserSchema, "user");
