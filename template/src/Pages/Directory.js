@@ -256,7 +256,7 @@ const filteredListings = useMemo(() => {
   const handlePageChange = newPage => setPage(newPage);
   const fetchListings = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/listing/approved`);
+      const res = await fetch(`${API_BASE}/api/listing/directory/approved`);
       const data = await res.json();
       if(data.success) {
         setAllListings(data.listings);
@@ -789,7 +789,9 @@ useEffect(() => {
       </Container>
     </section>
     {bottomHomeAds.length > 0 && (
+        <div className="bottom-ad-wrapper">
         <AdSlider ads={bottomHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
+        </div>
       )}
       </>
   );

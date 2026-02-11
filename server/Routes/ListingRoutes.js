@@ -962,6 +962,121 @@ router.get("/approved", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+router.get("/directory/approved", async (req, res) => {
+  try {
+    const listings = await Listing.aggregate([
+      // ✅ Only approved listings
+      { $match: { status: "approved" } },
+
+      // 🔗 Join user (for premium check)
+      {
+        $lookup: {
+          from: "users", // ⚠️ make sure this matches your actual collection name
+          localField: "user_id",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+
+      // 🔗 Join approved reviews only
+      {
+        $lookup: {
+          from: "reviews",
+          let: { listingId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$listingId", "$$listingId"] },
+                    { $eq: ["$status", "approved"] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: "reviews"
+        }
+      },
+
+      // ⭐ Calculate average rating (1 decimal)
+      {
+        $addFields: {
+          rating: {
+            $round: [
+              { $ifNull: [{ $avg: "$reviews.rating" }, 0] },
+              1
+            ]
+          }
+        }
+      },
+
+      // 🎯 Premium + rating grouping
+      {
+        $addFields: {
+          isPaid: {
+            $cond: [
+              {
+                $and: [
+                  { $eq: ["$user.isPremium", true] },
+                  { $gte: ["$user.premiumEndDate", new Date()] }
+                ]
+              },
+              1,
+              0
+            ]
+          },
+          randomSort: { $rand: {} }
+        }
+      },
+
+      // 📊 Final Sorting
+      // 🔗 Join categories
+{
+  $lookup: {
+    from: "categories",
+    localField: "categories",
+    foreignField: "_id",
+    as: "categories"
+  }
+},
+
+// 🔗 Join petCategories
+{
+  $lookup: {
+    from: "petcategories",
+    localField: "petCategories",
+    foreignField: "_id",
+    as: "petCategories"
+  }
+},
+
+      {
+        $sort: {
+          isPaid: -1,   // Premium first
+          rating: -1,   // Higher rating first
+          randomSort: 1 // Shuffle inside same rating
+        }
+      },
+
+      { $limit: 50 }
+    ]);
+
+    res.json({
+      success: true,
+      listings
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+});
+
 
 
 router.get("/counts", verifyToken, async (req, res) => {

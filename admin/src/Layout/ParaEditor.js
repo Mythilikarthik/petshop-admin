@@ -23,13 +23,16 @@ const ParaEditor = ({ value, onChange }) => {
         plugins:
           "advlist autolink lists link charmap preview anchor " +
           "searchreplace visualblocks code fullscreen " +
-          "insertdatetime media table paste help wordcount",
+          "insertdatetime media table paste help wordcount" +
+          "image link media code",
 
         toolbar:
           "undo redo | formatselect | bold italic underline | " +
           "alignleft aligncenter alignright alignjustify | " +
           "bullist numlist outdent indent | " +
-          "link | removeformat | help",
+          "link | removeformat | help |" +
+          "image | code",
+          images_upload_url: "http://localhost:5000/api/upload",
       }}
       onEditorChange={handleEditorChange}
     />

@@ -206,7 +206,9 @@ const fetchFaqs = async () => {
       </Container>
       
       {bottomHomeAds.length > 0 && (
+          <div className="bottom-ad-wrapper">
         <AdSlider ads={bottomHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
+        </div>
       )}
     </div>
   )

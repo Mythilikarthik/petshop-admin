@@ -22,6 +22,7 @@ const contactAdminRoutes = require("./Routes/ContactAdminRoutes");
 const DirectoryBannerRoutes = require("./Routes/DirectoryBanner");
 const BlogBannerRoutes = require("./Routes/BlogBanner");
 const CityBannerRoutes = require("./Routes/CityBannerRoutes");
+const path = require("path");
 
 
 
@@ -38,6 +39,7 @@ app.use(cors({
 }));
 app.use(express.json()); // for parsing JSON
 app.use("/uploads", express.static("uploads")); 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {

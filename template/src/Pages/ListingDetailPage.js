@@ -17,7 +17,7 @@ const API_BASE =
     : "http://localhost:5000";
 
 const ListingDetailPage = () => {
-  
+  const alertRef = useRef(null);
 const [showAuthGate, setShowAuthGate] = useState(false);
 
   const { user, authLoading } = useAuth();
@@ -120,6 +120,19 @@ useEffect(() => {
 
     fetchListing();
   }, [id]);
+
+// ============================================================
+
+  useEffect(() => {
+  if (alert.show && alertRef.current) {
+    alertRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+    alertRef.current.focus();
+  }
+}, [alert]);
 
   // ============================================================
   // 2️⃣ FETCH REVIEWS FOR THIS LISTING
@@ -331,6 +344,7 @@ useEffect(() => {
 
     setShowPhone(true);
   };
+
 
 
   return (
@@ -590,7 +604,7 @@ useEffect(() => {
           <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Write Review</h5>
         <Col md={12} lg={12}>
           {alert.show && (
-            <Alert
+            <Alert ref={alertRef}
               variant={alert.type}
               onClose={() => setAlert({ show: false })}
               dismissible
