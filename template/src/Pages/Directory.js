@@ -789,7 +789,11 @@ useEffect(() => {
       </Container>
     </section>
     {bottomHomeAds.length > 0 && (
-        <AdSlider ads={bottomHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
+        <div className='footer-ads'>
+          <Container>
+            <AdSlider ads={bottomHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
+          </Container>
+        </div>
       )}
       </>
   );

@@ -324,26 +324,49 @@ useEffect(() => {
   if (loading) return <div>Loading...</div>;
   if (!listing) return <div>Listing not found.</div>;
 
+  // const handleShowPhone = async () => {
+  //   if (!user) {
+  //     window.google.accounts.id.prompt(); // force login
+  //     return;
+  //   }
+  //   setIsTracking(true);
+
+  //   await fetch(`${API_BASE}/api/enquiry`, {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       listingId: listing._id,
+  //       userName: user.name,
+  //       userEmail: user.email,
+  //       action: "phone_view",
+  //     }),
+  //   });
+
+  //   setShowPhone(true);
+  // };
   const handleShowPhone = async () => {
-    if (!user) {
-      window.google.accounts.id.prompt(); // force login
-      return;
-    }
-    setIsTracking(true);
+  if (!user) {
+    setShowAuthGate(true);
+    return;
+  }
 
-    await fetch(`${API_BASE}/api/enquiry`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        listingId: listing._id,
-        userName: user.name,
-        userEmail: user.email,
-        action: "phone_view",
-      }),
-    });
+  setIsTracking(true);
 
-    setShowPhone(true);
-  };
+  await fetch(`${API_BASE}/api/enquiry`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      listingId: listing._id,
+      userName: user.name,
+      userEmail: user.email,
+      action: "phone_view",
+    }),
+  });
+
+  setShowPhone(true);
+  setIsTracking(false);
+};
+
 
 
 
@@ -418,65 +441,7 @@ useEffect(() => {
         ))}
         </div>
 
-            <div className="listing-contact">
-              
-              <ul>
-                <li>
-                  {/* <strong>Phone:</strong>{" "} */}
-                  {/* <a href={`tel:${listing.phone}`}>{listing.phone}</a> */}
-                  <li>
-                    <strong>Phone:</strong>{" "}
-                    {!showPhone ? (
-                      <Button
-                        size="sm"
-                        variant="outline-primary"
-                        onClick={handleShowPhone}
-                        disabled={isTracking}
-                      >
-                        {isTracking ? "Please wait..." : "Show Number"}
-                      </Button>
-                    ) : (
-                      <a href={`tel:${listing.phone}`} className="ms-2">
-                        {listing.phone}
-                      </a>
-                    )}
-                  </li>
-
-                </li>
-                <li>
-                  <strong>Email:</strong>{" "}
-                  <a href={`mailto:${listing.email}`}>
-                    {listing.email}
-                  </a>
-                </li>
-                <li>
-                  <strong>Address:</strong> {listing.address}
-                </li>
-                <li>
-                  <strong>City:</strong> {listing.city?.city}
-                </li>
-                <li>
-                  <strong>Website:</strong>{" "}
-                  <a
-                    href={listing.mapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {listing.mapUrl}
-                  </a>
-                </li>
-              </ul>
-              {console.log("Created By Type:", listing.created_by_type)}
-        {listing.created_by_type && listing.created_by_type === "admin" && !(listing.isClaimed) && (
-          <Button
-            variant="primary"
-            className="mt-3"
-            onClick={() => navigate(`/claim/${listing._id}`)}
-          >
-            Claim
-          </Button>
-        )}
-            </div>
+            
           </Col>
 
           
@@ -545,7 +510,7 @@ useEffect(() => {
         {/* REVIEWS SUMMARY */}
         
         {/* REVIEW LIST */}
-        <div className="review-list ">
+        <div className="review-list mt-3 ">
           <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Customer Reviews</h5>
           {console.log(reviews)}
           {reviews.length === 0 ? (
@@ -598,7 +563,68 @@ useEffect(() => {
           <Col md={4} className="bg-grey"> 
           {/* SIDE AREA - Placeholder for future content */}
           {/* REVIEW FORM */}
-          
+          <Row className="shadow-sm m-4 rounded">
+            <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Contact Details</h5>
+            <div className="listing-contact mt-3 mb-3">
+              
+              <ul>
+                <li>
+                  {/* <strong>Phone:</strong>{" "} */}
+                  {/* <a href={`tel:${listing.phone}`}>{listing.phone}</a> */}
+                  <li>
+                    <strong>Phone:</strong>{" "}
+                    {!showPhone ? (
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        onClick={handleShowPhone}
+                        disabled={isTracking}
+                      >
+                        {isTracking ? "Please wait..." : "Show Number"}
+                      </Button>
+                    ) : (
+                      <a href={`tel:${listing.phone}`} className="ms-2">
+                        {listing.phone}
+                      </a>
+                    )}
+                  </li>
+
+                </li>
+                <li>
+                  <strong>Email:</strong>{" "}
+                  <a href={`mailto:${listing.email}`}>
+                    {listing.email}
+                  </a>
+                </li>
+                <li>
+                  <strong>Address:</strong> {listing.address}
+                </li>
+                <li>
+                  <strong>City:</strong> {listing.city?.city}
+                </li>
+                <li>
+                  <strong>Website:</strong>{" "}
+                  <a
+                    href={listing.mapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {listing.mapUrl}
+                  </a>
+                </li>
+              </ul>
+              {console.log("Created By Type:", listing.created_by_type)}
+        {listing.created_by_type && listing.created_by_type === "admin" && !(listing.isClaimed) && (
+          <Button
+            variant="primary"
+            className="w-100"
+            onClick={() => navigate(`/claim/${listing._id}`)}
+          >
+            Claim
+          </Button>
+        )}
+            </div>
+          </Row>
         <Row className=" shadow-sm m-4 rounded">
        
           <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Write Review</h5>
