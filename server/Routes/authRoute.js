@@ -419,10 +419,10 @@ router.get("/user/profile/:id", async (req, res) => {
 // ------------------ Update User Profile ------------------
 router.put("/user/profile/:id", async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name,username, email, phone } = req.body;
     const updated = await User.findByIdAndUpdate(
       req.params.id,
-      { name, email, phone },
+      { name, username, email, phone },
       { new: true }
     );
 

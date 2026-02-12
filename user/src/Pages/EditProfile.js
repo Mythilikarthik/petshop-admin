@@ -9,7 +9,7 @@ const API_BASE = process.env.NODE_ENV === "production"
 
 const EditProfile = () => {
   const id = localStorage.getItem("userId");
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', username: '', email: '', phone: '' });
   const navigate = useNavigate();
 
   // Fetch current profile data
@@ -19,6 +19,7 @@ const EditProfile = () => {
       const data = await res.json();
       if (data.success) setFormData({
         name: data.user.name || '',
+        username: data.user.username || '',
         email: data.user.email || '',
         phone: data.user.phone || ''
       });
@@ -62,6 +63,17 @@ const EditProfile = () => {
               <Form.Label>Name</Form.Label>
               <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Enter your name" />
             </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Enter your username"
+              />
+            </Form.Group>
+
 
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
