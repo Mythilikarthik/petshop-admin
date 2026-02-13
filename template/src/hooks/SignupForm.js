@@ -3,7 +3,7 @@ import { Form, Button, Alert, Spinner } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 const API_BASE =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
+    ? "https://petshop-admin.onrender.com"
     : "http://localhost:5000";
 
 const SignupForm = ({ onSuccess }) => {
