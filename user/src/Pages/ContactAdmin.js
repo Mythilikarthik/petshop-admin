@@ -12,6 +12,8 @@ const ContactAdmin = () => {
   const navigate = useNavigate();
 
   
+const [loading, setLoading] = useState(true);
+const [noListing, setNoListing] = useState(false);
 
   const [listing, setListing] = useState({});
 const [formData, setFormData] = useState({
@@ -51,30 +53,88 @@ const [formData, setFormData] = useState({
     alert("Something went wrong. Try again later.");
   }
 };
+// useEffect(() => {
+//   const id = localStorage.getItem("userId");
+//   //console.log(id);
+//   const fetchListing = async () => {
+//     const res = await fetch(`${API_BASE}/api/listing/user/${id}`, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json", 
+//       },
+//     })
+//     const data = await res.json();
+//     if(data.success && data.listing) {
+//       setListing(data.listing);
+//      //console.log(listing);
+//       setFormData((prev) => ({
+//         ...prev,
+//         shopName: data.listing.shopName || "",
+//         email: data.listing.email || "",
+//       }));
+//      // console.log(formData);
+//     }
+//   }
+// fetchListing();
+// }, [])
 useEffect(() => {
   const id = localStorage.getItem("userId");
-  //console.log(id);
+  if (!id) return;
+
   const fetchListing = async () => {
-    const res = await fetch(`${API_BASE}/api/listing/user/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json", 
-      },
-    })
-    const data = await res.json();
-    if(data.success && data.listing) {
-      setListing(data.listing);
-     //console.log(listing);
-      setFormData((prev) => ({
-        ...prev,
-        shopName: data.listing.shopName || "",
-        email: data.listing.email || "",
-      }));
-     // console.log(formData);
+    try {
+      const res = await fetch(`${API_BASE}/api/listing/user/${id}`);
+      const data = await res.json();
+
+      if (res.status === 404) {
+        setNoListing(true);
+        setLoading(false);
+        return;
+      }
+
+      if (data.success && data.listing) {
+        setListing(data.listing);
+
+        setFormData((prev) => ({
+          ...prev,
+          shopName: data.listing.shopName || "",
+          email: data.listing.email || "",
+        }));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  }
-fetchListing();
-}, [])
+  };
+
+  fetchListing();
+}, []);
+
+if (loading) {
+  return (
+    <Container className="mt-5 text-center">
+      <p>Loading...</p>
+    </Container>
+  );
+}
+if (noListing) {
+  return (
+    <Container className="mt-5">
+      <h5>You don’t have a listing yet.</h5>
+    </Container>
+  );
+}
+if (listing?.status === "pending") {
+  return (
+    <Container className="mt-5">
+      <div className="form-container text-center">
+        <h5>Your listing is under admin approval</h5>
+        <p>Please wait until the admin approves your listing.</p>
+      </div>
+    </Container>
+  );
+}
 
 
   return (

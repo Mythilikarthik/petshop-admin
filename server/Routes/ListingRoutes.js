@@ -634,7 +634,7 @@ router.post("/by-pet-category", async (req, res) => {
     }
 
     const listings = await Listing.find({
-      petCategories: petCategory._id
+      petCategories: petCategory._id, status: "approved"
     })
       .populate("categories", "categoryName")
       .populate("petCategories", "petCategoryName")

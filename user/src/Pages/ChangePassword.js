@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Form, Button, Col, Container, Breadcrumb, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 
 const API_BASE = process.env.NODE_ENV === "production"
   ? "https://petshop-admin.onrender.com"
@@ -40,6 +42,18 @@ const ChangePassword = () => {
     }
     else alert(data.message || "Error changing password");
   };
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+const togglePassword = (field) => {
+  setShowPassword(prev => ({
+    ...prev,
+    [field]: !prev[field]
+  }));
+};
+
 
   return (
     <Container className="mt-4">
@@ -56,20 +70,95 @@ const ChangePassword = () => {
 
         <div className='form-container'>
         <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
+          {/* <Form.Group className="mb-3">
             <Form.Label>Current Password</Form.Label>
             <Form.Control type="password" name="currentPassword" value={formData.currentPassword} onChange={handleChange} placeholder="Enter your current password" />
+          </Form.Group> */}
+          <Form.Group className="mb-3">
+            <Form.Label>Current Password</Form.Label>
+            <div className="position-relative">
+              <Form.Control
+                type={showPassword.current ? "text" : "password"}
+                name="currentPassword"
+                value={formData.currentPassword}
+                onChange={handleChange}
+                placeholder="Enter your current password"
+              />
+              <span
+                onClick={() => togglePassword("current")}
+                style={{
+                  position: "absolute",
+                  right: "15px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer"
+                }}
+              >
+                {showPassword.current ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
           </Form.Group>
 
+{/* 
           <Form.Group className="mb-3">
             <Form.Label>New Password</Form.Label>
             <Form.Control type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="Enter new password" />
-          </Form.Group>
-
+          </Form.Group> */}
           <Form.Group className="mb-3">
+  <Form.Label>New Password</Form.Label>
+  <div className="position-relative">
+    <Form.Control
+      type={showPassword.new ? "text" : "password"}
+      name="newPassword"
+      value={formData.newPassword}
+      onChange={handleChange}
+      placeholder="Enter new password"
+    />
+    <span
+      onClick={() => togglePassword("new")}
+      style={{
+        position: "absolute",
+        right: "15px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        cursor: "pointer"
+      }}
+    >
+      {showPassword.new ? <FaEyeSlash /> : <FaEye />}
+    </span>
+  </div>
+</Form.Group>
+
+
+          {/* <Form.Group className="mb-3">
             <Form.Label>Confirm New Password</Form.Label>
             <Form.Control type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm new password" />
-          </Form.Group>
+          </Form.Group> */}
+          <Form.Group className="mb-3">
+  <Form.Label>Confirm New Password</Form.Label>
+  <div className="position-relative">
+    <Form.Control
+      type={showPassword.confirm ? "text" : "password"}
+      name="confirmPassword"
+      value={formData.confirmPassword}
+      onChange={handleChange}
+      placeholder="Confirm new password"
+    />
+    <span
+      onClick={() => togglePassword("confirm")}
+      style={{
+        position: "absolute",
+        right: "15px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        cursor: "pointer"
+      }}
+    >
+      {showPassword.confirm ? <FaEyeSlash /> : <FaEye />}
+    </span>
+  </div>
+</Form.Group>
+
 
           <Button variant="primary" type="submit">Change Password</Button>
         </Form>

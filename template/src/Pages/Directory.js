@@ -28,7 +28,13 @@ const [showAuthGate, setShowAuthGate] = useState(false);
 
   const pgname = "directory";
   const navigate = useNavigate();
-  const { city: routeCity, category: routeCategory, pet: routePet } = useParams();
+  // const { city: routeCity, category: routeCategory, pet: routePet } = useParams();
+  const params = useParams();
+
+const routeCity = params.city ? decodeURIComponent(params.city) : "";
+const routeCategory = params.category ? decodeURIComponent(params.category) : "";
+const routePet = params.pet ? decodeURIComponent(params.pet) : "";
+
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(routeCategory || '');
   const [search, setSearch] = useState('');
