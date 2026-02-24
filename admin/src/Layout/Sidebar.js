@@ -7,7 +7,8 @@ import {
   MdCampaign,MdOutlineCategory ,
   MdOutlinePages, MdOutlineStoreMallDirectory ,
   MdPets,
-  MdPeople
+  MdPeople,
+  MdQueryStats
 } from 'react-icons/md';
 import { GiJumpingDog , GiDogHouse, GiNestBirds , GiRabbit, GiDogBowl } from "react-icons/gi";
 import { FaChartArea, FaChevronDown, FaChevronUp, FaDeskpro, FaDesktop, FaNewspaper, FaPage4, FaPagelines, FaQuestionCircle } from 'react-icons/fa';
@@ -31,6 +32,7 @@ const menuItems = [
       { name: "Blog Listing", path: "/blog-listing", icon: <FaNewspaper  /> },
       { name: "FAQ", path: "/faq-listing", icon: <FaQuestionCircle /> },
       { name: "Review Management", path: "/review-management", icon: <MdCampaign /> },
+      { name: "Enquiry List", path: "/enquiry-list", icon: <MdQueryStats /> },
       
     ]
   },

@@ -600,7 +600,7 @@ useEffect(() => {
                   <strong>Address:</strong> {listing.address}
                 </li>
                 <li>
-                  <strong>City:</strong> {listing.city?.city}
+                  <strong>City:</strong> {listing.city?.city} {","} {listing.country}
                 </li>
                 <li>
                   <strong>Website:</strong>{" "}

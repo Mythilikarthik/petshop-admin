@@ -148,5 +148,40 @@ router.post("/", async (req, res) => {
     });
   }
 });
+router.get("/", async (req, res) => {
+  try {
+    const enquiries = await ListingEnquiry.find()
+      .populate("listingId", "shopName") // adjust fields
+      .sort({ createdAt: -1 });
+
+    res.json(enquiries);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Get single enquiry
+router.get("/:id", async (req, res) => {
+  try {
+    const enquiry = await ListingEnquiry.findById(req.params.id)
+      .populate("listingId", "shopName description");
+
+    if (!enquiry) return res.status(404).json({ message: "Not found" });
+
+    res.json(enquiry);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Delete enquiry
+router.delete("/:id", async (req, res) => {
+  try {
+    await ListingEnquiry.findByIdAndDelete(req.params.id);
+    res.json({ message: "Enquiry deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

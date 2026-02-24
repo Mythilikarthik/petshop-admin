@@ -668,7 +668,8 @@ router.post("/bulk", verifyToken, async (req, res) => {
       __row: idx + 2, // Excel row (assuming headers in row 1)
       created_by_id: userId,
       created_by_type: userType,
-      status
+      status,
+      country: "India",
     }));
 
     // ✅ Validate schema before proceeding
@@ -1049,6 +1050,20 @@ router.get("/directory/approved", async (req, res) => {
     localField: "petCategories",
     foreignField: "_id",
     as: "petCategories"
+  }
+},
+{
+  $lookup: {
+    from: "cities", // ⚠️ use your actual collection name
+    localField: "city",
+    foreignField: "_id",
+    as: "city"
+  }
+},
+{
+  $unwind: {
+    path: "$city",
+    preserveNullAndEmptyArrays: true
   }
 },
 

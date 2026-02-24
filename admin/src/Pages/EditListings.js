@@ -366,7 +366,6 @@ console.log("Submitting claimStatus:", formData.claimStatus);
                   }
                 />
               </Form.Group>
-
             )}
 
             {/* Verified Toggle */}
@@ -422,7 +421,7 @@ console.log("Submitting claimStatus:", formData.claimStatus);
 
             <Form.Group className="mb-3">
               <Form.Label>Email <span className="text-danger">*</span></Form.Label>
-              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required disabled />
+              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} />
             </Form.Group>
 
             <Form.Group className="mb-3">

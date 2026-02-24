@@ -4,7 +4,7 @@ const slugify = require("slugify");
 const ListingSchema = new mongoose.Schema({
   shopName: { type: String, required: true },
   slug: { type: String, index: true },
-  email: { type: String, required: true },
+  email: { type: String, required: false },
   phone: { type: String, required: true },
   address: String,
   city: { type: mongoose.Schema.Types.ObjectId, ref: "City", required: true },

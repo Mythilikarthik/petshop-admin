@@ -46,6 +46,32 @@ const ViewReviewDetail = () => {
       </Container>
     );
 
+    const handleStatusChange = async (newStatus) => {
+  if (!window.confirm(`Are you sure to mark this review as ${newStatus}?`)) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/reviews/${review._id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: newStatus,
+        adminId: localStorage.getItem("userId"),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setReview((prev) => ({ ...prev, status: newStatus }));
+    } else {
+      alert(data.message || "Failed to update status");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error updating review status");
+  }
+};
+
   return (
     <Container className="mt-4">
       <Row className='mb-3 justify-content-end align-items-center'>
@@ -57,9 +83,46 @@ const ViewReviewDetail = () => {
             <Breadcrumb.Item active>{review.listingId?.shopName || "—"}</Breadcrumb.Item>
         </Breadcrumb>
         </Col>
-        <Col xs={'auto'}>
-        <Button variant="secondary" onClick={() => navigate(-1)}>Go Back</Button>
-        </Col>
+        <Col xs={'auto'} className="d-flex gap-2">
+  <Button variant="secondary" onClick={() => navigate(-1)}>
+    Go Back
+  </Button>
+
+  {review.status === "pending" && (
+    <>
+      <Button
+        variant="success"
+        onClick={() => handleStatusChange("approved")}
+      >
+        Approve
+      </Button>
+      <Button
+        variant="danger"
+        onClick={() => handleStatusChange("rejected")}
+      >
+        Reject
+      </Button>
+    </>
+  )}
+
+  {review.status === "approved" && (
+    <Button
+      variant="danger"
+      onClick={() => handleStatusChange("rejected")}
+    >
+      Reject
+    </Button>
+  )}
+
+  {review.status === "rejected" && (
+    <Button
+      variant="success"
+      onClick={() => handleStatusChange("approved")}
+    >
+      Approve
+    </Button>
+  )}
+</Col>
     </Row>
 
       <div className="form-container">
@@ -117,7 +180,7 @@ const ViewReviewDetail = () => {
               <Card.Img
               className="img-responsive"
                 variant="top"
-                src={`${API_BASE}${img}`}
+                src={`${API_BASE}/${img}`}
                 alt={`Review-${index}`}
                 style={{
                   height: "150px",

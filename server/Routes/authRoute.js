@@ -37,6 +37,11 @@ const USER_URL =
     ? "https://petshop-user.onrender.com"
     : "http://localhost:3001";
 
+const SITE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://petshop-template.onrender.com/"
+    : "http://localhost:3002";
+
 
 // helper function
 const generateToken = (id, role) => {
@@ -345,39 +350,88 @@ router.post("/user/register", async (req, res) => {
 });
 
 // ------------------ User Login ------------------
+// router.post("/user/login", async (req, res) => {
+//   console.log("User login attempt:", req.body);
+//   try {
+//     const { username, password } = req.body;
+//     const user = await User.findOne({
+//       $or: [{ username }, { email: username }, {isVerified : true}]
+//     });
+
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: "User not found" });
+//     }
+
+//     const passwordMatch =
+//       (user.password.startsWith("$2") && (await bcrypt.compare(password, user.password))) ||
+//       password === user.password;
+
+//     if (!passwordMatch) {
+//       return res.status(401).json({ success: false, message: "Invalid credentials" });
+//     }
+
+//     // ✅ Check and update premium if expired
+//     // if (
+//     //   user.isPremium &&
+//     //   user.premiumEndDate &&
+//     //   new Date() > new Date(user.premiumEndDate)
+//     // ) {
+//     //   user.isPremium = false;
+//     //   user.premiumPlan = null;
+//     //   user.premiumStartDate = null;
+//     //   user.premiumEndDate = null;
+//     //   await user.save();
+//     //   console.log(`⚠️ Premium expired for user: ${user.email}`);
+//     // }
+
+//     const token = generateToken(user._id, "user");
+
+//     return res.json({
+//       success: true,
+//       token,
+//       role: "user",
+//       id: user._id,
+//       name: user.name,
+//       message: "User login successful",
+//       isPremium: user.isPremium,
+//       premiumPlan: user.premiumPlan,
+//       premiumEndDate: user.premiumEndDate,
+//     });
+//   } catch (err) {
+//     console.error("User login error:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
 router.post("/user/login", async (req, res) => {
   console.log("User login attempt:", req.body);
+
   try {
     const { username, password } = req.body;
+
     const user = await User.findOne({
-      $or: [{ username }, { email: username }, {isVerified : true}]
+      $or: [{ username }, { email: username }],
+      isVerified: true
     });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found or not verified" });
     }
 
-    const passwordMatch =
-      (user.password.startsWith("$2") && (await bcrypt.compare(password, user.password))) ||
-      password === user.password;
+    if (!user.password) {
+      return res.status(500).json({ success: false, message: "Password not set" });
+    }
+
+    let passwordMatch = false;
+
+    if (user.password.startsWith("$2")) {
+      passwordMatch = await bcrypt.compare(password, user.password);
+    } else {
+      passwordMatch = password === user.password;
+    }
 
     if (!passwordMatch) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
-
-    // ✅ Check and update premium if expired
-    // if (
-    //   user.isPremium &&
-    //   user.premiumEndDate &&
-    //   new Date() > new Date(user.premiumEndDate)
-    // ) {
-    //   user.isPremium = false;
-    //   user.premiumPlan = null;
-    //   user.premiumStartDate = null;
-    //   user.premiumEndDate = null;
-    //   await user.save();
-    //   console.log(`⚠️ Premium expired for user: ${user.email}`);
-    // }
 
     const token = generateToken(user._id, "user");
 
@@ -392,6 +446,7 @@ router.post("/user/login", async (req, res) => {
       premiumPlan: user.premiumPlan,
       premiumEndDate: user.premiumEndDate,
     });
+
   } catch (err) {
     console.error("User login error:", err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -635,6 +690,65 @@ router.post("/user/reset-password", async (req, res) => {
 
   res.json({ success: true, message: "Password reset successful" });
 });
+router.post("/site/user/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Email is not registered"
+      });
+    }
+//console.log(user.email);
+    const token = crypto.randomBytes(32).toString("hex");
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 1000 * 60 * 15; // 15 min
+    await user.save();
+
+    const resetLink = `${SITE_URL}/reset-password?token=${token}`;
+
+    await sendEmail({
+      to_email: user.email,      // ✅ dynamic email
+      reset_link: resetLink,      // ✅ token link
+    });
+
+    res.json({
+      success: true,
+      message: "Reset link sent"
+    });
+
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to send reset email"
+    });
+  }
+});
+router.post("/site/user/reset-password", async (req, res) => {
+  const { token, password } = req.body;
+
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user)
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired token" });
+
+  user.password = await bcrypt.hash(password, 10);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  res.json({ success: true, message: "Password reset successful" });
+});
 router.post("/user/google", async (req, res) => {
   try {
     console.log("Google login body:", req.body);
@@ -810,23 +924,69 @@ router.post("/user/send-otp", async (req, res) => {
 
 
 
+// router.post("/site/login", async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     if (!email || !password)
+//       return res.status(400).json({ success: false, message: "Email & password required" });
+
+//     const user = await User.findOne({ email });
+//     if (!user)
+//       return res.status(401).json({ success: false, message: "Invalid credentials" });
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch)
+//       return res.status(401).json({ success: false, message: "Invalid credentials" });
+
+//     const token = generateToken(user._id, "user");
+
+//     res.json({
+//       success: true,
+//       token,
+//       user: {
+//         id: user._id,
+//         name: user.name,
+//         email: user.email,
+//       },
+//     });
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
 router.post("/site/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body; // you can rename this to "login" if you want
 
     if (!email || !password)
-      return res.status(400).json({ success: false, message: "Email & password required" });
+      return res.status(400).json({ success: false, message: "Email/Username & password required" });
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [
+        { email: email },
+        { username: email }
+      ]
+    });
+
     if (!user)
       return res.status(401).json({ success: false, message: "Invalid credentials" });
 
+    // if (!user.password)
+    //   return res.status(500).json({ success: false, message: "Password not set" });
+if (!user.password) {  
+  return res.status(400).json({
+    success: false,
+    message: "This account uses Google login. Please sign in with Google and set your password.",
+    googleAccount: true
+  });
+}
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch)
       return res.status(401).json({ success: false, message: "Invalid credentials" });
 
     const token = generateToken(user._id, "user");
-
+console.log(user);
     res.json({
       success: true,
       token,
@@ -834,16 +994,168 @@ router.post("/site/login", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        username: user.username,
+        hasPassword: !!user.password   
       },
     });
+
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Login error:", err);
+    res.status(500).json({ success: false, message: err.message || "Server error" });
   }
 });
+router.post("/site/user/set-password", verifyToken, async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    if (!password)
+      return res.status(400).json({
+        success: false,
+        message: "Password is required"
+      });
+
+    // if (password.length < 6)
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Password must be at least 6 characters"
+    //   });
+
+    const user = await User.findById(req.userId);
+
+    if (!user)
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+
+    // ❗ If already has password
+    if (user.password) {
+      return res.status(400).json({
+        success: false,
+        message: "Password already set"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    user.authProvider = "local"; // now can login both ways
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password set successfully"
+    });
+
+  } catch (err) {
+    console.error("Set password error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+});
+router.post("/site/user/change-password", verifyToken, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword)
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+      });
+
+    // if (newPassword.length < 6)
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "New password must be at least 6 characters"
+    //   });
+
+    const user = await User.findById(req.userId);
+
+    if (!user || !user.password)
+      return res.status(400).json({
+        success: false,
+        message: "Password not set for this account"
+      });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isMatch)
+      return res.status(401).json({
+        success: false,
+        message: "Old password is incorrect"
+      });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password changed successfully"
+    });
+
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+});
+// router.post("/site/google", async (req, res) => {
+//   try {
+//     const { token } = req.body;
+//     if (!token) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Google token missing",
+//       });
+//     }
+
+//     const ticket = await client.verifyIdToken({
+//       idToken: token,
+//       audience: process.env.GOOGLE_CLIENT_ID,
+//     });
+
+//     const payload = ticket.getPayload();
+//     const { email, name, sub: googleId } = payload;
+
+//     let user = await User.findOne({ email });
+
+//     if (!user) {
+//       user = await User.create({
+//         name,
+//         email,
+//         googleId,
+//         site: "1", // logged in via site/google
+//       });
+//     }
+
+//     const jwtToken = generateToken(user._id, "user");
+
+//     res.json({
+//       success: true,
+//       token: jwtToken,
+//       user: {
+//         id: user._id,
+//         name: user.name,
+//         email: user.email,
+//       },
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(401).json({ success: false, message: "Google auth failed" });
+//   }
+// });
 
 router.post("/site/google", async (req, res) => {
   try {
     const { token } = req.body;
+
     if (!token) {
       return res.status(400).json({
         success: false,
@@ -861,12 +1173,29 @@ router.post("/site/google", async (req, res) => {
 
     let user = await User.findOne({ email });
 
+    // ✅ Create username generator
+    const generateUsername = async (name) => {
+      let baseUsername = name.replace(/\s+/g, "").toLowerCase();
+      let username = baseUsername;
+      let count = 1;
+
+      while (await User.findOne({ username })) {
+        username = `${baseUsername}${count}`;
+        count++;
+      }
+
+      return username;
+    };
+
     if (!user) {
+      const username = await generateUsername(name);
+
       user = await User.create({
         name,
         email,
         googleId,
-        site: "1", // logged in via site/google
+        username, // ✅ saved here
+        site: "1",
       });
     }
 
@@ -879,8 +1208,11 @@ router.post("/site/google", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        username: user.username, // ✅ return it
+        hasPassword: !!user.password   
       },
     });
+
   } catch (err) {
     console.error(err);
     res.status(401).json({ success: false, message: "Google auth failed" });

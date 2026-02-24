@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Form, Button, Alert, Spinner } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { GoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
 
 
 const API_BASE =
@@ -15,6 +16,7 @@ const LoginForm = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { login, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
   //   setError("");
@@ -76,7 +78,7 @@ const handleSubmit = async (e) => {
       <Form.Group className="mb-3">
         <Form.Label>Email</Form.Label>
         <Form.Control
-          type="email"
+          type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -92,6 +94,14 @@ const handleSubmit = async (e) => {
           required
         />
       </Form.Group>
+      <div className="text-end mb-3">
+        <span
+          style={{ cursor: "pointer", color: "#0d6efd", fontSize: "14px" }}
+          onClick={() => navigate("/forgot-password")}
+        >
+          Forgot password?
+        </span>
+      </div>
 
       <Button type="submit" className="w-100" disabled={loading}>
         {loading ? <Spinner size="sm" /> : "Login"}

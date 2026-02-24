@@ -20,8 +20,194 @@ const Header = ({ home }) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSetPassword, setShowSetPassword] = useState(false);
+const [showChangePassword, setShowChangePassword] = useState(false);
+
+const openSetPassword = () => setShowSetPassword(true);
+const openChangePassword = () => setShowChangePassword(true);
 
   const { user, loginWithGoogle, logout } = useAuth();
+
+  /* =========================
+   SET PASSWORD MODAL
+========================= */
+
+ const SetPasswordModal = ({ show, onClose }) => {
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+
+  const handleSubmit = async () => {
+    // if (!password || password.length < 6) {
+    //   alert("Password must be at least 6 characters");
+    //   return;
+    // }
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Session expired. Please login again.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        `${API_BASE}/api/auth/site/user/set-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ password }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Password set successfully");
+
+        // Update local user info (optional)
+        const updatedUser = { ...user, hasPassword: true };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        setPassword("");
+        onClose();
+      } else {
+        alert(data.message || "Failed to set password");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal show={show} onHide={onClose} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Set Password</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body>
+        <input
+          type="password"
+          className="form-control"
+          placeholder="Enter new password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <button
+          className="btn btn-primary w-100 mt-3"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? "Saving..." : "Save Password"}
+        </button>
+      </Modal.Body>
+    </Modal>
+  );
+};
+
+/* =========================
+   CHANGE PASSWORD MODAL
+========================= */
+
+ const ChangePasswordModal = ({ show, onClose }) => {
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!oldPassword || !newPassword) {
+      alert("All fields are required");
+      return;
+    }
+
+    // if (newPassword.length < 6) {
+    //   alert("New password must be at least 6 characters");
+    //   return;
+    // }
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Session expired. Please login again.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        `${API_BASE}/api/auth/site/user/change-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ oldPassword, newPassword }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Password changed successfully");
+        setOldPassword("");
+        setNewPassword("");
+        onClose();
+      } else {
+        alert(data.message || "Failed to change password");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal show={show} onHide={onClose} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Change Password</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body>
+        <input
+          type="password"
+          className="form-control mb-2"
+          placeholder="Old password"
+          value={oldPassword}
+          onChange={(e) => setOldPassword(e.target.value)}
+        />
+
+        <input
+          type="password"
+          className="form-control"
+          placeholder="New password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
+
+        <button
+          className="btn btn-primary w-100 mt-3"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? "Updating..." : "Update Password"}
+        </button>
+      </Modal.Body>
+    </Modal>
+  );
+};
 
   // 🔒 FORCE LOGIN BEFORE SITE ACCESS
   // useEffect(() => {
@@ -216,7 +402,17 @@ const Header = ({ home }) => {
     id="user-dropdown"
     className="user-dropdown d-flex align-items-center"
   >
-    
+    {user.hasPassword ? (
+      <NavDropdown.Item onClick={openChangePassword}>
+        Change Password
+      </NavDropdown.Item>
+    ) : (
+      <NavDropdown.Item onClick={openSetPassword}>
+        Set Password
+      </NavDropdown.Item>
+    )}
+
+    <NavDropdown.Divider />
 
     <NavDropdown.Item onClick={logout} className="text-danger">
       Logout
@@ -229,7 +425,15 @@ const Header = ({ home }) => {
         </Container>
       </Navbar>
     </div>
-     
+     <SetPasswordModal
+  show={showSetPassword}
+  onClose={() => setShowSetPassword(false)}
+/>
+
+<ChangePasswordModal
+  show={showChangePassword}
+  onClose={() => setShowChangePassword(false)}
+/>
     </>
   );
 };

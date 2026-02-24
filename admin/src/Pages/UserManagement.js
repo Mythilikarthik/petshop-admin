@@ -6,10 +6,9 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 
-const API_BASE =
-  process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
-    : "http://localhost:5000";
+const API_BASE = process.env.NODE_ENV === "production"
+  ? "https://petshop-admin.onrender.com"
+  : "http://localhost:5000";
 
 const UserManagement = () => {
   // const initialListings = [

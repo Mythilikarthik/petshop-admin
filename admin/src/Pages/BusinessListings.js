@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Select from "react-select";
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import { FaUpload } from "react-icons/fa";
+import { FaUpload, FaDownload } from "react-icons/fa";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -247,11 +247,11 @@ for (let idx = 0; idx < rows.length; idx++) {
   const address = safe(row.address);
   const cityName = safe(row.city).toLowerCase();
 
-  const categoriesRaw = safe(row.categories)
+  const categoriesRaw = safe(row.category)
     .split(/[,;|]/)
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-  const petCategoriesRaw = safe(row.petCategories)
+  const petCategoriesRaw = safe(row.type)
     .split(/[,;|]/)
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
@@ -387,6 +387,52 @@ if (!mapped.length) {
                [ CSV / Excel only ]
               </div> */}
             </Form.Group>
+          </Col>
+          <Col xs={'auto'} className="d-flex align-items-center justify-content-center">
+                {/* <Button
+                  variant="outline-success"
+                  className="ms-2"
+                  onClick={() => {
+                    const csvContent = `petCategories,categories,shopName,email,phone,city`;
+
+                    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "sample-listings-mandatory.csv";
+                    link.click();
+                  }}
+                >
+                  Download Sample File
+                </Button> */}
+                <Form.Group className="text-center">
+                  <label
+                    onClick={() => {
+                      const csvContent = `type,category,shopName,phone,city`;
+
+                      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                      const link = document.createElement("a");
+                      link.href = URL.createObjectURL(blob);
+                      link.download = "sample-listings-mandatory.csv";
+                      link.click();
+                    }}
+                    className="btn btn-success d-flex flex-column align-items-center justify-content-center circular-button"
+                    style={{
+                      cursor: "pointer",
+                      padding: "12px",
+                      borderRadius: "100%",
+                    }}
+                  >
+                    <FaDownload size={20} />
+                  </label>
+
+                  {/* Optional small text */}
+                  {/* 
+                  <div className="text-muted mt-2" style={{ fontSize: "0.8rem" }}>
+                    Download Sample CSV
+                  </div> 
+                  */}
+                </Form.Group>
+          
           </Col>
         </Row>
         <Row className='d-flex justify-content-center mb-5'>

@@ -59,6 +59,7 @@ import CityBannerManagement from './Pages/CityBannerManagement';
 import AddCityBanner from "./Pages/AddCityBanner";
 import BlogBannerManagement from './Pages/BlogBannerManagement';
 import UserDetails from "./Pages/UserDetails";
+import EnquiryList from "./Pages/EnquiryList";
 
 function App() {
   
@@ -140,6 +141,7 @@ function App() {
           <Route path="/city-banner-management" element={<CityBannerManagement />} />
           <Route path="/add-city-banner" element={<AddCityBanner />} />
           <Route path="/user-details/:id" element={<UserDetails />} />
+          <Route path='/enquiry-list' element={<EnquiryList />} />
         </Route>
         
 

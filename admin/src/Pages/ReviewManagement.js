@@ -170,7 +170,7 @@ const ReviewManagement = () => {
         <Table bordered hover responsive>
           <thead>
             <tr>
-              <th>#</th>
+              <th>S.No</th>
               <th>Listing</th>
               <th>Reviewer</th>
               <th>Email</th>

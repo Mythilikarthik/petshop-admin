@@ -618,6 +618,8 @@ useEffect(() => {
             .replace(/\s+/g, "-")
             .replace(/[^a-z0-9-]/g, "");
 
+            {console.log(listing)}
+
       return(
         <Col key={listing._id} md={4} className="mb-4 d-flex">
   <Card className="provider-card w-100 h-100 d-flex flex-column">
@@ -636,7 +638,39 @@ useEffect(() => {
     </Card.Header>
 
     <Card.Body className="pos-rel d-flex flex-column flex-grow-1">
-      <Card.Title>{listing.shopName && listing.shopName.length >10 ? listing.shopName.slice(0,10) + "..." : listing.shopName}</Card.Title>
+      <div className='status-updates mt-2 mb-2 d-flex gap-2'>
+        {listing.isVerified && (
+          <div className='verified-identification'>
+            <Badge pill bg="success" className='gap-1 d-flex'>
+              <MdVerified />
+              Verified
+            </Badge>
+          </div>
+          
+        )}
+        {listing.rating >=4 && (
+          <div className='top-rated-identification'>
+            <Badge pill bg="success" className='gap-1 d-flex'>
+              <GiTrophy  />
+              Top Rated
+            </Badge>
+          </div>
+        )}
+        
+      </div>
+      {/* <Card.Title title={listing.shopName || ""}>{listing.shopName && listing.shopName.length >10 ? listing.shopName.slice(0,10) + "..." : listing.shopName}</Card.Title> */}
+      <Card.Title
+  title={listing.shopName}
+  style={{
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    maxWidth: "200px",
+    cursor: "pointer",
+  }}
+>
+  {listing.shopName}
+</Card.Title>
       <div className="service-tags mt-2">
         
      {listing.petCategories?.length > 0 && (
@@ -652,13 +686,36 @@ useEffect(() => {
           <span className='align-items-center d-flex' role="img" aria-label="star" style={{"verticalAlign" : "unset"}}> <BsStarFill /> </span> 
           <span className='d-block'>{listing.rating}</span>
       </div>
-
+{/* <div className="service-rating align-items-center d-flex gap-2 mt-2">
+  {Number(listing.rating) > 0 ? (
+    <>
+      <BsStarFill color="#ffb400" />
+      <span>{Number(listing.rating).toFixed(1)}</span>
+    </>
+  ) : (
+    <span className="text-muted small">No reviews yet</span>
+  )}
+</div> */}
       
 
-      <Card.Text className="mt-2">
+      {/* <Card.Text className="mt-2">
         {listing.description.length > 50
           ? listing.description.slice(0, 50) + "..."
           : listing.description}
+      </Card.Text> */}
+      <Card.Text
+        className="mt-2"
+        title={listing.description}
+        style={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,   // number of lines
+          WebkitBoxOrient: "vertical",
+          cursor: "pointer",
+        }}
+      >
+        {listing.description}
       </Card.Text>
 
       <div className="service-location mt-2">
@@ -681,26 +738,7 @@ useEffect(() => {
       )} */}
 
 
-      <div className='status-updates mt-auto mb-2 d-flex gap-2'>
-        {listing.isVerified && (
-          <div className='verified-identification'>
-            <Badge pill bg="success" className='gap-1 d-flex'>
-              <MdVerified />
-              Verified
-            </Badge>
-          </div>
-          
-        )}
-        {listing.rating >=4 && (
-          <div className='top-rated-identification'>
-            <Badge pill bg="success" className='gap-1 d-flex'>
-              <GiTrophy  />
-              Top Rated
-            </Badge>
-          </div>
-        )}
-        
-      </div>
+      
       {/* Button pushed to bottom */}
       <Button
         variant="primary"

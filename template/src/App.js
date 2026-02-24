@@ -26,6 +26,8 @@ import { FaArrowUp } from "react-icons/fa";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from "./contexts/AuthContext";
 import VerifyOtp from "./Pages/VerifyOtp";
+import ForgotPassword from './Pages/ForgotPassword';
+import ResetPassword from './Pages/ResetPassword';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -91,8 +93,7 @@ function App() {
   return (
   <GoogleOAuthProvider clientId="932728880850-okmd8gvva3mv1vc00lsiqsjkambs2gol.apps.googleusercontent.com">
     <AuthProvider>
-    <div className="App">
-      
+    <div className="App">      
       <BrowserRouter>
       <ScrollToTopOnNavigate />
         <Header home={home} />
@@ -118,6 +119,8 @@ function App() {
           <Route path="/directory/:city?/:category?/:pet?" element={<Directory />} />
           <Route path="/listings/:slugId" element={<ListingDetailPage />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>        
         <Footer home={home} categoryPage={categoryPage} />
          {showScroll && (
