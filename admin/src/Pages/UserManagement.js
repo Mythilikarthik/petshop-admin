@@ -127,6 +127,9 @@ const handleDownload = () => {
 
   saveAs(file, "users.xlsx");
 };
+const lastLoggedInUser = [...listings]
+  .filter(u => u.lastLogin)
+  .sort((a, b) => new Date(b.lastLogin) - new Date(a.lastLogin))[0];
 
   return (
     <div className="container mt-4">
@@ -172,8 +175,18 @@ const handleDownload = () => {
               Download Excel
             </Button>
           </Col>
+          <Col xs="auto">
+            {lastLoggedInUser && (
+              <Button
+              variant="primary"
+              onClick={() => handleView(lastLoggedInUser._id)}
+              >
+              View Last Login Details
+            </Button>
+          )}
+        </Col>
         </Row>
-
+        
 
         {/* Table */}
         <Table  bordered hover responsive>
@@ -183,6 +196,7 @@ const handleDownload = () => {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Type</th>
+                <th>Last Login</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -202,7 +216,11 @@ const handleDownload = () => {
                     <Badge bg="secondary">Free</Badge>
                   )}
                 </td>
-                
+                <td>
+                  {listing.lastLogin
+                    ? new Date(listing.lastLogin).toLocaleString()
+                    : "Never"}
+                </td>
                 
                 <td>
                     

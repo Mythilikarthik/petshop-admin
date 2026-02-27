@@ -166,8 +166,216 @@
 
 // export default EnquiryList;
 
+// import React, { useEffect, useState, useMemo } from "react";
+// import { Table, Button, Modal } from "react-bootstrap";
+// import ReactPaginate from "react-paginate";
+
+// const API_BASE =
+//   process.env.NODE_ENV === "production"
+//     ? "https://petshop-admin.onrender.com"
+//     : "http://localhost:5000";
+
+// const itemsPerPage = 10;
+
+// const EnquiryList = () => {
+//   const [enquiries, setEnquiries] = useState([]);
+//   const [selectedGroup, setSelectedGroup] = useState(null);
+//   const [showModal, setShowModal] = useState(false);
+//   const [currentPage, setCurrentPage] = useState(0);
+
+//   // ✅ Fetch enquiries
+//   const fetchEnquiries = async () => {
+//     try {
+//       const res = await fetch(`${API_BASE}/api/enquiry`);
+//       const data = await res.json();
+
+//       setEnquiries(Array.isArray(data) ? data : []);
+//       setCurrentPage(0);
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchEnquiries();
+//   }, []);
+
+//   // ✅ GROUP BY name + email + shopName
+//   const groupedEnquiries = useMemo(() => {
+//     const grouped = {};
+
+//     enquiries.forEach((enq) => {
+//       const shopName = enq.listingId?.shopName || "N/A";
+
+//       const key = `${enq.userName}_${enq.userEmail}_${shopName}`;
+
+//       if (!grouped[key]) {
+//         grouped[key] = {
+//           userName: enq.userName,
+//           userEmail: enq.userEmail,
+//           shopName: shopName,
+//           count: 1,
+//           enquiries: [enq],
+//           latestDate: enq.createdAt,
+//         };
+//       } else {
+//         grouped[key].count += 1;
+//         grouped[key].enquiries.push(enq);
+
+//         // update latest date
+//         if (
+//           new Date(enq.createdAt) >
+//           new Date(grouped[key].latestDate)
+//         ) {
+//           grouped[key].latestDate = enq.createdAt;
+//         }
+//       }
+//     });
+
+//     return Object.values(grouped);
+//   }, [enquiries]);
+
+//   // ✅ Pagination based on grouped data
+//   const pageCount = Math.ceil(groupedEnquiries.length / itemsPerPage);
+
+//   const displayedEnquiries = groupedEnquiries.slice(
+//     currentPage * itemsPerPage,
+//     (currentPage + 1) * itemsPerPage
+//   );
+
+//   const handlePageClick = ({ selected }) => {
+//     setCurrentPage(selected);
+//   };
+
+//   // ✅ Delete entire group
+//   const handleDeleteGroup = async (group) => {
+//     if (!window.confirm("Delete all enquiries for this user & shop?"))
+//       return;
+
+//     try {
+//       for (let enq of group.enquiries) {
+//         await fetch(`${API_BASE}/api/enquiry/${enq._id}`, {
+//           method: "DELETE",
+//         });
+//       }
+
+//       fetchEnquiries();
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   };
+
+//   return (
+//     <div className="container mt-4">
+//         <div className="pl-3 pr-3">
+//       <h3>Grouped Enquiry List</h3>
+
+//       <Table striped bordered hover>
+//         <thead>
+//           <tr>
+//             <th>S.No</th>
+//             <th>Listing</th>
+//             <th>Name</th>
+//             <th>Email</th>
+//             <th>Total Enquiries</th>
+//             <th>Latest Date</th>
+//             <th>Options</th>
+//           </tr>
+//         </thead>
+
+//         <tbody>
+//           {displayedEnquiries.map((group, index) => (
+//             <tr key={`${group.userEmail}-${group.shopName}`}>
+//               <td>{currentPage * itemsPerPage + index + 1}</td>
+//               <td>{group.shopName}</td>
+//               <td>{group.userName}</td>
+//               <td>{group.userEmail}</td>
+//               <td>
+//                 <strong>{group.count}</strong>
+//               </td>
+//               <td>
+//                 {new Date(group.latestDate).toLocaleString()}
+//               </td>
+//               <td>
+//                 <Button
+//                   variant="secondary"
+//                   size="sm"
+//                   className="me-2"
+//                   onClick={() => {
+//                     setSelectedGroup(group);
+//                     setShowModal(true);
+//                   }}
+//                 >
+//                   View All
+//                 </Button>
+
+//                 <Button
+//                   variant="danger"
+//                   size="sm"
+//                   onClick={() => handleDeleteGroup(group)}
+//                 >
+//                   Delete All
+//                 </Button>
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </Table>
+
+//       {/* Pagination */}
+//       {pageCount > 1 && (
+//         <ReactPaginate
+//           pageCount={pageCount}
+//           pageRangeDisplayed={2}
+//           marginPagesDisplayed={1}
+//           onPageChange={handlePageClick}
+//           containerClassName="pagination justify-content-center"
+//           pageClassName="page-item"
+//           pageLinkClassName="page-link"
+//           previousLabel="«"
+//           nextLabel="»"
+//           previousClassName="page-item"
+//           nextClassName="page-item"
+//           previousLinkClassName="page-link"
+//           nextLinkClassName="page-link"
+//           activeClassName="active"
+//         />
+//       )}
+
+//       {/* View All Enquiries Modal */}
+//       <Modal
+//         show={showModal}
+//         onHide={() => setShowModal(false)}
+//         size="lg"
+//       >
+//         <Modal.Header closeButton>
+//           <Modal.Title>
+//             All Enquiries ({selectedGroup?.count})
+//           </Modal.Title>
+//         </Modal.Header>
+
+//         <Modal.Body>
+//           {selectedGroup &&
+//             selectedGroup.enquiries.map((enq, index) => (
+//               <div key={enq._id} className="mb-3 border-bottom pb-2">
+//                 <p><strong>Action:</strong> {enq.action}</p>
+//                 <p><strong>IP:</strong> {enq.ip}</p>
+//                 <p>
+//                   <strong>Date:</strong>{" "}
+//                   {new Date(enq.createdAt).toLocaleString()}
+//                 </p>
+//               </div>
+//             ))}
+//         </Modal.Body>
+//       </Modal>
+//     </div>
+//     </div>
+//   );
+// };
+
+// export default EnquiryList;
 import React, { useEffect, useState, useMemo } from "react";
-import { Table, Button, Modal } from "react-bootstrap";
+import { Table, Button, Modal, Form, Row, Col } from "react-bootstrap";
 import ReactPaginate from "react-paginate";
 
 const API_BASE =
@@ -183,12 +391,15 @@ const EnquiryList = () => {
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
 
-  // ✅ Fetch enquiries
+  // 🔎 Filters
+  const [search, setSearch] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
   const fetchEnquiries = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/enquiry`);
       const data = await res.json();
-
       setEnquiries(Array.isArray(data) ? data : []);
       setCurrentPage(0);
     } catch (err) {
@@ -200,20 +411,24 @@ const EnquiryList = () => {
     fetchEnquiries();
   }, []);
 
-  // ✅ GROUP BY name + email + shopName
+  // ✅ GROUP CLEANED
   const groupedEnquiries = useMemo(() => {
     const grouped = {};
 
     enquiries.forEach((enq) => {
-      const shopName = enq.listingId?.shopName || "N/A";
+      const shopNameRaw = enq.listingId?.shopName || "N/A";
 
-      const key = `${enq.userName}_${enq.userEmail}_${shopName}`;
+      const userName = enq.userName?.trim().toLowerCase() || "";
+      const userEmail = enq.userEmail?.trim().toLowerCase() || "";
+      const shopName = shopNameRaw?.trim().toLowerCase() || "";
+
+      const key = `${userName}_${userEmail}_${shopName}`;
 
       if (!grouped[key]) {
         grouped[key] = {
-          userName: enq.userName,
-          userEmail: enq.userEmail,
-          shopName: shopName,
+          userName: enq.userName?.trim() || "N/A",
+          userEmail: enq.userEmail?.trim() || "N/A",
+          shopName: shopNameRaw?.trim() || "N/A",
           count: 1,
           enquiries: [enq],
           latestDate: enq.createdAt,
@@ -222,23 +437,43 @@ const EnquiryList = () => {
         grouped[key].count += 1;
         grouped[key].enquiries.push(enq);
 
-        // update latest date
-        if (
-          new Date(enq.createdAt) >
-          new Date(grouped[key].latestDate)
-        ) {
+        if (new Date(enq.createdAt) > new Date(grouped[key].latestDate)) {
           grouped[key].latestDate = enq.createdAt;
         }
       }
     });
 
-    return Object.values(grouped);
+    return Object.values(grouped).sort(
+      (a, b) => new Date(b.latestDate) - new Date(a.latestDate)
+    );
   }, [enquiries]);
 
-  // ✅ Pagination based on grouped data
-  const pageCount = Math.ceil(groupedEnquiries.length / itemsPerPage);
+  // ✅ FILTER LOGIC
+  const filteredGroups = useMemo(() => {
+    return groupedEnquiries.filter((group) => {
+      const matchesSearch =
+        group.userName.toLowerCase().includes(search.toLowerCase()) ||
+        group.userEmail.toLowerCase().includes(search.toLowerCase()) ||
+        group.shopName.toLowerCase().includes(search.toLowerCase());
 
-  const displayedEnquiries = groupedEnquiries.slice(
+      const groupDate = new Date(group.latestDate);
+
+      const matchesFrom =
+        !fromDate || groupDate >= new Date(fromDate + "T00:00:00");
+
+      const matchesTo =
+        !toDate || groupDate <= new Date(toDate + "T23:59:59");
+
+      return matchesSearch && matchesFrom && matchesTo;
+    });
+  }, [groupedEnquiries, search, fromDate, toDate]);
+  const totalClicks = useMemo(() => {
+    return filteredGroups.reduce((sum, group) => sum + group.count, 0);
+  }, [filteredGroups]);
+
+  const pageCount = Math.ceil(filteredGroups.length / itemsPerPage);
+
+  const displayedEnquiries = filteredGroups.slice(
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
   );
@@ -247,128 +482,174 @@ const EnquiryList = () => {
     setCurrentPage(selected);
   };
 
-  // ✅ Delete entire group
-  const handleDeleteGroup = async (group) => {
-    if (!window.confirm("Delete all enquiries for this user & shop?"))
-      return;
+  // ✅ CSV EXPORT
+  const exportCSV = () => {
+    const headers = [
+      "Listing",
+      "Name",
+      "Email",
+      "Total Clicks",
+      "Latest Date",
+    ];
 
-    try {
-      for (let enq of group.enquiries) {
-        await fetch(`${API_BASE}/api/enquiry/${enq._id}`, {
-          method: "DELETE",
-        });
-      }
+    const rows = filteredGroups.map((group) => [
+      group.shopName,
+      group.userName,
+      group.userEmail,
+      group.count,
+      new Date(group.latestDate).toLocaleString(),
+    ]);
 
-      fetchEnquiries();
-    } catch (err) {
-      console.error(err);
-    }
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "enquiries.csv");
+    document.body.appendChild(link);
+    link.click();
   };
 
   return (
     <div className="container mt-4">
-        <div className="pl-3 pr-3">
-      <h3>Grouped Enquiry List</h3>
+     <div className="pl-3 pr-3">
+       <h3>Grouped Enquiry List</h3>
 
-      <Table striped bordered hover>
+      {/* 🔎 FILTER BAR */}
+      <Row className="mb-3">
+        <Col md={12}>
+          <Form.Control
+            type="text"
+            placeholder="Search name, email, shopname"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(0);
+            }}
+          />
+        </Col>
+
+        {/* <Col md={3}>
+          <Form.Control
+            type="date"
+            value={fromDate}
+            onChange={(e) => {
+              setFromDate(e.target.value);
+              setCurrentPage(0);
+            }}
+          />
+        </Col>
+
+        <Col md={3}>
+          <Form.Control
+            type="date"
+            value={toDate}
+            onChange={(e) => {
+              setToDate(e.target.value);
+              setCurrentPage(0);
+            }}
+          />
+        </Col>
+
+        <Col md={2}>
+          <Button variant="success" onClick={exportCSV}>
+            Export CSV
+          </Button>
+        </Col> */}
+      </Row>
+
+      <Table striped bordered hover responsive>
         <thead>
           <tr>
             <th>S.No</th>
             <th>Listing</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Total Enquiries</th>
+            <th>Total Clicks</th>
             <th>Latest Date</th>
             <th>Options</th>
           </tr>
         </thead>
 
         <tbody>
-          {displayedEnquiries.map((group, index) => (
-            <tr key={`${group.userEmail}-${group.shopName}`}>
-              <td>{currentPage * itemsPerPage + index + 1}</td>
-              <td>{group.shopName}</td>
-              <td>{group.userName}</td>
-              <td>{group.userEmail}</td>
-              <td>
-                <strong>{group.count}</strong>
-              </td>
-              <td>
-                {new Date(group.latestDate).toLocaleString()}
-              </td>
-              <td>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => {
-                    setSelectedGroup(group);
-                    setShowModal(true);
-                  }}
-                >
-                  View All
-                </Button>
-
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDeleteGroup(group)}
-                >
-                  Delete All
-                </Button>
+          {displayedEnquiries.length === 0 ? (
+            <tr>
+              <td colSpan="7" className="text-center">
+                No enquiries found
               </td>
             </tr>
-          ))}
+          ) : (
+            displayedEnquiries.map((group, index) => (
+              <tr key={index}>
+                <td>{currentPage * itemsPerPage + index + 1}</td>
+                <td>{group.shopName}</td>
+                <td>{group.userName}</td>
+                <td>{group.userEmail}</td>
+                <td><strong>{group.count}</strong></td>
+                <td>{new Date(group.latestDate).toLocaleString()}</td>
+                <td>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setSelectedGroup(group);
+                      setShowModal(true);
+                    }}
+                  >
+                    View
+                  </Button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan="4" className="text-end">
+              <strong>Total Clicks:</strong>
+            </td>
+            <td>
+              <strong>{totalClicks}</strong>
+            </td>
+            <td colSpan="2"></td>
+          </tr>
+        </tfoot>
       </Table>
 
-      {/* Pagination */}
       {pageCount > 1 && (
         <ReactPaginate
           pageCount={pageCount}
-          pageRangeDisplayed={2}
-          marginPagesDisplayed={1}
           onPageChange={handlePageClick}
           containerClassName="pagination justify-content-center"
           pageClassName="page-item"
           pageLinkClassName="page-link"
           previousLabel="«"
           nextLabel="»"
-          previousClassName="page-item"
-          nextClassName="page-item"
-          previousLinkClassName="page-link"
-          nextLinkClassName="page-link"
           activeClassName="active"
+          forcePage={currentPage}
         />
       )}
 
-      {/* View All Enquiries Modal */}
-      <Modal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        size="lg"
-      >
+      {/* Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
             All Enquiries ({selectedGroup?.count})
           </Modal.Title>
         </Modal.Header>
-
         <Modal.Body>
           {selectedGroup &&
-            selectedGroup.enquiries.map((enq, index) => (
+            selectedGroup.enquiries.map((enq) => (
               <div key={enq._id} className="mb-3 border-bottom pb-2">
                 <p><strong>Action:</strong> {enq.action}</p>
                 <p><strong>IP:</strong> {enq.ip}</p>
-                <p>
-                  <strong>Date:</strong>{" "}
-                  {new Date(enq.createdAt).toLocaleString()}
-                </p>
+                <p><strong>Date:</strong> {new Date(enq.createdAt).toLocaleString()}</p>
               </div>
             ))}
         </Modal.Body>
       </Modal>
-    </div>
+     </div>
     </div>
   );
 };

@@ -14,6 +14,10 @@ const ListingEnquirySchema = new mongoose.Schema({
     required: true,
   },
   ip: String,
+  isSeen: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now,

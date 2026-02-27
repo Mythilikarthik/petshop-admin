@@ -83,10 +83,10 @@ ListingSchema.pre("save", function (next) {
   }
   next();
 });
-ListingSchema.index(
-  { slug: 1, city: 1 },
-  { unique: true }
-);
+// ListingSchema.index(
+//   { slug: 1, city: 1 },
+//   { unique: true }
+// );
 
 ListingSchema.pre("validate", function (next) {
   if (this.created_by_type === "user" && !this.user_id) {

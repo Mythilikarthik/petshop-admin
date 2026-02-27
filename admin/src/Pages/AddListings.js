@@ -314,7 +314,7 @@ useEffect(() => {
                   }))
                 }
               /> */}
-              <Select
+              {/* <Select
   isMulti
   options={petCategory.map(c => ({ value: c._id, label: c.categoryName }))}
   value={petCategory
@@ -329,6 +329,39 @@ useEffect(() => {
     }))
   }
   required
+/> */}
+<Select
+  isMulti
+  options={[
+    { value: "all", label: "All Types" },   // ✅ Add this
+    ...petCategory.map(c => ({ value: c._id, label: c.categoryName }))
+  ]}
+  value={
+    formData.petCategories.length === petCategory.length
+      ? [{ value: "all", label: "All Types" }]
+      : petCategory
+          .filter(p => formData.petCategories.includes(p._id))
+          .map(p => ({ value: p._id, label: p.categoryName }))
+  }
+  onChange={(selected) => {
+    if (!selected) {
+      setFormData(prev => ({ ...prev, petCategories: [] }));
+      return;
+    }
+
+    // ✅ If "All" selected
+    if (selected.some(s => s.value === "all")) {
+      setFormData(prev => ({
+        ...prev,
+        petCategories: petCategory.map(p => p._id) // select all ids
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        petCategories: selected.map(s => s.value)
+      }));
+    }
+  }}
 />
 
             </Form.Group>
@@ -384,7 +417,7 @@ useEffect(() => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+              <Form.Label>Email </Form.Label>
               <Form.Control
                 type="email"
                 name="email"

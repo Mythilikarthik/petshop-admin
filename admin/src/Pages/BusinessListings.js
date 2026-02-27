@@ -173,6 +173,8 @@ const BusinessListings = () => {
 
   /** Bulk import logic */
   const addListingsFromRows = async (rows = []) => {
+    const REQUIRED_FIELDS = ["type", "category", "shopName", "phone", "city"];
+const missingRequired = [];
   const timestamp = Date.now();
 
   // Fetch mapping data for categories, petcategories, cities
@@ -256,6 +258,20 @@ for (let idx = 0; idx < rows.length; idx++) {
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
 
+    const rowErrors = [];
+
+    if (!petCategoriesRaw) rowErrors.push("type");
+    if (!categoriesRaw) rowErrors.push("category");
+    if (!shopName) rowErrors.push("shopName");
+    if (!phone) rowErrors.push("phone");
+    if (!cityName) rowErrors.push("city");
+    if (rowErrors.length > 0) {
+      missingRequired.push(
+        `Row ${idx + 2}: Missing ${rowErrors.join(", ")}`
+      );
+      continue; 
+    }
+
   // --- CITY CHECK ---
   const cityId = cityMap[cityName] || null;
   if (!cityId && cityName) missingCities.add(row.city);
@@ -284,12 +300,19 @@ for (let idx = 0; idx < rows.length; idx++) {
     categories: categoryIds,
     petCategories: petCategoryIds,
     description: safe(row.description),
-    mapUrl: safe(row.mapUrl),
+    mapUrl: safe(row.websiteUrl),
     metaTitle: safe(row.metaTitle),
     metaDescription: safe(row.metaDescription),
     metaKeyword: safe(row.metaKeyword),
     status: safe(row.status || 'pending').toLowerCase(),
   });
+}
+if (missingRequired.length) {
+  alert(
+    "Import stopped due to missing required fields:\n\n" +
+    missingRequired.join("\n")
+  );
+  return;
 }
 
 // --- Final check ---
@@ -407,7 +430,7 @@ if (!mapped.length) {
                 <Form.Group className="text-center">
                   <label
                     onClick={() => {
-                      const csvContent = `type,category,shopName,phone,city`;
+                      const csvContent = `type,category,shopName,email,phone,address,city,websiteUrl,description,metaTitle,metaKeyword,metaDescription`;
 
                       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                       const link = document.createElement("a");

@@ -27,7 +27,11 @@ site: {type: String,  enum: ["0", "1"], default: "0"},
   isVerified: {
     type: Boolean,
     default: false,
-  }
+  },
+  lastLogin: {
+  type: Date,
+  default: null
+}
 
 });
 

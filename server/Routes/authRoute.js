@@ -986,6 +986,8 @@ if (!user.password) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
 
     const token = generateToken(user._id, "user");
+    user.lastLogin = new Date();
+    await user.save();
 console.log(user);
     res.json({
       success: true,
@@ -1200,6 +1202,8 @@ router.post("/site/google", async (req, res) => {
     }
 
     const jwtToken = generateToken(user._id, "user");
+    user.lastLogin = new Date();
+    await user.save();
 
     res.json({
       success: true,

@@ -420,7 +420,7 @@ console.log("Submitting claimStatus:", formData.claimStatus);
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+              <Form.Label>Email </Form.Label>
               <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} />
             </Form.Group>
 
