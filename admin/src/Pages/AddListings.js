@@ -18,6 +18,24 @@ const [filteredPetCategories, setFilteredPetCategories] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
   const [petCategory, setPetCategory] = useState([]);
 const [newKeyword, setNewKeyword] = useState("");
+const daysOfWeek = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+];
+
+const [businessHours, setBusinessHours] = useState(
+  daysOfWeek.map(day => ({
+    day,
+    open: "",
+    close: "",
+    closed: false
+  }))
+);
   const [formData, setFormData] = useState({
     shopName: listing?.shopName || "",
     email: listing?.email || "",
@@ -184,6 +202,7 @@ const getTypes = async () => {
       formDataToSend.append("metaTitle", formData.metaTitle);
       formDataToSend.append("metaKeyword", formData.metaKeyword);
       formDataToSend.append("metaDescription", formData.metaDescription);
+      formDataToSend.append("businessHours", JSON.stringify(businessHours));
 
       console.log(formData.categories);
       // append selected categories
@@ -437,6 +456,60 @@ useEffect(() => {
                 required
               />
             </Form.Group>
+            <Form.Group className="mb-4">
+  <Form.Label className="fw-bold">Business Hours</Form.Label>
+
+  {businessHours.map((item, index) => (
+    <Row key={index} className="align-items-center mb-2">
+      <Col md={3}>
+        <strong>{item.day}</strong>
+      </Col>
+
+      <Col md={3}>
+        <Form.Control
+          type="time"
+          value={item.open}
+          disabled={item.closed}
+          onChange={(e) => {
+            const updated = [...businessHours];
+            updated[index].open = e.target.value;
+            setBusinessHours(updated);
+          }}
+        />
+      </Col>
+
+      <Col md={3}>
+        <Form.Control
+          type="time"
+          value={item.close}
+          disabled={item.closed}
+          onChange={(e) => {
+            const updated = [...businessHours];
+            updated[index].close = e.target.value;
+            setBusinessHours(updated);
+          }}
+        />
+      </Col>
+
+      <Col md={3}>
+        <Form.Check
+          type="checkbox"
+          label="Closed"
+          checked={item.closed}
+          onChange={(e) => {
+            const updated = [...businessHours];
+            updated[index].closed = e.target.checked;
+            if (e.target.checked) {
+              updated[index].open = "";
+              updated[index].close = "";
+            }
+            setBusinessHours(updated);
+          }}
+        />
+      </Col>
+    </Row>
+  ))}
+</Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Address</Form.Label>

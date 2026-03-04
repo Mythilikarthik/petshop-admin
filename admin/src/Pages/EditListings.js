@@ -25,7 +25,24 @@ const EditListing = () => {
 const [bannerPreview, setBannerPreview] = useState(null);
 const [existingBanner, setExistingBanner] = useState(null);
 
+const daysOfWeek = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+];
 
+const [businessHours, setBusinessHours] = useState(
+  daysOfWeek.map(day => ({
+    day,
+    open: "",
+    close: "",
+    closed: false
+  }))
+);
   const [formData, setFormData] = useState({
     shopName: '',
     email: '',
@@ -153,6 +170,10 @@ const [existingBanner, setExistingBanner] = useState(null);
             verificationDocs: data.listing.verificationDocs || [],
             isClaimed: data.listing.isClaimed || false,
           });
+          // ✅ Load business hours from DB
+          if (data.listing.businessHours && data.listing.businessHours.length > 0) {
+            setBusinessHours(data.listing.businessHours);
+          }
         } else {
           alert('Failed to fetch listing');
           navigate('/business-listing');
@@ -262,7 +283,7 @@ const [existingBanner, setExistingBanner] = useState(null);
         isVerified: formData.isVerified, 
         createdBy: formData.createdBy,
       }).forEach(([key, val]) => formDataToSend.append(key, val));
-
+formDataToSend.append("businessHours", JSON.stringify(businessHours));
       formData.categories.forEach(cat => formDataToSend.append('categories[]', cat));
       formData.petCategories.forEach(cat => formDataToSend.append('petCategories[]', cat));
       formData.photos.forEach(photo => formDataToSend.append('photos', photo));
@@ -428,6 +449,60 @@ console.log("Submitting claimStatus:", formData.claimStatus);
               <Form.Label>Phone <span className="text-danger">*</span></Form.Label>
               <Form.Control type="number" name="phone" value={formData.phone} onChange={handleChange} required />
             </Form.Group>
+            <Form.Group className="mb-4">
+  <Form.Label className="fw-bold">Business Hours</Form.Label>
+
+  {businessHours.map((item, index) => (
+    <Row key={index} className="align-items-center mb-2">
+      <Col md={3}>
+        <strong>{item.day}</strong>
+      </Col>
+
+      <Col md={3}>
+        <Form.Control
+          type="time"
+          value={item.open}
+          disabled={item.closed}
+          onChange={(e) => {
+            const updated = [...businessHours];
+            updated[index].open = e.target.value;
+            setBusinessHours(updated);
+          }}
+        />
+      </Col>
+
+      <Col md={3}>
+        <Form.Control
+          type="time"
+          value={item.close}
+          disabled={item.closed}
+          onChange={(e) => {
+            const updated = [...businessHours];
+            updated[index].close = e.target.value;
+            setBusinessHours(updated);
+          }}
+        />
+      </Col>
+
+      <Col md={3}>
+        <Form.Check
+          type="checkbox"
+          label="Closed"
+          checked={item.closed}
+          onChange={(e) => {
+            const updated = [...businessHours];
+            updated[index].closed = e.target.checked;
+            if (e.target.checked) {
+              updated[index].open = "";
+              updated[index].close = "";
+            }
+            setBusinessHours(updated);
+          }}
+        />
+      </Col>
+    </Row>
+  ))}
+</Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Address</Form.Label>

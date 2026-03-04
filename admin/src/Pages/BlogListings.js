@@ -108,12 +108,33 @@ const BlogListings = () => {
 
         <Row className='mb-3'>
           <Col md={4}>
+          <div style={{"position" : "relative"}}>
             <Form.Control
               type="text"
               placeholder="Search by title/author"
               value={searchTerm}
               onChange={e => { setSearchTerm(e.target.value); setCurrentPage(0); }}
             />
+            {searchTerm && (
+              <span
+                onClick={() => {
+                  setSearchTerm("");
+                  setCurrentPage(0);
+                }}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+            </div>
           </Col>
           <Col md={4}>
             <Select

@@ -10,6 +10,14 @@ const ListingSchema = new mongoose.Schema({
   city: { type: mongoose.Schema.Types.ObjectId, ref: "City", required: true },
   country: String,
   mapUrl: String,
+  businessHours: [
+  {
+    day: { type: String, required: true },
+    open: { type: String, default: "" },
+    close: { type: String, default: "" },
+    closed: { type: Boolean, default: false }
+  }
+],
 
   categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true }],
   petCategories: [{ type: mongoose.Schema.Types.ObjectId, ref: "PetCategory", required: true }],

@@ -23,6 +23,7 @@ const DirectoryBannerRoutes = require("./Routes/DirectoryBanner");
 const BlogBannerRoutes = require("./Routes/BlogBanner");
 const CityBannerRoutes = require("./Routes/CityBannerRoutes");
 const AdminNotification = require("./Routes/AdminNotification");
+const SpecializedServiceRoutes = require("./Routes/SpecializedServiceRoutes");
 const path = require("path");
 
 
@@ -75,6 +76,7 @@ app.use("/api/blog-banner", BlogBannerRoutes);
 app.use("/api/city-banner", CityBannerRoutes);
 app.use("/api/enquiry", ListingEnquiry);
 app.use("/api/admin/notifications", AdminNotification);
+app.use("/api/specialized-service", SpecializedServiceRoutes);
 
 
 

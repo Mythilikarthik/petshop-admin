@@ -29,7 +29,7 @@ const AddCategory = () => {
   useEffect(() => {
     const fetchPetCategories = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/pet-category`);
+        const res = await fetch(`${API_BASE}/api/pet-category/show`);
         const data = await res.json();
         if (data.success) {
           setPetCategoryList(

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./Css/ListingDetailPage.css";
 import dummyImage from "../dummy.jpg";
-import { FaStar } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaRegStar  } from "react-icons/fa";
 import { Form, Button, Container, Row, Col, Alert, Modal } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { incrementListingViews } from "../utils/engagementTracker";
@@ -176,16 +176,40 @@ useEffect(() => {
       />
     ));
   };
-
   const renderAvgStarsCal = (value) => {
-    const full = Math.round(value);
-    return Array.from({ length: 5 }).map((_, i) => (
-      <FaStar
-        key={i}
-        color={i < full ? "#ffc107" : "#e4e5e9"}
-      />
-    ));
-  };
+  const stars = [];
+
+  const fullStars = Math.floor(value);
+  const hasHalfStar = value % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+  // Full stars
+  for (let i = 0; i < fullStars; i++) {
+    stars.push(<FaStar key={`full-${i}`} color="#ffc107" />);
+  }
+
+  // Half star
+  if (hasHalfStar) {
+    stars.push(<FaStarHalfAlt key="half" color="#ffc107" />);
+  }
+
+  // Empty stars
+  for (let i = 0; i < emptyStars; i++) {
+    stars.push(<FaRegStar key={`empty-${i}`} color="#e4e5e9" />);
+  }
+
+  return stars;
+};
+// Full -round off
+  // const renderAvgStarsCal = (value) => {
+  //   const full = Math.round(value);
+  //   return Array.from({ length: 5 }).map((_, i) => (
+  //     <FaStar
+  //       key={i}
+  //       color={i < full ? "#ffc107" : "#e4e5e9"}
+  //     />
+  //   ));
+  // };
 
   // ============================================================
   // 4️⃣ SUBMIT NEW REVIEW (GUEST) without image
@@ -620,7 +644,7 @@ useEffect(() => {
             className="w-100"
             onClick={() => navigate(`/claim/${listing._id}`)}
           >
-            Claim
+            Claim this business
           </Button>
         )}
             </div>

@@ -164,6 +164,7 @@ const menuItems = [
       { name: "Listing", path: "/business-listing", icon: <GiNestBirds />, badgeKey: "serviceProviders" },
       { name: "Category Listing", path: "/category-listing", icon: <GiDogBowl /> },
       { name: "Pet Type Listing", path: "/pet-category-listing", icon: <GiDogBowl /> },
+      { name: "Specialized Services Listing", path: "/specialized-services-listing", icon: <GiDogBowl /> },
       { name: "City Listing", path: "/city-listing", icon: <MdPlace /> },
       { name: "Blog Listing", path: "/blog-listing", icon: <FaNewspaper /> },
       { name: "FAQ", path: "/faq-listing", icon: <FaQuestionCircle /> },
@@ -188,6 +189,12 @@ const menuItems = [
       { name: "Blog Banner", path: "/blog-banner-management", icon: <MdOutlineStoreMallDirectory /> },
     ],
   },
+  { name: "Ad Management", path: "/ad-management", icon: <MdCampaign />, 
+    children : [
+      { name: "Custom Ad", path: "/custom-ad", icon: <GiDogBowl /> },
+      { name: "Ad Listing", path: "/ad-listing", icon: <GiNestBirds  /> },
+    ]
+   },
 
   { name: "Revenue Tracking", path: "/revenue-tracking", icon: <MdAttachMoney /> },
   { name: "Logout", path: "/logout", icon: <MdLogout /> },

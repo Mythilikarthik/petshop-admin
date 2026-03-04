@@ -60,6 +60,8 @@ import AddCityBanner from "./Pages/AddCityBanner";
 import BlogBannerManagement from './Pages/BlogBannerManagement';
 import UserDetails from "./Pages/UserDetails";
 import EnquiryList from "./Pages/EnquiryList";
+import SpecializedServicesListings from './Pages/SpecializedServicesListings';
+import AddEditSpecializedService from './Pages/AddEditSpecializedService';
 
 function App() {
   
@@ -142,6 +144,9 @@ function App() {
           <Route path="/add-city-banner" element={<AddCityBanner />} />
           <Route path="/user-details/:id" element={<UserDetails />} />
           <Route path='/enquiry-list' element={<EnquiryList />} />
+          <Route path='/specialized-services-listing' element={<SpecializedServicesListings />} />
+          <Route path='/edit-specialized-service' element={<AddEditSpecializedService />} />
+          <Route path='/add-specialized-service' element={<AddEditSpecializedService />} />
         </Route>
         
 

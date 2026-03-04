@@ -174,11 +174,22 @@ router.post(
 
       const bannerFile = req.files?.bannerImage?.[0];
       const photoFiles = req.files?.photos || [];
+      let parsedBusinessHours = [];
+
+      if (req.body.businessHours) {
+        try {
+          parsedBusinessHours = JSON.parse(req.body.businessHours);
+        } catch (err) {
+          console.error("Invalid businessHours JSON");
+          parsedBusinessHours = [];
+        }
+      }
 
       const newListing = new Listing({
         shopName,
         email,
         phone,
+        businessHours: parsedBusinessHours,
         address,
         city,
         country: country?.trim() || "India",
@@ -304,9 +315,9 @@ router.post(
 //     }
 //   }
 // );
+
 router.put(
   "/claim/:id",
-  verifyToken,
   (req, res, next) => {
     docUpload.array("documents")(req, res, (err) => {
       if (err) {
@@ -321,13 +332,18 @@ router.put(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { claimRole, verificationMethod } = req.body;
-      const claimedBy = req.userId;
 
-      if (!claimRole || !verificationMethod) {
-        return res.json({ success: false, message: "Missing fields" });
-      }
+      const {
+        name,
+        username,
+        email,
+        phone,
+        password,
+        claimRole,
+        verificationMethod,
+      } = req.body;
 
+      // 1️⃣ Validate listing
       const listing = await Listing.findById(id);
       if (!listing) {
         return res.json({ success: false, message: "Listing not found" });
@@ -336,15 +352,45 @@ router.put(
       if (listing.isClaimed) {
         return res.json({
           success: false,
-          message: "Listing already claimed and under verification",
+          message: "Listing already claimed",
         });
       }
 
+      // 2️⃣ Check existing user
+      const existingUser = await User.findOne({
+        $or: [{ username }, { email }],
+      });
+console.log(username, email);
+      if (existingUser) {
+        return res.json({
+          success: false,
+          message: "User already exists",
+        });
+      }
+
+      // 3️⃣ Create user
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+      const newUser = new User({
+        name,
+        username,
+        email,
+        phone,
+        password: hashedPassword,
+        otp,
+        otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        isVerified: false,
+      });
+
+      await newUser.save();
+
+      // 4️⃣ Update listing (pending verification)
       listing.isClaimed = true;
-      listing.claimedBy = claimedBy;
+      listing.claimedBy = newUser._id;
       listing.claimRole = claimRole;
       listing.verificationMethod = verificationMethod;
-      listing.claimStatus = "pending";
+      listing.claimStatus = "otp_pending";
       listing.status = "pending";
       listing.claimedAt = new Date();
 
@@ -354,35 +400,22 @@ router.put(
 
       await listing.save();
 
-      const isEmail = verificationMethod.toLowerCase() === "email";
-
-      if (isEmail) {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const user = await User.findById(claimedBy);
-
-        if (!user) {
-          return res
-            .status(404)
-            .json({ success: false, message: "User not found" });
-        }
-
-        user.otp = otp;
-        user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-        await user.save();
-
+      // 5️⃣ Send OTP if email verification
+      if (verificationMethod.toLowerCase() === "email") {
         await sendOtpEmail({
-          email: user.email,
-          name: user.username,
-          otp: otp,
+          email,
+          name: username,
+          otp,
         });
       }
 
+      const token = generateToken(newUser._id, "user");
+
       res.json({
         success: true,
-        requiresOtp: isEmail,
-        message: isEmail
-          ? "OTP sent to email"
-          : "Claim submitted for document verification",
+        message: "Claim initiated. OTP sent.",
+        userId: newUser._id,
+        token,
       });
     } catch (err) {
       console.error(err);
@@ -390,6 +423,92 @@ router.put(
     }
   }
 );
+// router.put(
+//   "/claim/:id",
+//   verifyToken,
+//   (req, res, next) => {
+//     docUpload.array("documents")(req, res, (err) => {
+//       if (err) {
+//         return res.status(400).json({
+//           success: false,
+//           message: err.message,
+//         });
+//       }
+//       next();
+//     });
+//   },
+//   async (req, res) => {
+//     try {
+//       const { id } = req.params;
+//       const { claimRole, verificationMethod } = req.body;
+//       const claimedBy = req.userId;
+
+//       if (!claimRole || !verificationMethod) {
+//         return res.json({ success: false, message: "Missing fields" });
+//       }
+
+//       const listing = await Listing.findById(id);
+//       if (!listing) {
+//         return res.json({ success: false, message: "Listing not found" });
+//       }
+
+//       if (listing.isClaimed) {
+//         return res.json({
+//           success: false,
+//           message: "Listing already claimed and under verification",
+//         });
+//       }
+
+//       listing.isClaimed = true;
+//       listing.claimedBy = claimedBy;
+//       listing.claimRole = claimRole;
+//       listing.verificationMethod = verificationMethod;
+//       listing.claimStatus = "pending";
+//       listing.status = "pending";
+//       listing.claimedAt = new Date();
+
+//       if (req.files?.length) {
+//         listing.verificationDocs = req.files.map((f) => f.path);
+//       }
+
+//       await listing.save();
+
+//       const isEmail = verificationMethod.toLowerCase() === "email";
+
+//       if (isEmail) {
+//         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//         const user = await User.findById(claimedBy);
+
+//         if (!user) {
+//           return res
+//             .status(404)
+//             .json({ success: false, message: "User not found" });
+//         }
+
+//         user.otp = otp;
+//         user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+//         await user.save();
+
+//         await sendOtpEmail({
+//           email: user.email,
+//           name: user.username,
+//           otp: otp,
+//         });
+//       }
+
+//       res.json({
+//         success: true,
+//         requiresOtp: isEmail,
+//         message: isEmail
+//           ? "OTP sent to email"
+//           : "Claim submitted for document verification",
+//       });
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).json({ success: false, message: err.message });
+//     }
+//   }
+// );
 
 // routes/listing.js (or controller file)
 
@@ -1396,6 +1515,16 @@ router.put(
 
       /* -------------------- Status safety -------------------- */
       if (data.status) data.status = data.status.toString();
+
+      /* -------------------- Parse business hours -------------------- */
+if (data.businessHours) {
+  try {
+    data.businessHours = JSON.parse(data.businessHours);
+  } catch (err) {
+    console.error("Invalid businessHours JSON");
+    data.businessHours = [];
+  }
+}
 
       /* -------------------- Update listing -------------------- */
       const listing = await Listing.findByIdAndUpdate(

@@ -535,7 +535,7 @@ router.put("/user/change-password/:id", async (req, res) => {
 //   }
 // });
 // routes/user.js
-router.get("/user/all", verifyToken, async (req, res) => {
+router.get("/user/all", async (req, res) => {
   try {
     const users = await User.find({
       site: "1",
@@ -846,12 +846,43 @@ router.post("/site/register", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-router.post("/user/verify-otp", verifyToken, async (req, res) => {
+// router.post("/user/verify-otp", verifyToken, async (req, res) => {
+//   try {
+//     const { userId, otp } = req.body;
+
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.json({ success: false, message: "User not found" });
+//     }
+
+//     if (user.otp !== otp) {
+//       return res.json({ success: false, message: "Invalid OTP" });
+//     }
+
+//     if (user.otpExpiresAt < Date.now()) {
+//       return res.json({ success: false, message: "OTP expired" });
+//     }
+
+//     user.isVerified = true;
+//     user.otp = null;
+//     user.otpExpiresAt = null;
+//     await user.save();
+
+//     res.json({
+//       success: true,
+//       message: "OTP verified successfully",
+//     });
+
+//   } catch (err) {
+//     res.json({ success: false, message: err.message });
+//   }
+// });
+router.post("/user/verify-otp", async (req, res) => {
   try {
     const { userId, otp } = req.body;
 
     const user = await User.findById(userId);
-
     if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
@@ -864,16 +895,25 @@ router.post("/user/verify-otp", verifyToken, async (req, res) => {
       return res.json({ success: false, message: "OTP expired" });
     }
 
+    // Mark user verified
     user.isVerified = true;
     user.otp = null;
     user.otpExpiresAt = null;
     await user.save();
 
+    // Now mark listing as verified
+    const listing = await Listing.findOne({ claimedBy: userId });
+
+    if (listing) {
+      listing.claimStatus = "verified";
+      listing.status = "active";
+      await listing.save();
+    }
+
     res.json({
       success: true,
-      message: "OTP verified successfully",
+      message: "OTP verified & listing activated",
     });
-
   } catch (err) {
     res.json({ success: false, message: err.message });
   }
