@@ -124,7 +124,8 @@ const CategoryPages = () => {
       {/* Filters */}
       <Row className="mb-3">
         <Col md={5}>
-          <Form.Control
+        <div style={{ "position" : "relative"}}>
+              <Form.Control
             type="text"
             placeholder="Search ..."
             value={search}
@@ -133,6 +134,29 @@ const CategoryPages = () => {
               setCurrentPage(0);
             }}
           />
+
+
+              {search && (
+              <span
+                onClick={() => {
+                  setSearch("");
+                  setCurrentPage(0);
+                }}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+            </div>
+          
         </Col>
         <Col md={5}>
           <Select

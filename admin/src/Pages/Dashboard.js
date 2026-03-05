@@ -54,6 +54,7 @@ const [signupCount, setSignupCount] = useState(0);
   const [cityList, setCityList] = useState([]);
   const [newShopOwners, setNewShopOwners] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
+  const [quickFilter, setQuickFilter] = useState("");
   
   useEffect(() => {
     const fetchReviewCount = async () => {
@@ -283,39 +284,113 @@ useEffect(() => {
       <Row className="mb-3">
         <Col md={4}>
           <Form.Label>Start Date</Form.Label>
-          <Form.Control
+          <div style={{"position" : "relative"}} >
+            <Form.Control
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
+            {startDate && (
+              <span
+                onClick={() => {
+                  setStartDate("");
+                }}
+                style={{
+                  position: "absolute",
+                  right: "45px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+          </div>
+          
         </Col>
 
         <Col md={4}>
         <Form.Label>End Date</Form.Label>
-          <Form.Control
+        <div style={{"position":"relative"}}>
+            <Form.Control
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
+          {endDate && (
+              <span
+                onClick={() => {
+                  setEndDate("");
+                }}
+                style={{
+                  position: "absolute",
+                  right: "45px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+        </div>
+          
         </Col>
 
         <Col md={4}>
           <Form.Label>Quick Filter</Form.Label>
-          <Form.Select
-            onChange={(e) => {
-              const today = new Date();
-              const past = new Date();
-              past.setDate(today.getDate() - e.target.value);
+          <div style={{"position" : "relative"}}>
+            <Form.Select
+                value={quickFilter}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setQuickFilter(value);
 
-              setStartDate(past.toISOString().split("T")[0]);
-              setEndDate(today.toISOString().split("T")[0]);
-            }}
-          >
-            <option value="">Quick Filter</option>
-            <option value="0">Today</option>
-            <option value="7">Last 7 Days</option>
-            <option value="30">Last 30 Days</option>
-          </Form.Select>
+                  if (!value) {
+                    setStartDate("");
+                    setEndDate("");
+                    return;
+                  }
+                  const today = new Date();
+                  const past = new Date();
+                  past.setDate(today.getDate() - e.target.value);
+
+                  setStartDate(past.toISOString().split("T")[0]);
+                  setEndDate(today.toISOString().split("T")[0]);
+                }}
+              >
+                <option value="">Quick Filter</option>
+                <option value="0">Today</option>
+                <option value="7">Last 7 Days</option>
+                <option value="30">Last 30 Days</option>
+              </Form.Select>
+            {quickFilter  && (
+              <span
+                onClick={() => {
+                  setQuickFilter("");   // ⭐ reset select
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                style={{
+                  position: "absolute",
+                  right: "45px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+          </div>
+          
         </Col>
       </Row>
 
@@ -380,8 +455,8 @@ useEffect(() => {
              
   
   <Form.Group className="mb-3">
-                
-                <Form.Select
+    <div style={{"position" : "relative"}}>
+<Form.Select
     name="city"
     value={selectedCity}
     onChange={(e) => setSelectedCity(e.target.value)}
@@ -394,6 +469,27 @@ useEffect(() => {
       </option>
     ))}
   </Form.Select>
+      {selectedCity && (
+              <span
+                onClick={() => {
+                  setSelectedCity("");
+                }}
+                style={{
+                  position: "absolute",
+                  right: "45px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+    </div>
+                
+                
   
               </Form.Group>
 

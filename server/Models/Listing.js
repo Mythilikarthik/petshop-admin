@@ -21,6 +21,7 @@ const ListingSchema = new mongoose.Schema({
 
   categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true }],
   petCategories: [{ type: mongoose.Schema.Types.ObjectId, ref: "PetCategory", required: true }],
+  specializedServices: [{ type: mongoose.Schema.Types.ObjectId, ref: "SpecializedService", required: true }],
 
   description: String,
   photos: [String],

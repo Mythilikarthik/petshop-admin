@@ -520,7 +520,9 @@ const EnquiryList = () => {
       {/* 🔎 FILTER BAR */}
       <Row className="mb-3">
         <Col md={12}>
-          <Form.Control
+        <div style={{ "position" : "relative"}}>
+              
+        <Form.Control
             type="text"
             placeholder="Search name, email, shopname"
             value={search}
@@ -529,6 +531,28 @@ const EnquiryList = () => {
               setCurrentPage(0);
             }}
           />
+
+              {search && (
+              <span
+                onClick={() => {
+                  setSearch("");
+                  setCurrentPage(0);
+                }}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+            </div>
+          
         </Col>
 
         {/* <Col md={3}>
@@ -626,6 +650,11 @@ const EnquiryList = () => {
           pageLinkClassName="page-link"
           previousLabel="«"
           nextLabel="»"
+          
+            previousClassName="page-item"
+            nextClassName="page-item"
+            previousLinkClassName="page-link"
+            nextLinkClassName="page-link"
           activeClassName="active"
           forcePage={currentPage}
         />

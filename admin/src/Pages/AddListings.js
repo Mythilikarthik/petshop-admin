@@ -17,6 +17,7 @@ const [filteredPetCategories, setFilteredPetCategories] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
   const [petCategory, setPetCategory] = useState([]);
+  const [serviceList, setServiceList] = useState([]);
 const [newKeyword, setNewKeyword] = useState("");
 const daysOfWeek = [
   "Monday",
@@ -45,6 +46,7 @@ const [businessHours, setBusinessHours] = useState(
     country: listing?.country || "India",
     mapUrl: listing?.mapUrl || "",
     petCategories: listing?.petCategories || [],
+    specializedServices: listing?.specializedServices || [],
     description: listing?.description || "",
     categories: listing?.categories || [],
     photos: [],
@@ -101,6 +103,40 @@ const handleBannerChange = (e) => {
     const urls = files.map((file) => URL.createObjectURL(file));
     setPreviewUrls(urls);
   };
+
+  useEffect(() => {
+  if (!formData.categories.length) {
+    setServiceList([]);
+    return;
+  }
+
+  const fetchServices = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/specialized-service/byCategories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          categories: formData.categories
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setServiceList(data.services);
+      } else {
+        setServiceList([]);
+      }
+console.log("ss", serviceList);
+    } catch (err) {
+      console.error("Service fetch error", err);
+    }
+  };
+
+  fetchServices();
+}, [formData.categories]);
 useEffect(() => {
   if (formData.categories.length > 0) {
     // find all selected categories
@@ -211,6 +247,9 @@ const getTypes = async () => {
       });
       formData.petCategories.forEach((petId) => {
         formDataToSend.append("petCategories[]", petId);
+      });
+      formData.specializedServices.forEach((serviceId) => {
+        formDataToSend.append("specializedServices[]", serviceId);
       });
       formDataToSend.append("city", formData.city);
 
@@ -420,6 +459,27 @@ useEffect(() => {
 />
 
             </Form.Group>
+            <Form.Group className="mb-3">
+  <Form.Label>Specialized Services</Form.Label>
+
+  <Select
+    isMulti
+    options={serviceList.map(s => ({
+      value: s._id,
+      label: s.serviceName
+    }))}
+    value={serviceList
+      .filter(s => formData.specializedServices.includes(s._id))
+      .map(s => ({ value: s._id, label: s.serviceName }))
+    }
+    onChange={(selected) =>
+      setFormData(prev => ({
+        ...prev,
+        specializedServices: selected ? selected.map(s => s.value) : []
+      }))
+    }
+  />
+</Form.Group>
             
 
 

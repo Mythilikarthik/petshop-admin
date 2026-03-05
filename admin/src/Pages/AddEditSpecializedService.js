@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, Button, Container, Row, Col, Breadcrumb } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
+import useUnsavedChanges from "../Hooks/useUnsavedChanges";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -20,7 +21,8 @@ export default function AddEditSpecializedService() {
     description: "",
     show: true,
   });
-
+const { resetInitialSnapshot, confirmLeave, markAsSaved } =
+    useUnsavedChanges(form);
   const [petCategories, setPetCategories] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -45,6 +47,7 @@ export default function AddEditSpecializedService() {
             description: data.description || "",
             show: data.show ?? true,
           });
+            setTimeout(() => resetInitialSnapshot(), 0);
         });
     }
   }, [id]);
@@ -76,39 +79,29 @@ export default function AddEditSpecializedService() {
       console.error(err);
     }
   };
-  console.log(petCategories, allCategories);
+  console.log("allCategory", allCategories);
 
   // ✅ When PetCategory changes → filter Categories
   useEffect(() => {
   if (!form.petCategory) {
     setFilteredCategories([]);
-    setForm(prev => ({ ...prev, category: "" }));
     return;
   }
 
   const filtered = allCategories.filter(cat =>
-  cat.show === true &&
-  Array.isArray(cat.petCategories) &&
-  cat.petCategories.some(id => id.toString() === form.petCategory)
-);
+    cat.show === true &&
+    Array.isArray(cat.petCategories) &&
+    cat.petCategories.some(petId => String(petId._id) === String(form.petCategory))
+  );
 
   setFilteredCategories(filtered);
 
-  // ✅ Auto reset category if not valid
-  if (!filtered.some(c => c._id === form.category)) {
-
-    // 🔥 If only one category exists → auto select it
-    if (filtered.length === 1) {
-      setForm(prev => ({
-        ...prev,
-        category: filtered[0]._id
-      }));
-    } else {
-      setForm(prev => ({
-        ...prev,
-        category: ""
-      }));
-    }
+  // reset category if not valid
+  if (!filtered.some(c => String(c._id) === String(form.category))) {
+    setForm(prev => ({
+      ...prev,
+      category: filtered.length === 1 ? filtered[0]._id : ""
+    }));
   }
 
 }, [form.petCategory, allCategories]);
@@ -155,9 +148,9 @@ export default function AddEditSpecializedService() {
       if (!res.ok) {
         throw new Error(data.message || "Something went wrong");
       }
-
+      markAsSaved();
       setSuccess("Saved successfully!");
-      setTimeout(() => navigate("/specialized-services"), 1200);
+      setTimeout(() => navigate("/specialized-services-listing"), 1200);
 
     } catch (err) {
       setError(err.message);
@@ -181,12 +174,16 @@ export default function AddEditSpecializedService() {
           </Breadcrumb>
         </Col>
         <Col xs="auto">
-          <Button variant="secondary" onClick={() => navigate("/specialized-services")}>
+          <Button variant="secondary" onClick={() => {
+            if(!(confirmLeave)) return
+            navigate("/specialized-services-listing")
+          }}>
             Go Back
           </Button>
         </Col>
       </Row>
-
+{console.log("petcategories", petCategories)}
+{console.log("categories" , filteredCategories)}
       <div className="form-container">
         <Form onSubmit={handleSubmit}>
 

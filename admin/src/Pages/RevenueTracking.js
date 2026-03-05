@@ -299,6 +299,8 @@ const downloadPDF = () => {
         {/* Filters */}
         <Row className="mb-3">
           <Col>
+          <div style={{ "position" : "relative"}}>
+              
             <Form.Group>
               <Form.Control
                 type="month"
@@ -307,6 +309,27 @@ const downloadPDF = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </Form.Group>
+
+
+              {searchTerm && (
+              <span
+                onClick={() => {
+                  setSearchTerm("");
+                }}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+            </div>
           </Col>
           {/* <Col>
             <Form.Group>

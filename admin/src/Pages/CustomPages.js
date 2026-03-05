@@ -98,7 +98,9 @@ const CustomPages = () => {
 
         {/* Search and Create */}
         <Row className="mb-3">
-          <Col md={8}>
+          {/* <Col md={8}>
+          <div style={{ "position" : "relative"}}>
+              
             <Form.Control
               type="text"
               placeholder="Search by Page, Category, City, or Title"
@@ -108,7 +110,29 @@ const CustomPages = () => {
                 setCurrentPage(0);
               }}
             />
-          </Col>
+
+
+              {searchTerm && (
+              <span
+                onClick={() => {
+                  setSearchTerm("");
+                  setCurrentPage(0);
+                }}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+            </div>
+          </Col> */}
           {/* <Col md={4} className="text-end">
             <Button
               variant="primary"

@@ -154,6 +154,7 @@ router.post(
         description,
         categories,
         petCategories,
+        specializedServices,
         metaTitle,
         metaKeyword,
         metaDescription
@@ -197,6 +198,7 @@ router.post(
         description,
         categories,
         petCategories,
+        specializedServices,
         created_by_id: req.userId,
         created_by_type: req.userType,
         bannerImage: bannerFile ? `${uploadDir}/`+bannerFile.filename : null,

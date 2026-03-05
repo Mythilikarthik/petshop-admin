@@ -145,7 +145,7 @@ function App() {
           <Route path="/user-details/:id" element={<UserDetails />} />
           <Route path='/enquiry-list' element={<EnquiryList />} />
           <Route path='/specialized-services-listing' element={<SpecializedServicesListings />} />
-          <Route path='/edit-specialized-service' element={<AddEditSpecializedService />} />
+          <Route path='/edit-specialized-service/:id' element={<AddEditSpecializedService />} />
           <Route path='/add-specialized-service' element={<AddEditSpecializedService />} />
         </Route>
         

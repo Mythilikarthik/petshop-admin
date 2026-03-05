@@ -105,12 +105,36 @@ const FaqListing = () => {
         {/* Filters */}
         <Row className='mb-3'>
           <Col md={8}>
-            <Form.Control
+          <div style={{ "position" : "relative"}}>
+              <Form.Control
               type="text"
               placeholder="Search by FAQ"
               value={searchTerm}
               onChange={e => { setSearchTerm(e.target.value); setCurrentPage(0); }}
             />
+
+
+              {searchTerm && (
+              <span
+                onClick={() => {
+                  setSearchTerm("");
+                  setCurrentPage(0);
+                }}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+            </div>
+            
           </Col>
           <Col md={4} className="text-end">
             <Button variant="primary" onClick={() => openEdit(null)}>+ Add New</Button>

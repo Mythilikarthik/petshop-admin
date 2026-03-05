@@ -18,6 +18,7 @@ const EditListing = () => {
   const [listing, setListing] = useState(null);
   const [categoryList, setCategoryList] = useState([]);
   const [petCategoryList, setPetCategoryList] = useState([]);
+  const [serviceList, setServiceList] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const [newKeyword, setNewKeyword] = useState("");
@@ -54,6 +55,7 @@ const [businessHours, setBusinessHours] = useState(
     description: '',
     categories: [],     // 🧩 will hold category _ids
     petCategories: [],  // 🧩 will hold petCategory _ids
+      specializedServices: [],   // ⭐ ADD THIS
     photos: [],
     existingPhotos: [],
     metaTitle: '',
@@ -70,7 +72,42 @@ const [businessHours, setBusinessHours] = useState(
 
   const { confirmLeave, markAsSaved, resetInitialSnapshot } =
     useUnsavedChanges(formData, { excludeKeys: ['photos', 'existingPhotos'] });
+const fetchServices = async (categories) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/specialized-service/byCategories`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        categories
+      })
+    });
 
+    const data = await res.json();
+
+    if (data.success) {
+      setServiceList(
+        data.services.map(s => ({
+          value: s._id,
+          label: s.serviceName
+        }))
+      );
+    } else {
+      setServiceList([]);
+    }
+
+  } catch (err) {
+    console.error("Service fetch error", err);
+  }
+};
+useEffect(() => {
+  if (formData.categories.length > 0) {
+    fetchServices(formData.categories);
+  } else {
+    setServiceList([]);
+  }
+}, [formData.categories]);
   // ✅ Fetch categories, pet categories, and cities (ID + Name)
   useEffect(() => {
     const fetchCategories = async () => {
@@ -146,6 +183,7 @@ const [businessHours, setBusinessHours] = useState(
             description: data.listing.description || '',
             categories: data.listing.categories?.map(c => c._id || c) || [],
             petCategories: data.listing.petCategories?.map(c => c._id || c) || [],
+            specializedServices: data.listing.specializedServices?.map(s => s._id || s) || [],
             photos: [],
             bannerImage: data.listing.bannerImage || null,
             existingPhotos: data.listing.photos || [],
@@ -189,12 +227,56 @@ const [businessHours, setBusinessHours] = useState(
 
     fetchListing();
   }, [id, navigate]);
+  const handleServiceChange = (selected) => {
+  setFormData(prev => ({
+    ...prev,
+    specializedServices: selected ? selected.map(s => s.value) : []
+  }));
+};
 
   useEffect(() => {
     if (!loading && listing) {
       resetInitialSnapshot();
     }
   }, [loading, listing]);
+  useEffect(() => {
+  if (!formData.petCategories || formData.petCategories.length === 0) {
+    setCategoryList([]);
+    return;
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/category/byPetCategories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          petCategories: formData.petCategories
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setCategoryList(
+          data.categories.map(c => ({
+            value: c._id,
+            label: c.categoryName
+          }))
+        );
+      } else {
+        setCategoryList([]);
+      }
+
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  fetchCategories();
+}, [formData.petCategories]);
 
   const handleVerifiedToggle = () => {
   setFormData(prev => ({
@@ -287,6 +369,9 @@ formDataToSend.append("businessHours", JSON.stringify(businessHours));
       formData.categories.forEach(cat => formDataToSend.append('categories[]', cat));
       formData.petCategories.forEach(cat => formDataToSend.append('petCategories[]', cat));
       formData.photos.forEach(photo => formDataToSend.append('photos', photo));
+      formData.specializedServices.forEach(service =>
+  formDataToSend.append("specializedServices[]", service)
+);
       formData.existingPhotos.forEach(photo => formDataToSend.append('existingPhotos[]', photo));
       if (banner) {
   formDataToSend.append("bannerImage", banner);  
@@ -410,7 +495,49 @@ console.log("Submitting claimStatus:", formData.claimStatus);
                 onChange={handleStatusToggle}
               />
             </Form.Group>
-            
+            <Form.Group className="mb-3">
+              <Form.Label>Type <span className="text-danger">*</span></Form.Label>
+              {/* <Select
+                isMulti
+                options={petCategoryList}
+                value={petCategoryList.filter(c => formData.petCategories.includes(c.value))}
+                onChange={handlePetCategoryChange}
+              /> */}
+              <Select
+  isMulti
+  options={[
+    { value: "all", label: "All Types" },   // ✅ Add All option
+    ...petCategoryList
+  ]}
+  value={
+    petCategoryList.length > 0 &&
+formData.petCategories.length === petCategoryList.length
+      ? [{ value: "all", label: "All Types" }]
+      : petCategoryList.filter(p =>
+          formData.petCategories.includes(p.value)
+        )
+  }
+  onChange={(selected) => {
+    if (!selected) {
+      setFormData(prev => ({ ...prev, petCategories: [] }));
+      return;
+    }
+
+    // ✅ If All selected
+    if (selected.some(s => s.value === "all")) {
+      setFormData(prev => ({
+        ...prev,
+        petCategories: petCategoryList.map(p => p.value)
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        petCategories: selected.map(s => s.value)
+      }));
+    }
+  }}
+/>
+            </Form.Group>
 
             {/* Category Select */}
             <Form.Group className="mb-3">
@@ -424,13 +551,18 @@ console.log("Submitting claimStatus:", formData.claimStatus);
             </Form.Group>
 
             {/* Pet Type Select */}
+            
             <Form.Group className="mb-3">
-              <Form.Label>Type <span className="text-danger">*</span></Form.Label>
+              <Form.Label>Specialized Services</Form.Label>
+
               <Select
                 isMulti
-                options={petCategoryList}
-                value={petCategoryList.filter(c => formData.petCategories.includes(c.value))}
-                onChange={handlePetCategoryChange}
+                options={serviceList}
+                value={serviceList.filter(s =>
+                  formData.specializedServices.includes(s.value)
+                )}
+                onChange={handleServiceChange}
+                placeholder="Select Services"
               />
             </Form.Group>
 

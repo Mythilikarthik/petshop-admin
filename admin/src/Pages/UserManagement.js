@@ -159,7 +159,8 @@ const lastLoggedInUser = [...listings]
         /> */}
         <Row className="mb-3">
           <Col>
-            <Form.Control
+          <div style={{ "position" : "relative"}}>
+              <Form.Control
               type="text"
               placeholder="Search by name or email"
               value={searchTerm}
@@ -168,6 +169,29 @@ const lastLoggedInUser = [...listings]
                 setCurrentPage(0);
               }}
             />
+
+
+              {searchTerm && (
+              <span
+                onClick={() => {
+                  setSearchTerm("");
+                  setCurrentPage(0);
+                }}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#888"
+                }}
+              >
+                ✕
+              </span>
+            )}
+            </div>
+            
           </Col>
 
           <Col xs="auto">
