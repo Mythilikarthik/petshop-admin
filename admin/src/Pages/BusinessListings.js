@@ -241,6 +241,7 @@ const missingCategories = new Set();
 const missingPetCategories = new Set();
 
 for (let idx = 0; idx < rows.length; idx++) {
+  
   const row = rows[idx];
   const safe = (v) => (v == null ? '' : String(v).trim());
   const shopName = safe(row.shopname || row.shopName);
@@ -248,6 +249,15 @@ for (let idx = 0; idx < rows.length; idx++) {
   const phone = safe(row.phone);
   const address = safe(row.address);
   const cityName = safe(row.city).toLowerCase();
+  let businessHours = [];
+
+if (row.businessHours) {
+  try {
+    businessHours = JSON.parse(row.businessHours);
+  } catch (err) {
+    console.warn("Invalid businessHours JSON at row", idx + 2);
+  }
+}
 
   const categoriesRaw = safe(row.category)
     .split(/[,;|]/)
@@ -299,6 +309,7 @@ for (let idx = 0; idx < rows.length; idx++) {
     city: cityId,
     categories: categoryIds,
     petCategories: petCategoryIds,
+    businessHours, 
     description: safe(row.description),
     mapUrl: safe(row.websiteUrl),
     metaTitle: safe(row.metaTitle),
@@ -430,7 +441,7 @@ if (!mapped.length) {
                 <Form.Group className="text-center">
                   <label
                     onClick={() => {
-                      const csvContent = `type,category,shopName,email,phone,address,city,websiteUrl,description,metaTitle,metaKeyword,metaDescription`;
+                      const csvContent = `type,category,shopName,email,phone,businessHours,address,city,websiteUrl,description,metaTitle,metaKeyword,metaDescription`;
 
                       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                       const link = document.createElement("a");
