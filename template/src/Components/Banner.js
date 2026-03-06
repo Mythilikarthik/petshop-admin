@@ -155,7 +155,7 @@ const Banner = ({home}) => {
 
         {/* ✅ Filter Form */}
         <div className="form-section">
-          <div className="form-container">
+          <div className="form-container align-items-center">
             <Form onSubmit={handleSubmit}>
               <div className="d-flex flex-column flex-md-row align-items-center gap-2">
                 {/* Type */}
@@ -164,7 +164,7 @@ const Banner = ({home}) => {
                   onChange={(e) => setType(e.target.value)}
                   aria-label="All types"
                   className="me-md-2"
-                  style={{ width: 200, flex: "0 0 200px" }}
+                  style={{ width: 200, }}
                 >
                   <option value="">All Types</option>
                   {types.map((t) => (
@@ -180,7 +180,7 @@ const Banner = ({home}) => {
                   onChange={(e) => setCategory(e.target.value)}
                   aria-label="All categories"
                   className="me-md-2"
-                  style={{ width: 200, flex: "0 0 200px" }}
+                  style={{ width: 200, }}
                 >
                   <option value="">All Categories</option>
                   {categories.map((c) => (
@@ -196,7 +196,7 @@ const Banner = ({home}) => {
                   onChange={(e) => setCity(e.target.value)}
                   aria-label="All cities"
                   className="me-md-2"
-                  style={{ width: 180, flex: "0 0 180px" }}
+                  style={{ width: 180,  }}
                 >
                   <option value="">All Cities</option>
                   {cities.map((c) => (

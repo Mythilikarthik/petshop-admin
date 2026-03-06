@@ -7,6 +7,7 @@ import { BsLightningFill, BsTagFill, BsHouseFill, BsGeoAltFill, BsStarFill } fro
 import { useNavigate } from 'react-router-dom';
 import dummyImage from '../dummy.jpg';
 import { FaStar } from 'react-icons/fa';
+import StarRating from './StarRating';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -174,13 +175,14 @@ const renderAvgStarsCal = (value) => {
                             </Card.Header>
                             <Card.Body className='pos-rel d-flex flex-grow-1 flex-column '>
                                 
-                                <Card.Title>{service.title && service.title.length > 20 ? service.title.substring(0, 20) + "..." : service.title}</Card.Title>
+                                <Card.Title title={service.title}> 
+                                    {service.title && service.title.length > 20 ? service.title.substring(0, 25) + "..." : service.title}</Card.Title>
                                 <div className="service-tags">
                                 {service.tags.map((tag, index) => (
                                         <span key={service.id + "-tag-" + index} className="badge badge-top-rated">{tag}</span>
                                     ))}
                                 </div>
-                                <Card.Text className='mt-4'>{service.description && service.description.length > 60 ? service.description.substring(0, 60) + "..." : service.description}</Card.Text>
+                                <Card.Text className='mt-4' title={service.description}>{service.description && service.description.length > 60 ? service.description.substring(0, 60) + "..." : service.description}</Card.Text>
                                 <div className="service-location">
                                     <span role="img" aria-label="location"> <BsGeoAltFill />  </span> {service.location}
                                 </div>
@@ -199,7 +201,11 @@ const renderAvgStarsCal = (value) => {
                                     <span className='d-block'>{service.rating}</span>
                                 </div> */}
                                 <div className="review-summary service-rating">
-  <div className="rating-wrap">
+                                    <StarRating 
+                                      rating={averageRating(service.id)} 
+                                      reviewCount={renderAvgStarsCal(averageRating(service.id))} 
+                                    />
+  {/* <div className="rating-wrap">
     <div className="rating-value">
       {averageRating(service.id)}
     </div>
@@ -209,7 +215,7 @@ const renderAvgStarsCal = (value) => {
         {(reviewsByService[service.id] || []).length} review(s)
       </div>
     </div>
-  </div>
+  </div> */}
 </div>
 
 

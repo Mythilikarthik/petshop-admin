@@ -13,6 +13,7 @@ import { GiLaurelsTrophy, GiTrophy } from "react-icons/gi";
 import { useEngagementGate } from "../hooks/useEngagementGate";
 import { useAuth } from "../contexts/AuthContext";
 import AuthGateModal from "../hooks/AuthGateModel";
+import StarRating from "../Components/StarRating";
 
 // Example data (replace with API data)
 
@@ -667,6 +668,7 @@ useEffect(() => {
     textOverflow: "ellipsis",
     maxWidth: "200px",
     cursor: "pointer",
+    marginTop: "12px",
   }}
 >
   {listing.shopName}
@@ -682,10 +684,16 @@ useEffect(() => {
       )}
 
       </div>
-      <div className="service-rating align-items-center d-flex gap-1">
+      {/* <div className="service-rating align-items-center d-flex gap-1">
           <span className='align-items-center d-flex' role="img" aria-label="star" style={{"verticalAlign" : "unset"}}> <BsStarFill /> </span> 
           <span className='d-block'>{listing.rating}</span>
-      </div>
+      </div> */}
+      <div className="service-rating d-flex align-items-center gap-2 mt-2">
+  <StarRating 
+  rating={listing.rating} 
+  reviewCount={listing.reviewCount} 
+/>
+</div>
 {/* <div className="service-rating align-items-center d-flex gap-2 mt-2">
   {Number(listing.rating) > 0 ? (
     <>
