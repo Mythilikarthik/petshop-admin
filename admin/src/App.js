@@ -77,7 +77,7 @@ function App() {
     return <Loader />;
   }
   return (
-    <Router>
+    <Router basename="/admin">
       <SessionTimeoutHandler />
       <Routes>
         {/* Login route shown first */}
