@@ -33,6 +33,8 @@ const adSchema = new mongoose.Schema(
   enum: ["home", "directory", "blog"],
   required: true
 },
+fromDate: { type: Date, default: null },
+  toDate: { type: Date, default: null },
   },
   { timestamps: true }
 );

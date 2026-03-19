@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Container, Nav, Navbar, Modal, NavDropdown  } from "react-bootstrap";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import "./Css/Header.css";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../contexts/AuthContext";
 import { FaUser } from "react-icons/fa";
+import { HeadProvider, Meta, Title } from "react-head";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 
 const LOGIM_URI =
   process.env.NODE_ENV === "production"
@@ -36,6 +39,7 @@ const openChangePassword = () => setShowChangePassword(true);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async () => {
     // if (!password || password.length < 6) {
@@ -94,13 +98,35 @@ const openChangePassword = () => setShowChangePassword(true);
       </Modal.Header>
 
       <Modal.Body>
-        <input
+        {/* <input
           type="password"
           className="form-control"
           placeholder="Enter new password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-        />
+        /> */}
+        <div className="position-relative">
+  <input
+    type={showPassword ? "text" : "password"}
+    className="form-control pe-5"
+    placeholder="Enter new password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+  />
+
+  <span
+    onClick={() => setShowPassword(!showPassword)}
+    style={{
+      position: "absolute",
+      right: "15px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      cursor: "pointer",
+    }}
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
+</div>
 
         <button
           className="btn btn-primary w-100 mt-3"
@@ -122,6 +148,8 @@ const openChangePassword = () => setShowChangePassword(true);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+const [showNewPassword, setShowNewPassword] = useState(false);
 
   const handleSubmit = async () => {
     if (!oldPassword || !newPassword) {
@@ -181,7 +209,7 @@ const openChangePassword = () => setShowChangePassword(true);
       </Modal.Header>
 
       <Modal.Body>
-        <input
+        {/* <input
           type="password"
           className="form-control mb-2"
           placeholder="Old password"
@@ -195,7 +223,52 @@ const openChangePassword = () => setShowChangePassword(true);
           placeholder="New password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-        />
+        /> */}
+        <div className="position-relative mb-2">
+  <input
+    type={showOldPassword ? "text" : "password"}
+    className="form-control pe-5"
+    placeholder="Old password"
+    value={oldPassword}
+    onChange={(e) => setOldPassword(e.target.value)}
+  />
+
+  <span
+    onClick={() => setShowOldPassword(!showOldPassword)}
+    style={{
+      position: "absolute",
+      right: "15px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      cursor: "pointer",
+    }}
+  >
+    {showOldPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
+</div>
+
+<div className="position-relative">
+  <input
+    type={showNewPassword ? "text" : "password"}
+    className="form-control pe-5"
+    placeholder="New password"
+    value={newPassword}
+    onChange={(e) => setNewPassword(e.target.value)}
+  />
+
+  <span
+    onClick={() => setShowNewPassword(!showNewPassword)}
+    style={{
+      position: "absolute",
+      right: "15px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      cursor: "pointer",
+    }}
+  >
+    {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
+</div>
 
         <button
           className="btn btn-primary w-100 mt-3"
@@ -219,6 +292,26 @@ const openChangePassword = () => setShowChangePassword(true);
   //     document.body.style.overflow = "auto";
   //   }
   // }, [user]);
+  const location = useLocation();
+
+const getPageTitle = () => {
+  const path = location.pathname;
+
+  if (path === "/") return "Vet and Pets - Home";
+
+  const parts = path
+    .replace("/", "")
+    .split("/")
+    .map((part) => decodeURIComponent(part)); // ✅ decode %20
+
+  const formatted = parts.map((part) =>
+    part
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase())
+  );
+
+  return `Vet and Pets - ${formatted.join(" - ")}`;
+};
 
   return (
     <>
@@ -259,7 +352,11 @@ const openChangePassword = () => setShowChangePassword(true);
         </Modal.Body>
       </Modal> */}
       
-
+<HeadProvider>
+      <div>
+        <Title>{getPageTitle()}</Title>
+      </div>
+    </HeadProvider>
   
     <div className="header">
       <Navbar

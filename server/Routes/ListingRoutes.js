@@ -6,10 +6,18 @@ const Listing = require("../Models/Listing");
 const Message = require("../Models/Message");
 const Review = require("../Models/Review");
 const User = require("../Models/User");
-const { verifyToken } = require("../middleware/authMiddleware");
+const {SECRET_KEY,verifyToken } = require("../middleware/authMiddleware");
 const PetCategory = require("../Models/PetCategory");
 const mongoose = require("mongoose");
 const emailjs = require("@emailjs/nodejs");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+
+const generateToken = (id, role) => {
+  return jwt.sign({ id, role }, SECRET_KEY, { expiresIn: "7d" });
+};
+
 
 const sendOtpEmail = async (templateData) => {
   return emailjs.send(
@@ -386,13 +394,21 @@ console.log(username, email);
       });
 
       await newUser.save();
+      console.log("claimid", newUser._id);
 
       // 4️⃣ Update listing (pending verification)
-      listing.isClaimed = true;
+      if (verificationMethod === "email") {
+  listing.claimStatus = "otp_pending";
+} else {
+  listing.claimStatus = "pending"; // waiting for admin review
+}
+
+listing.isClaimed = true; // ❗ keep false until verified
+      // listing.isClaimed = true;
       listing.claimedBy = newUser._id;
       listing.claimRole = claimRole;
       listing.verificationMethod = verificationMethod;
-      listing.claimStatus = "otp_pending";
+      // listing.claimStatus = "otp_pending";
       listing.status = "pending";
       listing.claimedAt = new Date();
 
@@ -403,12 +419,28 @@ console.log(username, email);
       await listing.save();
 
       // 5️⃣ Send OTP if email verification
+      // if (verificationMethod.toLowerCase() === "email") {
+      //   await sendOtpEmail({
+      //     email,
+      //     name: username,
+      //     otp,
+      //   });
+      // }
       if (verificationMethod.toLowerCase() === "email") {
-        await sendOtpEmail({
-          email,
-          name: username,
-          otp,
-        });
+        try {
+          await sendOtpEmail({
+            email,
+            name: username,
+            otp,
+          });
+        } catch (err) {
+          console.error("Email failed:", err);
+
+          return res.json({
+            success: false,
+            message: "Failed to send OTP email",
+          });
+        }
       }
 
       const token = generateToken(newUser._id, "user");
@@ -1088,7 +1120,16 @@ router.get("/directory/approved", async (req, res) => {
   try {
     const listings = await Listing.aggregate([
       // ✅ Only approved listings
-      { $match: { status: "approved" } },
+      // { $match: { status: "approved" } },
+      {
+  $match: {
+    status: "approved",
+    $or: [
+      { isClaimed: false }, // unclaimed listings
+      { isClaimed: true, claimStatus: "approved" } // claimed but verified
+    ]
+  }
+},
 
       // 🔗 Join user (for premium check)
       {
@@ -1262,6 +1303,7 @@ router.get("/user/:id", async (req, res) => {
     .populate("categories", "categoryName")
       .populate("petCategories", "categoryName")
       .populate("city", "city").sort({ created_at: -1 }); 
+      console.log(req.params.id);
       if (!listing) {
       return res.status(404).json({
         success: false,
@@ -1471,7 +1513,20 @@ router.put(
       if (data.claimStatus && ["approved", "pending"].includes(data.claimStatus)) {
   data.claimStatus = data.claimStatus;
 }
+if (data.claimStatus === "approved") {
+  const listing = await Listing.findById(req.params.id);
 
+  if (listing && listing.claimedBy) {
+    await User.findByIdAndUpdate(listing.claimedBy, {
+      isVerified: true
+    });
+
+    listing.isVerified = true;
+    listing.verifiedAt = new Date();
+
+    await listing.save();
+  }
+}
 
       /* -------------------- Parse categories -------------------- */
       if (data["categories[]"]) {

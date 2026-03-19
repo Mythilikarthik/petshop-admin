@@ -3,6 +3,7 @@ const router = express.Router();
 const Review = require("../Models/Review");
 const ListingEnquiry = require("../Models/ListingEnquiry");
 const User = require("../Models/User");
+const Listing = require("../Models/Listing");
 
 router.get("/", async (req, res) => {
   try {
@@ -13,12 +14,14 @@ router.get("/", async (req, res) => {
     const newUsers = await User.countDocuments({ site: "1", isVerified: false });
 
     const newServiceProviders = await User.countDocuments({ site: "0", isVerified: false });
+    const totallisting = await Listing.countDocuments({status: "pending" });
 
     res.json({
       reviews: newReviews,
       enquiries: newEnquiries,
       users: newUsers,
-      serviceProviders: newServiceProviders
+      serviceProviders: newServiceProviders,
+      totallisting: totallisting,
     });
 
   } catch (err) {

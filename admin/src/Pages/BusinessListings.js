@@ -92,7 +92,17 @@ const BusinessListings = () => {
     const matchesSearch = !term || (l.shopName || '').toLowerCase().includes(term) || (l.city?.city || '').toLowerCase().includes(term);
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.some(cat => l.categories?.includes(cat));
     const matchesType = selectedTypes.length === 0 || selectedTypes.some(type => l.petCategories?.includes(type));
-    const matchesStatus = l.status === statusFilter;
+    // const matchesStatus = l.status === statusFilter;
+    let matchesStatus = false;
+
+if (statusFilter === "approved") {
+  matchesStatus = l.status === "approved";
+} else if (statusFilter === "pending") {
+  // matchesStatus = l.status === "pending";
+  matchesStatus = l.status === "pending" && !l.isClaimed; // 🔥 FIX
+} else if (statusFilter === "claimed") {
+  matchesStatus = l.isClaimed === true;
+}
     return matchesSearch && matchesCategory && matchesStatus && matchesType;
   });
 
@@ -172,12 +182,217 @@ const BusinessListings = () => {
   };
 
   /** Bulk import logic */
-  const addListingsFromRows = async (rows = []) => {
-    const REQUIRED_FIELDS = ["type", "category", "shopName", "phone", "city"];
-const missingRequired = [];
+//   const addListingsFromRows = async (rows = []) => {
+//     const REQUIRED_FIELDS = ["type", "category", "shopName", "phone", "city"];
+// const missingRequired = [];
+//   const timestamp = Date.now();
+
+//   // Fetch mapping data for categories, petcategories, cities
+//   const [catRes, petCatRes, cityRes] = await Promise.all([
+//     fetch(`${API_BASE}/api/category/show`),
+//     fetch(`${API_BASE}/api/pet-category/show`),
+//     fetch(`${API_BASE}/api/city/show`)
+//   ]);
+
+//   const [catData, petCatData, cityData] = await Promise.all([
+//     catRes.json(),
+//     petCatRes.json(),
+//     cityRes.json()
+//   ]);
+
+//   const categoryMap = Object.fromEntries(
+//     catData.categories.map(c => [c.categoryName.toLowerCase(), c._id])
+//   );
+
+//   const petCategoryMap = Object.fromEntries(
+//     petCatData.petCategories.map(p => [p.categoryName.toLowerCase(), p._id])
+//   );
+
+//   const cityMap = Object.fromEntries(
+//     cityData.cities.map(city => [city.city.toLowerCase(), city._id])
+//   );
+
+//   // const mapped = rows.map((row, idx) => {
+//   //   const safe = (v) => (v == null ? '' : String(v).trim());
+//   //   const shopName = String(row.shopname || row.shopName || '').trim();
+//   //   const email = String(row.email || '').trim();
+//   //   const phone = safe(row.phone);
+//   //   const address = (row.address || '').trim();
+//   //   const cityName = (row.city || '').trim().toLowerCase();
+
+//   //   const categoriesRaw = (row.categories || '').split(/[,;|]/).map(s => s.trim().toLowerCase()).filter(Boolean);
+//   //   const petCategoriesRaw = (row.petCategories || '').split(/[,;|]/).map(s => s.trim().toLowerCase()).filter(Boolean);
+
+//   //   // Convert names → ObjectIds using map
+//   //   const categoryIds = categoriesRaw.map(name => categoryMap[name]).filter(Boolean);
+//   //   const petCategoryIds = petCategoriesRaw.map(name => petCategoryMap[name]).filter(Boolean);
+//   //   const cityId = cityMap[cityName] || null;
+
+//   //   return {
+//   //     _id: `tmp-${timestamp}-${idx}`,
+//   //     shopName,
+//   //     email,
+//   //     phone,
+//   //     address,
+//   //     city: cityId,
+//   //     categories: categoryIds,
+//   //     petCategories: petCategoryIds,
+//   //     description: (row.description || '').trim(),
+//   //     mapUrl: (row.mapUrl || '').trim(),
+//   //     metaTitle: (row.metaTitle || '').trim(),
+//   //     metaDescription: (row.metaDescription || '').trim(),
+//   //     metaKeyword: (row.metaKeyword || '').trim(),
+//   //     status: (row.status || 'pending').trim().toLowerCase()
+//   //   };
+//   // }).filter(r => r.shopName);
+//   const mapped = [];
+// const missingCities = new Set();
+// const missingCategories = new Set();
+// const missingPetCategories = new Set();
+
+// for (let idx = 0; idx < rows.length; idx++) {
+  
+//   const row = rows[idx];
+//   const safe = (v) => (v == null ? '' : String(v).trim());
+//   const shopName = safe(row.shopname || row.shopName);
+//   const email = safe(row.email);
+//   const phone = safe(row.phone);
+//   const address = safe(row.address);
+//   const cityName = safe(row.city).toLowerCase();
+//   let businessHours = [];
+
+// if (row.businessHours) {
+//   try {
+//     businessHours = JSON.parse(row.businessHours);
+//   } catch (err) {
+//     console.warn("Invalid businessHours JSON at row", idx + 2);
+//   }
+// }
+
+//   const categoriesRaw = safe(row.category)
+//     .split(/[,;|]/)
+//     .map((s) => s.trim().toLowerCase())
+//     .filter(Boolean);
+//   const petCategoriesRaw = safe(row.type)
+//     .split(/[,;|]/)
+//     .map((s) => s.trim().toLowerCase())
+//     .filter(Boolean);
+
+//     const rowErrors = [];
+
+//     if (!petCategoriesRaw) rowErrors.push("type");
+//     if (!categoriesRaw) rowErrors.push("category");
+//     if (!shopName) rowErrors.push("shopName");
+//     if (!phone) rowErrors.push("phone");
+//     if (!cityName) rowErrors.push("city");
+//     if (rowErrors.length > 0) {
+//       missingRequired.push(
+//         `Row ${idx + 2}: Missing ${rowErrors.join(", ")}`
+//       );
+//       continue; 
+//     }
+
+//   // --- CITY CHECK ---
+//   const cityId = cityMap[cityName] || null;
+//   if (!cityId && cityName) missingCities.add(row.city);
+
+//   // --- CATEGORY CHECK ---
+//   const categoryIds = categoriesRaw.map((name) => categoryMap[name]).filter(Boolean);
+//   if (categoryIds.length !== categoriesRaw.length) {
+//     const missing = categoriesRaw.filter((name) => !categoryMap[name]);
+//     missing.forEach((m) => missingCategories.add(m));
+//   }
+
+//   // --- PET CATEGORY CHECK ---
+//   const petCategoryIds = petCategoriesRaw.map((name) => petCategoryMap[name]).filter(Boolean);
+//   if (petCategoryIds.length !== petCategoriesRaw.length) {
+//     const missing = petCategoriesRaw.filter((name) => !petCategoryMap[name]);
+//     missing.forEach((m) => missingPetCategories.add(m));
+//   }
+
+//   mapped.push({
+//     _id: `tmp-${timestamp}-${idx}`,
+//     shopName,
+//     email,
+//     phone,
+//     address,
+//     city: cityId,
+//     categories: categoryIds,
+//     petCategories: petCategoryIds,
+//     businessHours, 
+//     description: safe(row.description),
+//     mapUrl: safe(row.websiteUrl),
+//     metaTitle: safe(row.metaTitle),
+//     metaDescription: safe(row.metaDescription),
+//     metaKeyword: safe(row.metaKeyword),
+//     status: safe(row.status || 'pending').toLowerCase(),
+//   });
+// }
+// if (missingRequired.length) {
+//   alert(
+//     "Import stopped due to missing required fields:\n\n" +
+//     missingRequired.join("\n")
+//   );
+//   return;
+// }
+
+// // --- Final check ---
+// if (missingCities.size || missingCategories.size || missingPetCategories.size) {
+//   let message = "Import stopped due to missing values:\n\n";
+
+//   if (missingCities.size)
+//     message += `Missing Cities: ${Array.from(missingCities).join(", ")}\n`;
+//   if (missingCategories.size)
+//     message += `Missing Categories: ${Array.from(missingCategories).join(", ")}\n`;
+//   if (missingPetCategories.size)
+//     message += `Missing Pet Categories: ${Array.from(missingPetCategories).join(", ")}\n`;
+
+//   message += "\nPlease correct these and retry.";
+//   alert(message);
+//   return; // stop everything
+// }
+
+// if (!mapped.length) {
+//   alert("No valid rows found. Import stopped.");
+//   return;
+// }
+
+
+//   if (mapped.length === 0) {
+//     setUploadError('No valid rows found. Ensure "shopName" exists.');
+//     return;
+//   }
+
+//   const token = localStorage.getItem("token");
+//   try {
+//     const bulkRes = await fetch(`${API_BASE}/api/listing/bulk`, {
+//       method: "POST",
+//       headers: {
+//         "Authorization": `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({ listings: mapped }),
+//     });
+
+//     const data = await bulkRes.json();
+//     if (data.success) {
+//       alert(`${data.created.length} listing(s) saved successfully!`);
+//       fetchListings();
+//     } else {
+//       setUploadError(data.message || "Failed to save listings.");
+//     }
+//   } catch (err) {
+//     console.error("Bulk import error:", err);
+//     setUploadError("Server error during bulk upload.");
+//   }
+// };
+
+const addListingsFromRows = async (rows = []) => {
+  const REQUIRED_FIELDS = ["type", "category", "shopName", "phone", "city"];
+  const missingRequired = [];
   const timestamp = Date.now();
 
-  // Fetch mapping data for categories, petcategories, cities
+  // Fetch mapping data
   const [catRes, petCatRes, cityRes] = await Promise.all([
     fetch(`${API_BASE}/api/category/show`),
     fetch(`${API_BASE}/api/pet-category/show`),
@@ -202,169 +417,155 @@ const missingRequired = [];
     cityData.cities.map(city => [city.city.toLowerCase(), city._id])
   );
 
-  // const mapped = rows.map((row, idx) => {
-  //   const safe = (v) => (v == null ? '' : String(v).trim());
-  //   const shopName = String(row.shopname || row.shopName || '').trim();
-  //   const email = String(row.email || '').trim();
-  //   const phone = safe(row.phone);
-  //   const address = (row.address || '').trim();
-  //   const cityName = (row.city || '').trim().toLowerCase();
-
-  //   const categoriesRaw = (row.categories || '').split(/[,;|]/).map(s => s.trim().toLowerCase()).filter(Boolean);
-  //   const petCategoriesRaw = (row.petCategories || '').split(/[,;|]/).map(s => s.trim().toLowerCase()).filter(Boolean);
-
-  //   // Convert names → ObjectIds using map
-  //   const categoryIds = categoriesRaw.map(name => categoryMap[name]).filter(Boolean);
-  //   const petCategoryIds = petCategoriesRaw.map(name => petCategoryMap[name]).filter(Boolean);
-  //   const cityId = cityMap[cityName] || null;
-
-  //   return {
-  //     _id: `tmp-${timestamp}-${idx}`,
-  //     shopName,
-  //     email,
-  //     phone,
-  //     address,
-  //     city: cityId,
-  //     categories: categoryIds,
-  //     petCategories: petCategoryIds,
-  //     description: (row.description || '').trim(),
-  //     mapUrl: (row.mapUrl || '').trim(),
-  //     metaTitle: (row.metaTitle || '').trim(),
-  //     metaDescription: (row.metaDescription || '').trim(),
-  //     metaKeyword: (row.metaKeyword || '').trim(),
-  //     status: (row.status || 'pending').trim().toLowerCase()
-  //   };
-  // }).filter(r => r.shopName);
   const mapped = [];
-const missingCities = new Set();
-const missingCategories = new Set();
-const missingPetCategories = new Set();
+  const missingCities = new Set();
+  const missingCategories = new Set();
+  const missingPetCategories = new Set();
 
-for (let idx = 0; idx < rows.length; idx++) {
-  
-  const row = rows[idx];
-  const safe = (v) => (v == null ? '' : String(v).trim());
-  const shopName = safe(row.shopname || row.shopName);
-  const email = safe(row.email);
-  const phone = safe(row.phone);
-  const address = safe(row.address);
-  const cityName = safe(row.city).toLowerCase();
-  let businessHours = [];
+  for (let idx = 0; idx < rows.length; idx++) {
+    const row = rows[idx];
+    const safe = (v) => (v == null ? '' : String(v).trim());
 
-if (row.businessHours) {
-  try {
-    businessHours = JSON.parse(row.businessHours);
-  } catch (err) {
-    console.warn("Invalid businessHours JSON at row", idx + 2);
-  }
-}
+    const shopName = safe(row.shopname || row.shopName);
+    const email = safe(row.email);
+    const phone = safe(row.phone);
+    const address = safe(row.address);
+    const cityName = safe(row.city).toLowerCase();
 
-  const categoriesRaw = safe(row.category)
-    .split(/[,;|]/)
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-  const petCategoriesRaw = safe(row.type)
-    .split(/[,;|]/)
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
+    let businessHours = [];
+    if (row.businessHours) {
+      try {
+        businessHours = JSON.parse(row.businessHours);
+      } catch (err) {
+        console.warn("Invalid businessHours JSON at row", idx + 2);
+      }
+    }
 
+    // 👉 CATEGORY (NORMAL)
+    const categoriesRaw = safe(row.category)
+      .split(/[,;|]/)
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+
+    // 👉 PET CATEGORY (TYPE FIELD)
+    const petCategoriesRaw = safe(row.type)
+      .split(/[,;|]/)
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+
+    // --- REQUIRED CHECK ---
     const rowErrors = [];
-
-    if (!petCategoriesRaw) rowErrors.push("type");
-    if (!categoriesRaw) rowErrors.push("category");
+    if (!petCategoriesRaw.length) rowErrors.push("type");
+    if (!categoriesRaw.length) rowErrors.push("category");
     if (!shopName) rowErrors.push("shopName");
     if (!phone) rowErrors.push("phone");
     if (!cityName) rowErrors.push("city");
+
     if (rowErrors.length > 0) {
-      missingRequired.push(
-        `Row ${idx + 2}: Missing ${rowErrors.join(", ")}`
-      );
-      continue; 
+      missingRequired.push(`Row ${idx + 2}: Missing ${rowErrors.join(", ")}`);
+      continue;
     }
 
-  // --- CITY CHECK ---
-  const cityId = cityMap[cityName] || null;
-  if (!cityId && cityName) missingCities.add(row.city);
+    // --- CITY ---
+    const cityId = cityMap[cityName] || null;
+    if (!cityId && cityName) missingCities.add(row.city);
 
-  // --- CATEGORY CHECK ---
-  const categoryIds = categoriesRaw.map((name) => categoryMap[name]).filter(Boolean);
-  if (categoryIds.length !== categoriesRaw.length) {
-    const missing = categoriesRaw.filter((name) => !categoryMap[name]);
-    missing.forEach((m) => missingCategories.add(m));
+    // --- CATEGORY ---
+    const categoryIds = categoriesRaw
+      .map(name => categoryMap[name])
+      .filter(Boolean);
+
+    if (categoryIds.length !== categoriesRaw.length) {
+      const missing = categoriesRaw.filter(name => !categoryMap[name]);
+      missing.forEach(m => missingCategories.add(m));
+    }
+
+    // --- PET CATEGORY (🔥 ALL TYPES FIX) ---
+    let petCategoryIds = [];
+
+    if (
+      petCategoriesRaw.some(v =>
+        ["all", "all types"].includes(v)
+      )
+    ) {
+      // ✅ SELECT ALL PET CATEGORIES
+      petCategoryIds = Object.values(petCategoryMap);
+    } else {
+      petCategoryIds = petCategoriesRaw
+        .map(name => {
+          if (!petCategoryMap[name]) {
+            missingPetCategories.add(name);
+          }
+          return petCategoryMap[name];
+        })
+        .filter(Boolean);
+    }
+
+    // --- PUSH ---
+    mapped.push({
+      _id: `tmp-${timestamp}-${idx}`,
+      shopName,
+      email,
+      phone,
+      address,
+      city: cityId,
+      categories: categoryIds,
+      petCategories: petCategoryIds,
+      businessHours,
+      description: safe(row.description),
+      mapUrl: safe(row.websiteUrl),
+      metaTitle: safe(row.metaTitle),
+      metaDescription: safe(row.metaDescription),
+      metaKeyword: safe(row.metaKeyword),
+      status: safe(row.status || "pending").toLowerCase(),
+    });
   }
 
-  // --- PET CATEGORY CHECK ---
-  const petCategoryIds = petCategoriesRaw.map((name) => petCategoryMap[name]).filter(Boolean);
-  if (petCategoryIds.length !== petCategoriesRaw.length) {
-    const missing = petCategoriesRaw.filter((name) => !petCategoryMap[name]);
-    missing.forEach((m) => missingPetCategories.add(m));
-  }
-
-  mapped.push({
-    _id: `tmp-${timestamp}-${idx}`,
-    shopName,
-    email,
-    phone,
-    address,
-    city: cityId,
-    categories: categoryIds,
-    petCategories: petCategoryIds,
-    businessHours, 
-    description: safe(row.description),
-    mapUrl: safe(row.websiteUrl),
-    metaTitle: safe(row.metaTitle),
-    metaDescription: safe(row.metaDescription),
-    metaKeyword: safe(row.metaKeyword),
-    status: safe(row.status || 'pending').toLowerCase(),
-  });
-}
-if (missingRequired.length) {
-  alert(
-    "Import stopped due to missing required fields:\n\n" +
-    missingRequired.join("\n")
-  );
-  return;
-}
-
-// --- Final check ---
-if (missingCities.size || missingCategories.size || missingPetCategories.size) {
-  let message = "Import stopped due to missing values:\n\n";
-
-  if (missingCities.size)
-    message += `Missing Cities: ${Array.from(missingCities).join(", ")}\n`;
-  if (missingCategories.size)
-    message += `Missing Categories: ${Array.from(missingCategories).join(", ")}\n`;
-  if (missingPetCategories.size)
-    message += `Missing Pet Categories: ${Array.from(missingPetCategories).join(", ")}\n`;
-
-  message += "\nPlease correct these and retry.";
-  alert(message);
-  return; // stop everything
-}
-
-if (!mapped.length) {
-  alert("No valid rows found. Import stopped.");
-  return;
-}
-
-
-  if (mapped.length === 0) {
-    setUploadError('No valid rows found. Ensure "shopName" exists.');
+  // --- REQUIRED ERROR ---
+  if (missingRequired.length) {
+    alert(
+      "Import stopped due to missing required fields:\n\n" +
+      missingRequired.join("\n")
+    );
     return;
   }
 
+  // --- FINAL VALIDATION ---
+  if (missingCities.size || missingCategories.size || missingPetCategories.size) {
+    let message = "Import stopped due to missing values:\n\n";
+
+    if (missingCities.size)
+      message += `Missing Cities: ${Array.from(missingCities).join(", ")}\n`;
+    if (missingCategories.size)
+      message += `Missing Categories: ${Array.from(missingCategories).join(", ")}\n`;
+    if (missingPetCategories.size)
+      message += `Missing Pet Categories: ${Array.from(missingPetCategories).join(", ")}\n`;
+
+    message += "\nPlease correct these and retry.";
+    alert(message);
+    return;
+  }
+
+  if (!mapped.length) {
+    alert("No valid rows found. Import stopped.");
+    return;
+  }
+
+  // --- API CALL ---
   const token = localStorage.getItem("token");
+
   try {
     const bulkRes = await fetch(`${API_BASE}/api/listing/bulk`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ listings: mapped }),
     });
 
     const data = await bulkRes.json();
+
     if (data.success) {
       alert(`${data.created.length} listing(s) saved successfully!`);
       fetchListings();
@@ -376,7 +577,6 @@ if (!mapped.length) {
     setUploadError("Server error during bulk upload.");
   }
 };
-
 
   return (
     <div className="container mt-4">
@@ -541,6 +741,15 @@ if (!mapped.length) {
           </Col>
           <Col md={3}>
             <ButtonGroup className='w-100'>
+               <ToggleButton
+                id="pending"
+                type="radio"
+                variant="outline-danger"
+                checked={statusFilter === "pending"}
+                onChange={() => { setStatusFilter("pending"); setCurrentPage(0); }}
+              >
+                Pending
+              </ToggleButton>
               <ToggleButton
                 id="approved"
                 type="radio"
@@ -550,15 +759,19 @@ if (!mapped.length) {
               >
                 Approved
               </ToggleButton>
+             
               <ToggleButton
-                id="pending"
-                type="radio"
-                variant="outline-danger"
-                checked={statusFilter === "pending"}
-                onChange={() => { setStatusFilter("pending"); setCurrentPage(0); }}
-              >
-                Pending
-              </ToggleButton>
+              id="claimed"
+              type="radio"
+              variant="outline-warning"
+              checked={statusFilter === "claimed"}
+              onChange={() => {
+                setStatusFilter("claimed");
+                setCurrentPage(0);
+              }}
+            >
+              Claimed
+            </ToggleButton>
             </ButtonGroup>
           </Col>
           {/* <Col md={2}>

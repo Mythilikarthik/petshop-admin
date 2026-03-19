@@ -9,6 +9,7 @@ const checkPremium = require("../middleware/checkPremium");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const emailjs = require("@emailjs/nodejs");
+const Listing = require("../Models/Listing");
 
 const router = express.Router();
 const { OAuth2Client } = require("google-auth-library");
@@ -412,6 +413,7 @@ router.post("/user/login", async (req, res) => {
       $or: [{ username }, { email: username }],
       isVerified: true
     });
+    console.log(username, password);
 
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found or not verified" });
@@ -535,14 +537,28 @@ router.put("/user/change-password/:id", async (req, res) => {
 //   }
 // });
 // routes/user.js
+// router.get("/user/all", async (req, res) => {
+//   try {
+//     const users = await User.find({
+//       site: "1",
+//       _id: { $ne: req.userId } // exclude logged-in user
+//     })
+//     .sort({ created_at: -1 })
+//     .select("-password"); // never send password
+
+//     res.json({ success: true, users });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
 router.get("/user/all", async (req, res) => {
   try {
     const users = await User.find({
-      site: "1",
       _id: { $ne: req.userId } // exclude logged-in user
     })
     .sort({ created_at: -1 })
-    .select("-password"); // never send password
+    .select("-password");
 
     res.json({ success: true, users });
   } catch (err) {
@@ -881,6 +897,7 @@ router.post("/site/register", async (req, res) => {
 router.post("/user/verify-otp", async (req, res) => {
   try {
     const { userId, otp } = req.body;
+    console.log("verify-otp", userId);
 
     const user = await User.findById(userId);
     if (!user) {
@@ -903,10 +920,10 @@ router.post("/user/verify-otp", async (req, res) => {
 
     // Now mark listing as verified
     const listing = await Listing.findOne({ claimedBy: userId });
-
+console.log("verified",userId);
     if (listing) {
       listing.claimStatus = "verified";
-      listing.status = "active";
+      listing.status = "pending";
       await listing.save();
     }
 

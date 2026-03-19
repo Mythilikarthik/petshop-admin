@@ -20,7 +20,9 @@ const categoryPageSchema = new mongoose.Schema(
     displayName: { type: String, required: true },
     description: { type: String },
     image: { type: String },
-
+content: {
+  type: String
+},
     // Services section
     services: [serviceSchema],
 

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Css/Directory.css';
 import { Row, Col, Card, Button, Container, Image, Badge, Modal } from "react-bootstrap";
-import { BsGeoAltFill, BsStarFill } from "react-icons/bs";
+import { BsClock, BsClockFill, BsClockHistory, BsCloudCheckFill, BsGeoAltFill, BsStarFill } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 import dummyImage from '../dummy.jpg';
 import AdSlider from '../Components/AdSlider';
@@ -689,11 +689,11 @@ useEffect(() => {
           <span className='d-block'>{listing.rating}</span>
       </div> */}
       <div className="service-rating d-flex align-items-center gap-2 mt-2">
-  <StarRating 
-  rating={listing.rating} 
-  reviewCount={listing.reviewCount} 
-/>
-</div>
+        <StarRating 
+          rating={listing.rating} 
+          reviewCount={listing.reviewCount} 
+        />
+      </div>
 {/* <div className="service-rating align-items-center d-flex gap-2 mt-2">
   {Number(listing.rating) > 0 ? (
     <>
@@ -726,9 +726,41 @@ useEffect(() => {
         {listing.description}
       </Card.Text>
 
-      <div className="service-location mt-2">
+      <div className="service-location mt-2 d-flex gap-2 align-items-center">
         <BsGeoAltFill /> {listing.city.city}
       </div>
+      {/* <div className="service-location mt-2">
+        {listing.businessHours?.map((bh, index) => (
+          <div key={index}>
+            <strong>{bh.day}:</strong>{" "}
+            {bh.closed ? "Closed" : `${bh.open} - ${bh.close}`}
+          </div>
+        ))}
+      </div> */}
+      {/* <div className="service-location mt-2">
+  <BsGeoAltFill />{" "}
+  {listing.businessHours
+    ?.map((bh) =>
+      bh.closed ? `${bh.day}: Closed` : `${bh.day}: ${bh.open}-${bh.close}`
+    )
+    .join(", ")}
+</div> */}
+<div className="service-location mt-2 d-flex gap-2 align-items-center">
+  <BsClockFill /> 
+  {(() => {
+    const today = new Date().toLocaleString("en-US", { weekday: "long" });
+
+    const todayHours = listing.businessHours?.find(
+      (bh) => bh.day === today
+    );
+
+    return todayHours
+      ? todayHours.closed
+        ? "Closed Today"
+        : `Open Today: ${todayHours.open} - ${todayHours.close}`
+      : "Hours not available";
+  })()}
+</div>
 
       <div className="service-tags mt-2">
         {listing.categories?.map((cat, index) => (

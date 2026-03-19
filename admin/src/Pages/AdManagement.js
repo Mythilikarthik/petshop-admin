@@ -29,7 +29,9 @@ const AdManagement = () => {
     position: "",
     url: "",
     image: "",
-    page: "", 
+    page: "",
+    fromDate:"",
+    toDate:"", 
   });
 
   const [bannerFile, setBannerFile] = useState(null);
@@ -79,6 +81,8 @@ console.log(catData);
               url: ad.url || "",
               image: ad.image || "",
               page: ad.page || "",
+              fromDate: ad.fromDate ? ad.fromDate.split("T")[0] : "",
+              toDate: ad.toDate ? ad.toDate.split("T")[0] : "",
             });
           }
         } catch (err) {
@@ -113,6 +117,8 @@ console.log(catData);
     formToSend.append("position", formData.position);
     formToSend.append("url", formData.url);
     formToSend.append("page", formData.page);
+    formToSend.append("fromDate", formData.fromDate);
+    formToSend.append("toDate", formData.toDate);
 
     if (bannerFile) formToSend.append("image", bannerFile);
 
@@ -268,6 +274,27 @@ console.log(catData);
                 onChange={handleChange}
                 placeholder="https://example.com"
               />
+            </Form.Group>
+            {/* From Date */}
+            <Form.Group className="mb-3">
+            <Form.Label>From Date</Form.Label>
+            <Form.Control
+            type="date"
+            name="fromDate"
+            value={formData.fromDate || ""}
+            onChange={handleChange}
+            />
+            </Form.Group>
+
+            {/* To Date */}
+            <Form.Group className="mb-3">
+            <Form.Label>To Date</Form.Label>
+            <Form.Control
+            type="date"
+            name="toDate"
+            value={formData.toDate || ""}
+            onChange={handleChange}
+            />
             </Form.Group>
 
             {/* Banner Image */}

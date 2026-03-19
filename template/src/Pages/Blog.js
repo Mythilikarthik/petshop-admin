@@ -340,7 +340,7 @@ const Blog = () => {
                 {currentBlogs.length > 0 ? (
                   currentBlogs.map((item) => (
                     <Col md={4} key={item._id} className="mb-4">
-                      <Card className="pos-rel h-100">
+                      <Card className="pos-rel h-100 w-100">
                         <Card.Header className="p-0">
                           {item.bannerImage ? (
                             <img
@@ -349,7 +349,7 @@ const Blog = () => {
                               className="img-fluid"
                             />
                           ) : (
-                            <div className="text-center p-5">
+                            <div className="text-center">
                               <BsLightningFill size={80} />
                             </div>
                           )}

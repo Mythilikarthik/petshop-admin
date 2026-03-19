@@ -396,3 +396,19 @@
 .category-hero-icon svg {
   font-size: 48px;
 }
+.card {
+				border-radius: 15px;
+			}
+			.section-title {
+				margin-bottom: 20px;
+				font-weight: 600;
+			}
+
+.cat .card {
+				border-radius: 15px;
+			}
+		.cat 	.section-title {
+				margin-bottom: 20px;
+				font-weight: 600;
+				font-size: 20px;
+			}

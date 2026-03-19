@@ -584,6 +584,7 @@ useEffect(() => {
 
         
           </Col>
+
           <Col md={4} className="bg-grey"> 
           {/* SIDE AREA - Placeholder for future content */}
           {/* REVIEW FORM */}
@@ -636,6 +637,23 @@ useEffect(() => {
                     {listing.mapUrl}
                   </a>
                 </li>
+                <li>
+  <strong>Working Hours:</strong>
+  <div className="mt-2">
+    {listing.businessHours?.length > 0 ? (
+      listing.businessHours.map((bh, index) => (
+        <div key={index} className="d-flex justify-content-between">
+          <span>{bh.day}</span>
+          <span>
+            {bh.closed ? "Closed" : `${bh.open} - ${bh.close}`}
+          </span>
+        </div>
+      ))
+    ) : (
+      <span>Not available</span>
+    )}
+  </div>
+</li>
               </ul>
               {console.log("Created By Type:", listing.created_by_type)}
         {listing.created_by_type && listing.created_by_type === "admin" && !(listing.isClaimed) && (

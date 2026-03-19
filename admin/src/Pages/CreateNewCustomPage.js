@@ -131,8 +131,8 @@ const handleBannerChange = (e) => {
 const handleSubmit = async (e) => {
   e.preventDefault();
 
-  if (formData.paraWordCount < 0 || formData.paraWordCount > 400) {
-    alert("One Para Content must be between 0 and 400 words.");
+  if (formData.paraWordCount < 0 || formData.paraWordCount > 600) {
+    alert("One Para Content must be between 0 and 600 words.");
     return;
   }
 
@@ -324,7 +324,7 @@ const handleGoBack = () => {
                 ))}
               </Form.Select>
             </Form.Group> */}
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
               <Form.Label>Page [slug]</Form.Label>
               <Form.Control 
                 type='text' 
@@ -334,7 +334,7 @@ const handleGoBack = () => {
                 onChange={handleChange} 
                 pattern="[a-zA-Z0-9\- ]+"
               />
-            </Form.Group>
+            </Form.Group> */}
 
             {/* Category Multi-select */}
             <Form.Group className="mb-3">
@@ -448,14 +448,14 @@ const handleGoBack = () => {
                     color:
                       !formData.paraWordCount ||
                       formData.paraWordCount < 100 ||
-                      formData.paraWordCount > 400
+                      formData.paraWordCount > 600
                         ? "red"
                         : "green",
                   }}
                 >
                   {formData.paraWordCount || 0}
                 </strong>{" "}
-                / 400
+                / 600
               </div>
             </Form.Group>
 
@@ -464,7 +464,7 @@ const handleGoBack = () => {
               type="submit"
               disabled={
                 !formData.paraWordCount ||
-                formData.paraWordCount > 400
+                formData.paraWordCount > 600
               }
             >
               Save

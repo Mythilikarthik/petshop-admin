@@ -102,7 +102,7 @@ router.post("/", uploadSingleWithError("image"), async (req, res) => {
     console.log("📩 Incoming ad data:", req.body);
     console.log("📷 Uploaded file:", req.file);
 
-    const { category, city, position, url, page } = req.body;
+    const { category, city, position, url, page, fromDate, toDate } = req.body;
 
     // 🔍 Validation checks
     if (!position) {
@@ -113,7 +113,7 @@ router.post("/", uploadSingleWithError("image"), async (req, res) => {
     }
 
     const image = `/uploads/ads/${req.file.filename}`;
-    const ad = new Ad({ category, city, position, url, image , page });
+    const ad = new Ad({ category, city, position, url, image , page, fromDate: fromDate || null, toDate: toDate || null });
 
     await ad.save();
 
@@ -132,7 +132,7 @@ router.patch("/:id", uploadSingleWithError("image"), async (req, res) => {
     const updateData = {};
 
     // Add only non-empty fields
-    ["category", "city", "position", "url", "page"].forEach((field) => {
+    ["category", "city", "position", "url", "page","fromDate","toDate"].forEach((field) => {
       if (req.body[field] && req.body[field] !== "") {
         updateData[field] = req.body[field];
       }
@@ -277,9 +277,28 @@ router.get("/top/:pgname", async (req, res) => {
   try {
     const { pgname } = req.params;
 
+    // const ads = await Ad.aggregate([
+    //   { $match: { page: pgname, position: "top" } },
+    //   { $sample: { size: 50 } } // adjust size if needed
+    // ]);
+    const today = new Date();
+
     const ads = await Ad.aggregate([
-      { $match: { page: pgname, position: "top" } },
-      { $sample: { size: 50 } } // adjust size if needed
+    {
+    $match:{
+    page: pgname,
+    position:"top",
+
+    $or:[
+    { fromDate: null, toDate: null },   // always show
+    {
+    fromDate:{ $lte: today },
+    toDate:{ $gte: today }
+    }
+    ]
+    }
+    },
+    { $sample:{ size:50 } }
     ]);
 
     const populatedAds = await Ad.populate(ads, [
@@ -304,9 +323,28 @@ router.get("/bottom/:pgname", async (req, res) => {
   try {
     const { pgname } = req.params;
 
+    // const ads = await Ad.aggregate([
+    //   { $match: { page: pgname, position: "bottom" } },
+    //   { $sample: { size: 50 } } // adjust size if needed
+    // ]);
+    const today = new Date();
+
     const ads = await Ad.aggregate([
-      { $match: { page: pgname, position: "bottom" } },
-      { $sample: { size: 50 } } // adjust size if needed
+    {
+    $match:{
+    page: pgname,
+    position:"bottom",
+
+    $or:[
+    { fromDate: null, toDate: null },   // always show
+    {
+    fromDate:{ $lte: today },
+    toDate:{ $gte: today }
+    }
+    ]
+    }
+    },
+    { $sample:{ size:50 } }
     ]);
 
     const populatedAds = await Ad.populate(ads, [
@@ -331,9 +369,28 @@ router.get("/middle/:pgname", async (req, res) => {
   try {
     const { pgname } = req.params;
 
+    // const ads = await Ad.aggregate([
+    //   { $match: { page: pgname, position: "middle" } },
+    //   { $sample: { size: 50 } } // adjust size if needed
+    // ]);
+    const today = new Date();
+
     const ads = await Ad.aggregate([
-      { $match: { page: pgname, position: "middle" } },
-      { $sample: { size: 50 } } // adjust size if needed
+    {
+    $match:{
+    page: pgname,
+    position:"middle",
+
+    $or:[
+    { fromDate: null, toDate: null },   // always show
+    {
+    fromDate:{ $lte: today },
+    toDate:{ $gte: today }
+    }
+    ]
+    }
+    },
+    { $sample:{ size:50 } }
     ]);
 
     const populatedAds = await Ad.populate(ads, [

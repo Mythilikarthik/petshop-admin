@@ -819,7 +819,7 @@ formData.petCategories.length === petCategoryList.length
 
             )}
 
-              {formData.isClaimed && formData.verificationMethod === "document" &&
+              {/* {formData.isClaimed && formData.verificationMethod === "document" &&
                 formData.verificationDocs.length > 0 && (
                   <Form.Group className="mb-4">
                     <Form.Label>Verification Documents</Form.Label>
@@ -857,7 +857,76 @@ formData.petCategories.length === petCategoryList.length
                       })}
                     </Row>
                   </Form.Group>
+              )} */}
+              {formData.isClaimed && formData.verificationMethod === "document" &&
+  formData.verificationDocs.length > 0 && (
+    <Form.Group className="mb-4">
+      <Form.Label>Verification Documents</Form.Label>
+
+      <Row>
+        {formData.verificationDocs.map((doc, idx) => {
+          const docUrl = doc.startsWith("http")
+            ? doc
+            : `${API_BASE}/${doc}`;
+
+          // ✅ Better detection
+          const lower = doc.toLowerCase();
+          const isPdf = lower.includes(".pdf");
+          const isImage =
+            lower.includes(".jpg") ||
+            lower.includes(".jpeg") ||
+            lower.includes(".png") ||
+            lower.includes(".webp");
+
+          return (
+            <Col key={idx} md={4} className="mb-3">
+
+              {/* ✅ IMAGE PREVIEW */}
+              {isImage && (
+                <a href={docUrl} target="_blank" rel="noreferrer">
+                  <img
+                    src={docUrl}
+                    alt={`doc-${idx}`}
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd"
+                    }}
+                  />
+                </a>
               )}
+
+              {/* ✅ PDF VIEW BUTTON */}
+              {isPdf && (
+                <a
+                  href={docUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-danger w-100"
+                >
+                  View PDF {idx + 1}
+                </a>
+              )}
+
+              {/* ✅ FALLBACK */}
+              {!isPdf && !isImage && (
+                <a
+                  href={docUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary w-100"
+                >
+                  Open File {idx + 1}
+                </a>
+              )}
+            </Col>
+          );
+        })}
+      </Row>
+    </Form.Group>
+)}
 
             <Button variant="primary" type="submit">
               Save Changes

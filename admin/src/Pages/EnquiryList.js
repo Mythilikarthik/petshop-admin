@@ -376,6 +376,7 @@
 // export default EnquiryList;
 import React, { useEffect, useState, useMemo } from "react";
 import { Table, Button, Modal, Form, Row, Col } from "react-bootstrap";
+import { FaArrowDown, FaArrowUp, FaSort } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 
 const API_BASE =
@@ -390,6 +391,9 @@ const EnquiryList = () => {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [sortField, setSortField] = useState("latestDate");
+const [sortOrder, setSortOrder] = useState("desc"); // asc | desc
+
 
   // 🔎 Filters
   const [search, setSearch] = useState("");
@@ -467,16 +471,54 @@ const EnquiryList = () => {
       return matchesSearch && matchesFrom && matchesTo;
     });
   }, [groupedEnquiries, search, fromDate, toDate]);
+
+  const sortedGroups = useMemo(() => {
+  let sorted = [...filteredGroups];
+
+  sorted.sort((a, b) => {
+    let valA, valB;
+
+    if (sortField === "count") {
+      valA = a.count;
+      valB = b.count;
+    } else if (sortField === "latestDate") {
+      valA = new Date(a.latestDate);
+      valB = new Date(b.latestDate);
+    } else {
+      valA = a[sortField]?.toLowerCase?.() || "";
+      valB = b[sortField]?.toLowerCase?.() || "";
+    }
+
+    if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+    if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  return sorted;
+}, [filteredGroups, sortField, sortOrder]);
   const totalClicks = useMemo(() => {
     return filteredGroups.reduce((sum, group) => sum + group.count, 0);
   }, [filteredGroups]);
 
-  const pageCount = Math.ceil(filteredGroups.length / itemsPerPage);
+  // const pageCount = Math.ceil(filteredGroups.length / itemsPerPage);
+  const pageCount = Math.ceil(sortedGroups.length / itemsPerPage);
 
-  const displayedEnquiries = filteredGroups.slice(
-    currentPage * itemsPerPage,
-    (currentPage + 1) * itemsPerPage
-  );
+  // const displayedEnquiries = filteredGroups.slice(
+  //   currentPage * itemsPerPage,
+  //   (currentPage + 1) * itemsPerPage
+  // );
+  const displayedEnquiries = sortedGroups.slice(
+  currentPage * itemsPerPage,
+  (currentPage + 1) * itemsPerPage
+);
+const handleSort = (field) => {
+  if (sortField === field) {
+    setSortOrder(prev => (prev === "asc" ? "desc" : "asc"));
+  } else {
+    setSortField(field);
+    setSortOrder("asc");
+  }
+};
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
@@ -511,6 +553,30 @@ const EnquiryList = () => {
     document.body.appendChild(link);
     link.click();
   };
+
+  const markAsSeen = async (group) => {
+  try {
+    const ids = group.enquiries.map(e => e._id);
+
+    await fetch(`${API_BASE}/api/enquiry/mark-seen`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ ids })
+    });
+
+    // ✅ Update UI instantly
+    setEnquiries(prev =>
+      prev.map(e =>
+        ids.includes(e._id) ? { ...e, isSeen: true } : e
+      )
+    );
+
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div className="container mt-4">
@@ -591,7 +657,20 @@ const EnquiryList = () => {
             <th>Listing</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Total Clicks</th>
+            <th onClick={() => handleSort("count")} style={{ cursor: "pointer", display: "flex", justifyContent: "space-between" }}>
+  Total Clicks{" "}
+  <span className="ms-1">
+    {sortField === "count" ? (
+      sortOrder === "asc" ? (
+        <FaArrowUp />
+      ) : (
+        <FaArrowDown />
+      )
+    ) : (
+      <FaSort className="text-muted" />
+    )}
+  </span>
+</th>
             <th>Latest Date</th>
             <th>Options</th>
           </tr>
@@ -611,7 +690,13 @@ const EnquiryList = () => {
                 <td>{group.shopName}</td>
                 <td>{group.userName}</td>
                 <td>{group.userEmail}</td>
-                <td><strong>{group.count}</strong></td>
+                {/* <td><strong>{group.count}</strong></td> */}
+                <td>
+                  <strong>{group.count}</strong>
+                  {group.enquiries.some(e => !e.isSeen) && (
+                    <span style={{ color: "red", marginLeft: "5px" }}>●</span>
+                  )}
+                </td>
                 <td>{new Date(group.latestDate).toLocaleString()}</td>
                 <td>
                   <Button
@@ -619,6 +704,7 @@ const EnquiryList = () => {
                     onClick={() => {
                       setSelectedGroup(group);
                       setShowModal(true);
+                      markAsSeen(group); 
                     }}
                   >
                     View

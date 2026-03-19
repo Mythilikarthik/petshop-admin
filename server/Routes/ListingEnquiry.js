@@ -173,7 +173,50 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.put("/mark-seen", async (req, res) => {
+  try {
+    let { ids } = req.body;
 
+    // ✅ Safety: handle wrong format
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({
+        success: false,
+        message: "ids must be an array",
+      });
+    }
+
+    // ✅ Filter valid ObjectIds only
+    const validIds = ids.filter(id =>
+      mongoose.Types.ObjectId.isValid(id)
+    );
+
+    if (validIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid IDs provided",
+      });
+    }
+
+    // ✅ Update
+    const result = await ListingEnquiry.updateMany(
+      { _id: { $in: validIds } },
+      { $set: { isSeen: true } }
+    );
+
+    return res.json({
+      success: true,
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+    });
+
+  } catch (err) {
+    console.error("Mark seen error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
 // ✅ Delete enquiry
 router.delete("/:id", async (req, res) => {
   try {

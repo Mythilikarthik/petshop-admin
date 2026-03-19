@@ -76,7 +76,7 @@ const UserDetails = () => {
               </p>
               <p>
                 <strong>Role:</strong>{" "}
-                {user.site === "1" ? "User" : "Admin"}
+                {user.site === "1" ? "User" : "Service Provider"}
               </p>
               <p>
                 <strong>Joined:</strong>{" "}

@@ -161,7 +161,7 @@ const menuItems = [
     name: "Business Listing",
     icon: <GiDogHouse />,
     children: [
-      { name: "Listing", path: "/business-listing", icon: <GiNestBirds />, badgeKey: "serviceProviders" },
+      { name: "Listing", path: "/business-listing", icon: <GiNestBirds />, badgeKey: "totallisting" },
       { name: "Category Listing", path: "/category-listing", icon: <GiDogBowl /> },
       { name: "Pet Type Listing", path: "/pet-category-listing", icon: <GiDogBowl /> },
       { name: "Specialized Services Listing", path: "/specialized-services-listing", icon: <GiDogBowl /> },

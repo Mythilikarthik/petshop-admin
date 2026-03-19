@@ -70,7 +70,7 @@ verificationDocs: {
 
 claimStatus: {
   type: String,
-  enum: ["pending", "approved", "rejected"],
+  enum: ["pending", "approved", "rejected", "otp_pending", "verified"],
   default: "pending",
 },
 

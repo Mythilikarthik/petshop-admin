@@ -796,6 +796,37 @@ const ClaimListing = () => {
               {errors.username}
             </Form.Control.Feedback>
           </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Email <span className="text-red">*</span></Form.Label>
+            {listing.email? (
+              <Form.Control
+                type="email"
+                name="email"
+                value={listing.email}
+                onChange={handleUserChange}
+                disabled
+            />
+            ) : (
+              <Form.Control
+                type="email"
+                name="email"
+                value={user.email}
+                onChange={handleUserChange}
+                
+            />
+            )}
+           
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+            <Form.Label>Phone <span className="text-red">*</span></Form.Label>
+            <Form.Control
+                name="phone"
+                value={listing.phone}
+                onChange={handleUserChange}
+                disabled
+            />
+            </Form.Group>
 
           {/* Role */}
           <Form.Group className="mb-3">
@@ -856,6 +887,23 @@ const ClaimListing = () => {
               </div>
             )}
           </Form.Group>
+          {/* Document Upload */}
+{verificationMethod === "document" && (
+  <Form.Group className="mb-4">
+    <Form.Label>Upload Verification Documents</Form.Label>
+    <Form.Control
+      type="file"
+      multiple
+      accept="image/*,.pdf"
+      onChange={(e) => {
+        setDocuments(Array.from(e.target.files));
+      }}
+    />
+    <Form.Text className="text-muted">
+      Upload business license, ID proof, utility bill, etc.
+    </Form.Text>
+  </Form.Group>
+)}
 
           {/* Password */}
           <Form.Group className="mb-3">

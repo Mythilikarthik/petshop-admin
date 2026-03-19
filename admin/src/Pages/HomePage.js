@@ -100,12 +100,12 @@ const HomePage = () => {
     img.src = URL.createObjectURL(file);
 
     img.onload = () => {
-      if (img.width === 1200 && img.height === 300) {
+      if (img.width === 1200 && img.height === 500) {
         validFiles.push(file);
         previews.push(img.src);
       } else {
         alert(
-          `${file.name} rejected ❌\nImage must be exactly 1200 x 300`
+          `${file.name} rejected ❌\nImage must be exactly 1200 x 500`
         );
       }
 
@@ -182,7 +182,7 @@ const HomePage = () => {
 <h6 className="mb-3 title-bg-style">Main Banner Slider</h6>
 
 <Form.Group className="mb-3">
-  <Form.Label>Banner Images (Multiple) - <b>1200 × 300 px only</b></Form.Label>
+  <Form.Label>Banner Images (Multiple) - <b>1200 × 500 px only</b></Form.Label>
   <Form.Control
     type="file"
     multiple

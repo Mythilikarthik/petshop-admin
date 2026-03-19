@@ -91,6 +91,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       metaTitle,
       metaDescription,
       metaKeywords,
+      content,
       icon,
       color,
     } = req.body;
@@ -109,6 +110,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       metaTitle,
       metaDescription,
       metaKeywords,
+      content,
     };
 
     const existing = await CategoryPage.findOne({ category });
@@ -131,6 +133,7 @@ router.patch("/:id", upload.single("image"), async (req, res) => {
       metaTitle,
       metaDescription,
       metaKeywords,
+      content,
       icon,
       color,
     } = req.body;
@@ -145,6 +148,7 @@ router.patch("/:id", upload.single("image"), async (req, res) => {
       metaTitle,
       metaDescription,
       metaKeywords,
+      content,
     };
 
     if (req.file) updateData.image = `/uploads/categorypages/${req.file.filename}`;
@@ -175,7 +179,8 @@ router.patch("/:id", upload.single("image"), async (req, res) => {
       description,
       metaTitle,
       metaDescription,
-      metaKeywords
+      metaKeywords,
+      content,
     } = req.body;
 
     const services = req.body.services ? JSON.parse(req.body.services) : [];
@@ -185,7 +190,8 @@ router.patch("/:id", upload.single("image"), async (req, res) => {
       services,
       metaTitle,
       metaDescription,
-      metaKeywords
+      metaKeywords,
+      content,
     };
 
     if (req.file) {

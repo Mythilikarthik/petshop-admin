@@ -3,6 +3,7 @@ import { Form, Button, Container, Row, Col, Breadcrumb, Image } from "react-boot
 import { useLocation, useNavigate } from "react-router-dom";
 import { IoIosCloseCircle } from "react-icons/io";
 import { GiHollowCat, GiJumpingDog, GiHummingbird, GiTropicalFish, GiPawHeart, GiPhrygianCap } from "react-icons/gi";
+import ParaEditor from "../Layout/ParaEditor";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -27,6 +28,8 @@ const CategoryPageForm = () => {
     metaTitle: "",
     metaDescription: "",
     metaKeywords: "",
+    content: "",
+    paraWordCount: 0,
   });
 
   const [serviceInput, setServiceInput] = useState({ title: "", description: "" });
@@ -59,6 +62,13 @@ const CategoryPageForm = () => {
         .then((data) => {
           if (data.success && data.page) {
             const p = data.page;
+            const content = p.content || "";
+
+            const wordCount = content
+              ? content.replace(/<[^>]+>/g, "")
+                  .split(/\s+/)
+                  .filter(Boolean).length
+              : 0;
             setFormData({
               category: p.category?._id || "",
               displayName: p.displayName || "",
@@ -71,7 +81,12 @@ const CategoryPageForm = () => {
               metaTitle: p.metaTitle || "",
               metaDescription: p.metaDescription || "",
               metaKeywords: p.metaKeywords || "",
+              content: content,
+              paraWordCount: wordCount,
             });
+            
+
+            
           }
         })
         .catch((err) => console.error("Category page fetch failed:", err));
@@ -112,6 +127,10 @@ const CategoryPageForm = () => {
   // 🟠 Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.paraWordCount < 0 || formData.paraWordCount > 1000) {
+      alert("One Para Content must be between 0 and 1000 words.");
+      return;
+    }
 
     const data = new FormData();
     data.append("category", formData.category);
@@ -124,6 +143,7 @@ const CategoryPageForm = () => {
     data.append("metaDescription", formData.metaDescription);
     data.append("metaKeywords", formData.metaKeywords);
     data.append("services", JSON.stringify(formData.services));
+    data.append("content", formData.content);
 
     const method = isEdit ? "PATCH" : "POST";
     const url = isEdit
@@ -254,6 +274,36 @@ const CategoryPageForm = () => {
                 </div>
               )}
             </Form.Group>
+            <Form.Group className="mb-4">
+  <Form.Label>SEO Content (One Para)</Form.Label>
+
+  <ParaEditor
+    value={formData.content}
+    onChange={(html, wordCount) =>
+      setFormData((prev) => ({
+        ...prev,
+        content: html,
+        paraWordCount: wordCount,
+      }))
+    }
+  />
+
+  <div style={{ fontSize: "14px", marginTop: "5px" }}>
+    Word count:{" "}
+    <strong
+      style={{
+        color:
+          formData.paraWordCount < 100 ||
+          formData.paraWordCount > 1000
+            ? "red"
+            : "green",
+      }}
+    >
+      {formData.paraWordCount || 0}
+    </strong>{" "}
+    / 1000
+  </div>
+</Form.Group>
 
             <h6>Services</h6>
             <Row>
