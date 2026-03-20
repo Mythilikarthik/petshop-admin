@@ -4,7 +4,7 @@
 // import { FaEye, FaEyeSlash } from "react-icons/fa";
 // const API_BASE =
 //   process.env.NODE_ENV === "production"
-//     ? "https://petshop-admin.onrender.com"
+//     ? process.env.REACT_APP_API_URL
 //     : "http://localhost:5000";
 
 // const ClaimListing = () => {
@@ -469,7 +469,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-admin.onrender.com"
+    ? process.env.REACT_APP_API_URL
     : "http://localhost:5000";
 
 const ClaimListing = () => {

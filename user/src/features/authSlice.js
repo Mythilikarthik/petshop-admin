@@ -1,7 +1,7 @@
 const { createSlice, createAsyncThunk } = require("@reduxjs/toolkit");
 
 const API_BASE = process.env.NODE_ENV === "production"
-  ? "https://petshop-admin.onrender.com"
+  ? process.env.REACT_APP_API_URL
   : "http://localhost:5000";
 export const loginUser = createAsyncThunk(
     "auth/loginUser",

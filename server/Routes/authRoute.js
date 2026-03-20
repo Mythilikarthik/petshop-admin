@@ -30,17 +30,17 @@ const sendEmail = async (templateData) => {
 
 const ADMIN_URL =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-admin-frontend.onrender.com"
+    ? process.env.REACT_APP_ADMIN_API_URL
     : "http://localhost:3000";
 
 const USER_URL =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
+    ? process.env.REACT_APP_USER_API_URL
     : "http://localhost:3001";
 
 const SITE_URL =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-template.onrender.com/"
+    ? process.env.REACT_APP_URL
     : "http://localhost:3002";
 
 
