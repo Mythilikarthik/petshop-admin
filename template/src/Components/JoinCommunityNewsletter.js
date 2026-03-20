@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const LOGIM_URI =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
+    ? process.env.REACT_APP_USER_API_URL
     : "http://localhost:3001";
 
 const JoinCommunityNewsletter = ({home}) => {

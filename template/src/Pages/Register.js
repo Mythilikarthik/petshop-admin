@@ -9,7 +9,7 @@ const API_BASE =
     : "http://localhost:5000";
 const LOGIM_URI =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
+    ? process.env.REACT_APP_USER_API_URL
     : "http://localhost:3001";
 
 const Register = () => {

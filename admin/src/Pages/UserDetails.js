@@ -4,7 +4,7 @@ import { Card, Badge, Button, Row, Col, Breadcrumb } from "react-bootstrap";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
-    ? "https://petshop-user.onrender.com"
+    ? process.env.REACT_APP_API_URL
     : "http://localhost:5000";
 
 const UserDetails = () => {
