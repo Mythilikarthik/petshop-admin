@@ -74,8 +74,9 @@ router.post("/", upload.single("banner"), async (req, res) => {
     let { page, category, city, pageTitle, metaKeyword, metaDescription, content } = req.body;
     page = page.replace(/\s+/g, "").toLowerCase();
 
-    if (!page || !pageTitle) return res.status(400).json({ success: false, message: "Page and Title are required" });
+    // if (!page || !pageTitle) return res.status(400).json({ success: false, message: "Page and Title are required" });
 
+    if (!pageTitle) return res.status(400).json({ success: false, message: "Page and Title are required" });
     // Check if banner already exists for this page+city
     const existing = await CustomPage.findOne({ page, city });
     if (existing && existing.banner) {
