@@ -80,18 +80,41 @@ const handleBannerChange = (e) => {
 };
 
 
-  const handleChange = (e) => {
-  let name = e.target.name;
-  let value = e.target.value;
+//   const handleChange = (e) => {
+//   let name = e.target.name;
+//   let value = e.target.value;
 
-  if (name === "page") {
-    value = value
+//   if (name === "page") {
+//     value = value
+//       .toLowerCase()
+//       .replace(/[^a-z\- ]/g, "")  // remove special chars
+//       .replace(/\s+/g, "-");         // convert spaces to hyphens
+//   }
+
+//   setFormData(prev => ({ ...prev, [name]: value }));
+// };
+const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  if (name === "pageTitle") {
+    // generate slug from title
+    const slug = value
       .toLowerCase()
-      .replace(/[^a-z\- ]/g, "")  // remove special chars
-      .replace(/\s+/g, "-");         // convert spaces to hyphens
-  }
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "") // remove special chars
+      .replace(/\s+/g, "-"); // spaces → hyphen
 
-  setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      pageTitle: value,
+      page: slug
+    }));
+  } else {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }
 };
 
 
@@ -339,6 +362,7 @@ const handleGoBack = () => {
                 required 
                 onChange={handleChange} 
                 pattern="[a-zA-Z0-9\- ]+"
+                hidden
               />
             </Form.Group>
 
