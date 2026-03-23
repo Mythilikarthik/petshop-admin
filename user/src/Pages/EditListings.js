@@ -327,33 +327,12 @@ const handleBannerChange = (e) => {
     );
   }
 
+  const isPendingListing = listing?.status === "pending";
+const isPendingClaim =
+  listing?.isClaimed === true && listing?.claimStatus === "pending";
   // Under review
-  if (listing?.status === "pending") {
-    return (
-      
-      <Container className="mt-5">
-        <div className='pl-3 pr-3'>
-        <Row className="mb-3 justify-content-end align-items-center">
-          <Col>
-            <h2 className="main-title mb-0">Edit Listing</h2>
-            <Breadcrumb className="top-breadcrumb">
-              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
-              <Breadcrumb.Item active>Edit Listing</Breadcrumb.Item>
-            </Breadcrumb>
-          </Col>
-          
-        </Row>
-        <div className='form-container'>
-        <Alert variant="warning" className='text-center'>
-          <h5>Your listing is under review</h5>
-          <p>Please wait for admin approval.</p>
-        </Alert>
-        </div>
-        </div>
-      </Container>
-    );
-  }
-  if(listing?.isClaimed && listing?.claimStatus === "pending") {
+  // if (listing?.status === "pending" || listing?.claimStatus === "pending") {
+  if (listing && (isPendingListing || isPendingClaim)) {
     return (
       
       <Container className="mt-5">
