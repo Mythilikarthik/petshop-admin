@@ -330,6 +330,9 @@ const handleBannerChange = (e) => {
   const isPendingListing = listing?.status === "pending";
 const isPendingClaim =
   listing?.isClaimed === true && listing?.claimStatus === "pending";
+
+  console.log(isPendingListing);
+  console.log(isPendingClaim);
   // Under review
   // if (listing?.status === "pending" || listing?.claimStatus === "pending") {
   if (listing && (isPendingListing || isPendingClaim)) {
