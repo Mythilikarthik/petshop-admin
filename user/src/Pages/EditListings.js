@@ -328,7 +328,7 @@ const handleBannerChange = (e) => {
   }
 
   // Under review
-  if (listing?.status === "pending" || listing?.claimStatus === "pending") {
+  if (listing?.status === "pending" || (listing?.isClaimed && listing?.claimStatus === "pending")) {
     return (
       
       <Container className="mt-5">
