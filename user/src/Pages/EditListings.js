@@ -335,7 +335,7 @@ const handleBannerChange = (e) => {
         <div className='pl-3 pr-3'>
         <Row className="mb-3 justify-content-end align-items-center">
           <Col>
-            <h2 className="main-title mb-0">Edit Listing</h2>
+            <h2 className="main-title mb-0">Edit pending Listing</h2>
             <Breadcrumb className="top-breadcrumb">
               <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
               <Breadcrumb.Item active>Edit Listing</Breadcrumb.Item>
@@ -362,7 +362,7 @@ const handleBannerChange = (e) => {
           <div className='pl-3 pr-3'>
           <Row className="mb-3 justify-content-end align-items-center">
             <Col>
-              <h2 className="main-title mb-0">Edit Listing</h2>
+              <h2 className="main-title mb-0">Edit claimed Listing</h2>
               <Breadcrumb className="top-breadcrumb">
                 <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
                 <Breadcrumb.Item active>Edit Listing</Breadcrumb.Item>
