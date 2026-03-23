@@ -17,7 +17,7 @@ const PageManagement = () => {
 
   const [formData, setFormData] = useState({
     page: listing?.page || '',
-    category: listing?.category || '',
+    category: Array.isArray(listing?.category) ? listing.category : [],
     city: listing?.city || '',
     pageTitle: listing?.pageTitle || '',
     metaKeyword: listing?.metaKeyword || '',
@@ -155,9 +155,14 @@ const handleSubmit = async (e) => {
     const fd = new FormData();
 
 Object.keys(formData).forEach((key) => {
+  // if (key === "category") {
+  //   formData.category.forEach((c) => fd.append("category[]", c));
+  // }
   if (key === "category") {
-    formData.category.forEach((c) => fd.append("category[]", c));
-  }
+  (Array.isArray(formData.category) ? formData.category : []).forEach((c) => {
+    fd.append("category[]", c);
+  });
+}
   else if (key === "banner") {
     // ❌ DO NOTHING HERE
   }
@@ -246,7 +251,8 @@ useEffect(() => {
             : 0;
           setFormData({
             page: data.page.page || '',
-            category: data.page.category || [],
+            // category: data.page.category || [],
+            category: Array.isArray(data.page.category) ? data.page.category : [],
             city: data.page.city || '',
             pageTitle: data.page.pageTitle || '',
             metaKeyword: data.page.metaKeyword || '',
@@ -324,8 +330,8 @@ const handleGoBack = () => {
                 ))}
               </Form.Select>
             </Form.Group> */}
-            {/* <Form.Group className="mb-3">
-              <Form.Label>Page [slug]</Form.Label>
+            <Form.Group className="mb-3">
+              <Form.Label>Page</Form.Label>
               <Form.Control 
                 type='text' 
                 name='page' 
@@ -334,7 +340,7 @@ const handleGoBack = () => {
                 onChange={handleChange} 
                 pattern="[a-zA-Z0-9\- ]+"
               />
-            </Form.Group> */}
+            </Form.Group>
 
             {/* Category Multi-select */}
             <Form.Group className="mb-3">
@@ -347,7 +353,7 @@ const handleGoBack = () => {
                 onChange={(selected) =>
                   setFormData((prev) => ({
                     ...prev,
-                    category: selected.map((s) => s.value),
+                        category: selected ? selected.map((s) => s.value) : []
                   }))
                 }
               />
