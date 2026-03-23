@@ -1526,7 +1526,9 @@ if (data.claimStatus === "approved") {
 
     await listing.save();
   }
-  if (data.isVerified === true) {
+  
+}
+if (data.isVerified === true) {
     const listing = await Listing.findById(req.params.id);
 
     if (listing && listing.user_id) {
@@ -1535,7 +1537,6 @@ if (data.claimStatus === "approved") {
       });
     }
   }
-}
 
       /* -------------------- Parse categories -------------------- */
       if (data["categories[]"]) {
