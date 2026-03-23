@@ -1526,6 +1526,15 @@ if (data.claimStatus === "approved") {
 
     await listing.save();
   }
+  if (data.isVerified === true) {
+    const listing = await Listing.findById(req.params.id);
+
+    if (listing && listing.user_id) {
+      await User.findByIdAndUpdate(listing.user_id, {
+        isVerified: true
+      });
+    }
+  }
 }
 
       /* -------------------- Parse categories -------------------- */
