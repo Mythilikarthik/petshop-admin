@@ -133,14 +133,14 @@ const CustomPages = () => {
             )}
             </div>
           </Col> */}
-          {/* <Col md={4} className="text-end">
+          <Col md={4} className="text-end">
             <Button
               variant="primary"
               onClick={() => navigate("/custom-page/new")}
             >
               + Create New Page
             </Button>
-          </Col> */}
+          </Col>
         </Row>
 
         {/* Table */}
