@@ -657,7 +657,7 @@ const showServiceFilter =
     setPage(1);
   }}
 >
-  <option value="">All Pets</option>
+  {/* <option value="">All Pets</option> */}
   <option value="all">All Types</option>
   {petCategories.map(pet => (
     <option key={pet._id} value={pet.categoryName}>
