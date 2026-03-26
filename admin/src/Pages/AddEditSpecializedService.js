@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { Form, Button, Container, Row, Col, Breadcrumb } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import useUnsavedChanges from "../Hooks/useUnsavedChanges";
+import Select from 'react-select';
+
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -16,7 +18,7 @@ export default function AddEditSpecializedService() {
 
   const [form, setForm] = useState({
     serviceName: "",
-    petCategory: "",
+    petCategories: [],
     category: "",
     description: "",
     show: true,
@@ -41,12 +43,12 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
         .then(res => res.json())
         .then(data => {
           setForm({
-            serviceName: data.serviceName || "",
-            petCategory: data.petCategory || "",
-            category: data.category || "",
-            description: data.description || "",
-            show: data.show ?? true,
-          });
+          serviceName: data.serviceName || "",
+          petCategories: data.petCategories || [],
+          category: data.category || "",
+          description: data.description || "",
+          show: data.show ?? true,
+        });
             setTimeout(() => resetInitialSnapshot(), 0);
         });
     }
@@ -82,21 +84,127 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
   console.log("allCategory", allCategories);
 
   // ✅ When PetCategory changes → filter Categories
-  useEffect(() => {
-  if (!form.petCategory) {
+//   useEffect(() => {
+//   if (!form.petCategory) {
+//     setFilteredCategories([]);
+//     return;
+//   }
+
+//   const filtered = allCategories.filter(cat =>
+//     cat.show === true &&
+//     Array.isArray(cat.petCategories) &&
+//     cat.petCategories.some(petId => String(petId._id) === String(form.petCategory))
+//   );
+
+//   setFilteredCategories(filtered);
+
+//   // reset category if not valid
+//   if (!filtered.some(c => String(c._id) === String(form.category))) {
+//     setForm(prev => ({
+//       ...prev,
+//       category: filtered.length === 1 ? filtered[0]._id : ""
+//     }));
+//   }
+
+// }, [form.petCategory, allCategories]);
+// working except all types
+// useEffect(() => {
+//   if (!form.petCategories.length) {
+//     setFilteredCategories([]);
+//     return;
+//   }
+
+//   const isAllSelected = form.petCategories.includes("all");
+
+//   const filtered = allCategories.filter(cat => {
+//     if (!cat.show || !Array.isArray(cat.petCategories)) return false;
+
+//     // ✅ If ALL selected → show all categories
+//     // if (isAllSelected) return true;
+//     const totalPetIds = petCategories.map(p => String(p._id));
+
+// const filtered = allCategories.filter(cat => {
+//   if (!cat.show || !Array.isArray(cat.petCategories)) return false;
+
+//   const allowedPets = cat.petCategories.map(p => String(p._id));
+
+//   // ✅ ALL selected → category must contain ALL pet types
+//   if (isAllSelected) {
+//     return (
+//       allowedPets.length === totalPetIds.length &&
+//       totalPetIds.every(p => allowedPets.includes(p))
+//     );
+//   }
+
+//   // ✅ NORMAL exact match
+//   const selectedPets = form.petCategories.map(String);
+
+//   const isExactMatch =
+//     allowedPets.length === selectedPets.length &&
+//     selectedPets.every(p => allowedPets.includes(p));
+
+//   return isExactMatch;
+// });
+
+//     const allowedPets = cat.petCategories.map(p => String(p._id));
+
+//     const selectedPets = form.petCategories.map(String);
+
+//     // ✅ EXACT MATCH CONDITION
+//     const isExactMatch =
+//       allowedPets.length === selectedPets.length &&
+//       selectedPets.every(p => allowedPets.includes(p));
+
+//     return isExactMatch;
+//   });
+
+//   setFilteredCategories(filtered);
+
+//   // reset invalid category
+//   if (!filtered.some(c => String(c._id) === String(form.category))) {
+//     setForm(prev => ({
+//       ...prev,
+//       category: filtered.length === 1 ? filtered[0]._id : ""
+//     }));
+//   }
+
+// }, [form.petCategories, allCategories]);
+useEffect(() => {
+  if (!form.petCategories.length) {
     setFilteredCategories([]);
     return;
   }
 
-  const filtered = allCategories.filter(cat =>
-    cat.show === true &&
-    Array.isArray(cat.petCategories) &&
-    cat.petCategories.some(petId => String(petId._id) === String(form.petCategory))
-  );
+  const isAllSelected = form.petCategories.includes("all");
+
+  // ✅ Get ALL pet IDs from DB
+  const totalPetIds = petCategories.map(p => String(p._id));
+
+  const filtered = allCategories.filter(cat => {
+    if (!cat.show || !Array.isArray(cat.petCategories)) return false;
+
+    const allowedPets = cat.petCategories.map(p => String(p._id));
+
+    // ✅ CASE 1: ALL selected
+    if (isAllSelected) {
+      return (
+        allowedPets.length === totalPetIds.length &&
+        totalPetIds.every(id => allowedPets.includes(id))
+      );
+    }
+
+    // ✅ CASE 2: Selected pets (exact match)
+    const selectedPets = form.petCategories.map(String);
+
+    return (
+      allowedPets.length === selectedPets.length &&
+      selectedPets.every(id => allowedPets.includes(id))
+    );
+  });
 
   setFilteredCategories(filtered);
 
-  // reset category if not valid
+  // reset invalid category
   if (!filtered.some(c => String(c._id) === String(form.category))) {
     setForm(prev => ({
       ...prev,
@@ -104,7 +212,7 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
     }));
   }
 
-}, [form.petCategory, allCategories]);
+}, [form.petCategories, allCategories, petCategories]);
 
   const handleChange = (e) => {
   const { name, value, type, checked } = e.target;
@@ -129,6 +237,41 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
     setLoading(true);
     setError("");
     setSuccess("");
+    const selectedCategory = allCategories.find(
+  c => String(c._id) === String(form.category)
+);
+
+if (!selectedCategory) {
+  setError("Invalid category selected");
+  setLoading(false);
+  return;
+}
+
+const allowedPets = (selectedCategory.petCategories || []).map(p =>
+  String(p._id)
+);
+
+// ✅ STRICT INTERSECTION CHECK
+// const isValid = form.petCategories.every(petId =>
+//   allowedPets.includes(String(petId))
+// );
+const isAllSelected = form.petCategories.includes("all");
+
+if (!isAllSelected) {
+  const selectedPets = form.petCategories.map(String);
+
+  const isExactMatch =
+    allowedPets.length === selectedPets.length &&
+    selectedPets.every(p => allowedPets.includes(p));
+
+  if (!isExactMatch) {
+    setError("Selected category is not valid for chosen pet types");
+    setLoading(false);
+    return;
+  }
+}
+
+
 
     try {
       const url = id
@@ -188,7 +331,7 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
         <Form onSubmit={handleSubmit}>
 
           {/* Pet Category First */}
-          <Form.Group className="mb-3">
+          {/* <Form.Group className="mb-3">
             <Form.Label>Select Pet Category</Form.Label>
             <Form.Select
               name="petCategory"
@@ -203,7 +346,52 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
                 </option>
               ))}
             </Form.Select>
-          </Form.Group>
+          </Form.Group> */}
+          <Form.Group className="mb-3">
+  <Form.Label>Select Pet Categories</Form.Label>
+  <Select
+  isMulti
+  options={[
+    { value: "all", label: "All Types" }, // ✅ ADD THIS
+    ...petCategories.map(p => ({
+      value: p._id,
+      label: p.categoryName
+    }))
+  ]}
+  value={[
+    ...(
+      form.petCategories.includes("all")
+        ? [{ value: "all", label: "All Types" }]
+        : []
+    ),
+    ...petCategories
+      .filter(opt => form.petCategories.includes(opt._id))
+      .map(p => ({
+        value: p._id,
+        label: p.categoryName
+      }))
+  ]}
+  onChange={(selected) => {
+    const values = selected ? selected.map(s => s.value) : [];
+
+    // 🔥 LOGIC: if "all" selected → ignore others
+    if (values.includes("all")) {
+      setForm(prev => ({
+        ...prev,
+        petCategories: ["all"],
+        category: ""
+      }));
+    } else {
+      setForm(prev => ({
+        ...prev,
+        petCategories: values,
+        category: ""
+      }));
+    }
+  }}
+  placeholder="Select pet types..."
+/>
+</Form.Group>
 
           {/* Filtered Category */}
           <Form.Group className="mb-3">
@@ -213,7 +401,7 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
               value={form.category}
               onChange={handleChange}
               required
-              disabled={!form.petCategory}
+              disabled={!form.petCategories.length}
             >
               <option value="">Select Category</option>
               {filteredCategories.map(cat => (

@@ -107,7 +107,11 @@ export default function SpecializedServiceList() {
         <td>{pagesVisited + index + 1}</td>
         <td>{service.serviceName}</td>
         <td>{service.category?.categoryName}</td>
-        <td>{service.petCategory?.categoryName}</td>
+        <td>
+  {service.petCategories?.length > 0
+    ? service.petCategories.map(p => p.categoryName).join(", ")
+    : "-"}
+</td>
 
         <td>
           <Form.Check

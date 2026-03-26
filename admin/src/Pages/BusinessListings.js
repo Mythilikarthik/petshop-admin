@@ -409,6 +409,15 @@ const addListingsFromRows = async (rows = []) => {
     catData.categories.map(c => [c.categoryName.toLowerCase(), c._id])
   );
 
+  const categoryPetMap = Object.fromEntries(
+    catData.categories.map(c => [
+      c.categoryName.toLowerCase(),
+      (c.petCategories || []).map(p =>
+        (p.categoryName || p).toLowerCase()
+      )
+    ])
+  );
+
   const petCategoryMap = Object.fromEntries(
     petCatData.petCategories.map(p => [p.categoryName.toLowerCase(), p._id])
   );
@@ -421,6 +430,7 @@ const addListingsFromRows = async (rows = []) => {
   const missingCities = new Set();
   const missingCategories = new Set();
   const missingPetCategories = new Set();
+  const intersectionErrors = [];
 
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx];
@@ -441,19 +451,17 @@ const addListingsFromRows = async (rows = []) => {
       }
     }
 
-    // 👉 CATEGORY (NORMAL)
     const categoriesRaw = safe(row.category)
       .split(/[,;|]/)
       .map(s => s.trim().toLowerCase())
       .filter(Boolean);
 
-    // 👉 PET CATEGORY (TYPE FIELD)
     const petCategoriesRaw = safe(row.type)
       .split(/[,;|]/)
       .map(s => s.trim().toLowerCase())
       .filter(Boolean);
 
-    // --- REQUIRED CHECK ---
+    // REQUIRED CHECK
     const rowErrors = [];
     if (!petCategoriesRaw.length) rowErrors.push("type");
     if (!categoriesRaw.length) rowErrors.push("category");
@@ -466,11 +474,37 @@ const addListingsFromRows = async (rows = []) => {
       continue;
     }
 
-    // --- CITY ---
+    // CITY CHECK
     const cityId = cityMap[cityName] || null;
     if (!cityId && cityName) missingCities.add(row.city);
 
-    // --- CATEGORY ---
+    // ✅ STRICT MATCH CHECK (FIXED)
+    let hasIntersectionError = false;
+
+    for (const cat of categoriesRaw) {
+      const allowedPets = categoryPetMap[cat] || [];
+
+      const sortedAllowed = [...allowedPets].sort();
+      const sortedGiven = [...petCategoriesRaw].sort();
+
+      const isExactMatch =
+        sortedAllowed.length === sortedGiven.length &&
+        sortedAllowed.every((val, i) => val === sortedGiven[i]);
+
+      if (!isExactMatch) {
+        hasIntersectionError = true;
+
+        intersectionErrors.push(
+          `Row ${idx + 2}: "${cat}" requires [${allowedPets.join(", ")}] but you provided [${petCategoriesRaw.join(", ")}]`
+        );
+
+        break;
+      }
+    }
+
+    if (hasIntersectionError) continue;
+
+    // CATEGORY IDS
     const categoryIds = categoriesRaw
       .map(name => categoryMap[name])
       .filter(Boolean);
@@ -480,15 +514,10 @@ const addListingsFromRows = async (rows = []) => {
       missing.forEach(m => missingCategories.add(m));
     }
 
-    // --- PET CATEGORY (🔥 ALL TYPES FIX) ---
+    // PET CATEGORY IDS
     let petCategoryIds = [];
 
-    if (
-      petCategoriesRaw.some(v =>
-        ["all", "all types"].includes(v)
-      )
-    ) {
-      // ✅ SELECT ALL PET CATEGORIES
+    if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
       petCategoryIds = Object.values(petCategoryMap);
     } else {
       petCategoryIds = petCategoriesRaw
@@ -501,7 +530,6 @@ const addListingsFromRows = async (rows = []) => {
         .filter(Boolean);
     }
 
-    // --- PUSH ---
     mapped.push({
       _id: `tmp-${timestamp}-${idx}`,
       shopName,
@@ -521,7 +549,7 @@ const addListingsFromRows = async (rows = []) => {
     });
   }
 
-  // --- REQUIRED ERROR ---
+  // REQUIRED ERROR
   if (missingRequired.length) {
     alert(
       "Import stopped due to missing required fields:\n\n" +
@@ -530,7 +558,7 @@ const addListingsFromRows = async (rows = []) => {
     return;
   }
 
-  // --- FINAL VALIDATION ---
+  // VALIDATION ERRORS
   if (missingCities.size || missingCategories.size || missingPetCategories.size) {
     let message = "Import stopped due to missing values:\n\n";
 
@@ -546,12 +574,22 @@ const addListingsFromRows = async (rows = []) => {
     return;
   }
 
+  // 🚨 FINAL STRICT ERROR
+  if (intersectionErrors.length > 0) {
+    setUploadError(intersectionErrors.join("\n"));
+    alert(
+      "Import stopped due to category/type mismatch:\n\n" +
+      intersectionErrors.join("\n")
+    );
+    return;
+  }
+
   if (!mapped.length) {
     alert("No valid rows found. Import stopped.");
     return;
   }
 
-  // --- API CALL ---
+  // API CALL
   const token = localStorage.getItem("token");
 
   try {

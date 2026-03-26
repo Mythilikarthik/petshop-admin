@@ -14,7 +14,22 @@ const Listing = require("../Models/Listing");
 const router = express.Router();
 const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const multer = require("multer");
+const path = require("path");
+const mongoose = require("mongoose");
 
+
+const sendOtpEmail = async (templateData) => {
+  return emailjs.send(
+    process.env.EMAILJS_SERVICE_ID_2,
+    process.env.EMAILJS_TEMPLATE_ID_2,
+    templateData,
+    {
+      publicKey: process.env.EMAILJS_PUBLIC_KEY_2,
+      privateKey: process.env.EMAILJS_PRIVATE_KEY_2,
+    }
+  );
+};
 
 const sendEmail = async (templateData) => {
   return emailjs.send(
@@ -48,6 +63,31 @@ const SITE_URL =
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, SECRET_KEY, { expiresIn: "7d" });
 };
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // make sure this folder exists
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+// file filter (optional but good)
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only JPG, PNG, PDF allowed"), false);
+  }
+};
+
+// 👇 THIS is your missing docUpload
+const docUpload = multer({
+  storage,
+  fileFilter,
+});
 
 // ------------------ Admin Login ------------------
 router.post("/admin/login", async (req, res) => {
@@ -1211,6 +1251,169 @@ router.post("/site/user/change-password", verifyToken, async (req, res) => {
 //   }
 // });
 
+router.post(
+  "/user/register-with-listing",
+  (req, res, next) => {
+    docUpload.array("documents")(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+        });
+      }
+      next();
+    });
+  },
+  async (req, res) => {
+    try {
+      const {
+        name,
+        username,
+        email,
+        phone,
+        password,
+        role,
+        verificationMethod,
+        shopName,
+        city,
+      } = req.body;
+
+      let { categories, petCategories } = req.body;
+
+      // 🟡 parse arrays
+      categories = categories ? JSON.parse(categories) : [];
+      petCategories = petCategories ? JSON.parse(petCategories) : [];
+
+      /* ---------------- VALIDATION ---------------- */
+      if (
+        !name ||
+        !username ||
+        !email ||
+        !phone ||
+        !password ||
+        !role ||
+        !verificationMethod ||
+        !shopName ||
+        !city ||
+        !categories.length ||
+        !petCategories.length
+      ) {
+        return res.json({
+          success: false,
+          message: "All fields required",
+        });
+      }
+
+      /* ---------------- CHECK USER ---------------- */
+      const existingUser = await User.findOne({
+        $or: [{ email }, { username }],
+      });
+
+      if (existingUser) {
+        return res.json({
+          success: false,
+          message: "User already exists",
+        });
+      }
+
+      /* ---------------- CREATE USER ---------------- */
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+      const newUser = new User({
+        name,
+        username,
+        email,
+        phone,
+        password: hashedPassword,
+        role, // ✅ store role
+        otp,
+        otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        isVerified: false,
+      });
+
+      await newUser.save();
+
+      /* ---------------- CREATE LISTING ---------------- */
+      const newListing = new Listing({
+        shopName,
+        email,
+        phone,
+        city,
+        categories: categories.map((id) => new mongoose.Types.ObjectId(id)),
+        petCategories: petCategories.map((id) => new mongoose.Types.ObjectId(id)),
+
+        created_by_type: "user",
+        created_by_id: newUser._id,
+        user_id: newUser._id,
+
+        signupRole: role,
+        verificationMethod,
+
+        signupBy: newUser._id,
+        signupAt: new Date(),
+
+        status: "pending",
+      });
+
+      // 🔥 claim status logic
+      if (verificationMethod === "email") {
+        newListing.signupStatus = "otp_pending";
+        newListing.isSignup = true;
+      } else {
+        newListing.signupStatus = "pending"; // admin review
+        newListing.isSignup = true;
+      }
+
+      // 📂 documents
+      if (req.files?.length) {
+        newListing.verificationDocs = req.files.map((f) => f.path);
+      }
+
+      await newListing.save();
+
+      /* ---------------- SEND OTP ---------------- */
+      if (verificationMethod === "email") {
+        try {
+          await sendOtpEmail({
+            email,
+            name: username,
+            otp,
+          });
+        } catch (err) {
+          console.log(err.message);
+          return res.json({
+            success: false,
+            message: "Failed to send OTP email",
+          });
+        }
+      }
+
+      /* ---------------- TOKEN ---------------- */
+      const token = generateToken(newUser._id, "user");
+
+      /* ---------------- RESPONSE ---------------- */
+      res.json({
+        success: true,
+        message:
+          verificationMethod === "email"
+            ? "OTP sent to email"
+            : "Registered successfully. Awaiting admin approval",
+
+        userId: newUser._id,
+        token,
+      });
+    } catch (err) {
+      console.error("Register with listing error:", err);
+      res.status(500).json({
+        success: false,
+        message: err.message,
+      });
+    }
+  }
+);
+
 router.post("/site/google", async (req, res) => {
   try {
     const { token } = req.body;
@@ -1279,5 +1482,6 @@ router.post("/site/google", async (req, res) => {
     res.status(401).json({ success: false, message: "Google auth failed" });
   }
 });
+
 
 module.exports = router;

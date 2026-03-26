@@ -45,6 +45,10 @@ const ListingSchema = new mongoose.Schema({
   claimedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   claimedAt: { type: Date, default: null },
 
+  isSignup: { type: Boolean, default: false },
+  signupBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  signupAt: { type: Date, default: null },
+
   isVerified: { type: Boolean, default: false },
   verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin", default: null },
   verifiedAt: { type: Date, default: null },
@@ -52,6 +56,11 @@ const ListingSchema = new mongoose.Schema({
 
   // Claim metadata
 claimRole: {
+  type: String,
+  enum: ["owner", "manager", "staff"],
+  default: null,
+},
+signupRole: {
   type: String,
   enum: ["owner", "manager", "staff"],
   default: null,
@@ -69,6 +78,11 @@ verificationDocs: {
 },
 
 claimStatus: {
+  type: String,
+  enum: ["pending", "approved", "rejected", "otp_pending", "verified"],
+  default: "pending",
+},
+signupStatus: {
   type: String,
   enum: ["pending", "approved", "rejected", "otp_pending", "verified"],
   default: "pending",

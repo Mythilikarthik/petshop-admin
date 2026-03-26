@@ -1118,23 +1118,35 @@ router.get("/approved", async (req, res) => {
 });
 router.get("/directory/approved", async (req, res) => {
   try {
-    const listings = await Listing.aggregate([
-      // ✅ Only approved listings
-      // { $match: { status: "approved" } },
-      {
-  $match: {
-    status: "approved",
-    $or: [
-      { isClaimed: false }, // unclaimed listings
-      { isClaimed: true, claimStatus: "approved" } // claimed but verified
-    ]
-  }
-},
+    const { pet, category } = req.query; 
+    // pet = petCategoryId
+    // category = categoryId (optional)
 
-      // 🔗 Join user (for premium check)
+    const matchStage = {
+      status: "approved",
+      $or: [
+        { isClaimed: false },
+        { isClaimed: true, claimStatus: "approved" }
+      ]
+    };
+
+    // ✅ Filter by petCategory if provided
+    if (pet) {
+      matchStage.petCategories = { $in: [new mongoose.Types.ObjectId(pet)] };
+    }
+
+    // ✅ Filter by category if provided
+    if (category) {
+      matchStage.categories = { $in: [new mongoose.Types.ObjectId(category)] };
+    }
+
+    const listings = await Listing.aggregate([
+      { $match: matchStage },
+
+      // 🔗 USER
       {
         $lookup: {
-          from: "users", // ⚠️ make sure this matches your actual collection name
+          from: "users",
           localField: "user_id",
           foreignField: "_id",
           as: "user"
@@ -1142,7 +1154,7 @@ router.get("/directory/approved", async (req, res) => {
       },
       { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
 
-      // 🔗 Join approved reviews only
+      // 🔗 REVIEWS
       {
         $lookup: {
           from: "reviews",
@@ -1163,19 +1175,16 @@ router.get("/directory/approved", async (req, res) => {
         }
       },
 
-      // ⭐ Calculate average rating (1 decimal)
+      // ⭐ Rating
       {
         $addFields: {
           rating: {
-            $round: [
-              { $ifNull: [{ $avg: "$reviews.rating" }, 0] },
-              1
-            ]
+            $round: [{ $ifNull: [{ $avg: "$reviews.rating" }, 0] }, 1]
           }
         }
       },
 
-      // 🎯 Premium + rating grouping
+      // 💰 Premium logic
       {
         $addFields: {
           isPaid: {
@@ -1194,55 +1203,92 @@ router.get("/directory/approved", async (req, res) => {
         }
       },
 
-      // 📊 Final Sorting
-      // 🔗 Join categories
-{
-  $lookup: {
-    from: "categories",
-    localField: "categories",
-    foreignField: "_id",
-    as: "categories"
-  }
-},
-
-// 🔗 Join petCategories
-{
-  $lookup: {
-    from: "petcategories",
-    localField: "petCategories",
-    foreignField: "_id",
-    as: "petCategories"
-  }
-},
-{
-  $lookup: {
-    from: "cities", // ⚠️ use your actual collection name
-    localField: "city",
-    foreignField: "_id",
-    as: "city"
-  }
-},
-{
-  $unwind: {
-    path: "$city",
-    preserveNullAndEmptyArrays: true
-  }
-},
-
+      // 🔗 CATEGORY
       {
-        $sort: {
-          isPaid: -1,   // Premium first
-          rating: -1,   // Higher rating first
-          randomSort: 1 // Shuffle inside same rating
+        $lookup: {
+          from: "categories",
+          localField: "categories",
+          foreignField: "_id",
+          as: "categories"
         }
       },
 
-      { $limit: 50 }
+      // 🔗 PET CATEGORY
+      {
+        $lookup: {
+          from: "petcategories",
+          localField: "petCategories",
+          foreignField: "_id",
+          as: "petCategories"
+        }
+      },
+
+      // 🔗 CITY
+      {
+        $lookup: {
+          from: "cities",
+          localField: "city",
+          foreignField: "_id",
+          as: "city"
+        }
+      },
+      { $unwind: { path: "$city", preserveNullAndEmptyArrays: true } },
+
+      // 🔗 SPECIALIZED SERVICES
+      {
+        $lookup: {
+          from: "specializedservices",
+          localField: "specializedServices",
+          foreignField: "_id",
+          as: "specializedServices"
+        }
+      },
+
+      // 📊 Sorting
+      {
+        $sort: {
+          isPaid: -1,
+          rating: -1,
+          randomSort: 1
+        }
+      }
     ]);
+
+    // ============================================
+    // ✅ DERIVE FILTER DATA BASED ON LISTINGS
+    // ============================================
+
+    const categoriesMap = new Map();
+    const citiesMap = new Map();
+    const servicesMap = new Map();
+
+    listings.forEach(l => {
+      // Categories
+      (l.categories || []).forEach(c => {
+        if (c.show) categoriesMap.set(c._id.toString(), c);
+      });
+
+      // Cities
+      if (l.city && l.city.show) {
+        citiesMap.set(l.city._id.toString(), l.city);
+      }
+
+      // Services
+      (l.specializedServices || []).forEach(s => {
+        if (s.show) servicesMap.set(s._id.toString(), s);
+      });
+    });
 
     res.json({
       success: true,
-      listings
+      listings,
+
+      // ✅ send filtered options
+      filters: {
+        categories: Array.from(categoriesMap.values()),
+        cities: Array.from(citiesMap.values()),
+        specializedServices: Array.from(servicesMap.values())
+      }
     });
 
   } catch (err) {

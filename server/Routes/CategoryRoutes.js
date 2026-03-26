@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Category = require('../Models/Category');
+const mongoose = require("mongoose");
 
 
 router.post('/add', async (req, res) => {
@@ -34,15 +35,77 @@ router.post('/add', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+// router.post("/byPetCategories", async (req, res) => {
+//   try {
+//     const { petCategories } = req.body; // array of petCategory IDs
+//     if (!Array.isArray(petCategories) || petCategories.length === 0) {
+//       return res.json({ success: true, categories: [] });
+//     }
+
+//     const categories = await Category.find({ petCategories: { $in: petCategories }, show: true });
+//     res.json({ success: true, categories });
+//   } catch (err) {
+//     console.error("Category fetch error:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
 router.post("/byPetCategories", async (req, res) => {
   try {
-    const { petCategories } = req.body; // array of petCategory IDs
+    let { petCategories } = req.body;
+
     if (!Array.isArray(petCategories) || petCategories.length === 0) {
       return res.json({ success: true, categories: [] });
     }
 
-    const categories = await Category.find({ petCategories: { $in: petCategories }, show: true });
+    // ✅ remove "all"
+    petCategories = petCategories.filter(id => id !== "all");
+
+    // ✅ convert to ObjectId
+    const objectIds = petCategories.map(id => new mongoose.Types.ObjectId(id));
+
+    const categories = await Category.aggregate([
+      {
+        $match: { show: true }
+      },
+      {
+        $addFields: {
+          isExactMatch: {
+            $setEquals: ["$petCategories", objectIds] // ✅ NOW WORKS
+          }
+        }
+      },
+      {
+        $match: { isExactMatch: true }
+      }
+    ]);
+
     res.json({ success: true, categories });
+
+  } catch (err) {
+    console.error("Category fetch error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+router.post("/directory/byPetCategories", async (req, res) => {
+  try {
+    let { petCategories } = req.body;
+
+    if (!Array.isArray(petCategories) || petCategories.length === 0) {
+      return res.json({ success: true, categories: [] });
+    }
+
+    // remove "all"
+    petCategories = petCategories.filter(id => id !== "all");
+
+    const objectIds = petCategories.map(id => new mongoose.Types.ObjectId(id));
+
+    const categories = await Category.find({
+      petCategories: { $in: objectIds },
+      show: true
+    }).populate("petCategories", "categoryName");
+
+    res.json({ success: true, categories });
+
   } catch (err) {
     console.error("Category fetch error:", err);
     res.status(500).json({ success: false, message: "Server error" });

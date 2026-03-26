@@ -44,12 +44,13 @@ const routePet = params.pet ? decodeURIComponent(params.pet) : "";
     const [bottomHomeAds, setBottomHomeAds] = useState([]);
     const [middleHomeAds, setMiddleHomeAds] = useState([]);
   const [adSettings, setAdSettings] = useState({ slideInterval: 5, maxImages: 5 });
-  const [selectedPet, setSelectedPet] = useState("");
+  // const [selectedPet, setSelectedPet] = useState("");
+  const [selectedPets, setSelectedPets] = useState([]);
 const [petCategories, setPetCategories] = useState([]);
 const [quickFilter, setQuickFilter] = useState(""); // topRated | verified
 const [sortBy, setSortBy] = useState("relevance");  // relevance | rating | popular | distance
 const [minRating, setMinRating] = useState(0);      // 0 | 3.5 | 4 | 4.5 | 5
-
+const [selectedService, setSelectedService] = useState("");
 const petCategoriesList = async () => {
   try {
     const res = await fetch(`${API_BASE}/api/pet-category/show`);
@@ -168,8 +169,9 @@ const PAGE_SIZE = 20;
 // }, [allListings, selectedCategory, selectedCity, routeCity, routeCategory, routePet, search]);
 
 const filteredListings = useMemo(() => {
+  const searchLower = search.toLowerCase();
+
   let result = allListings.filter(l => {
-    // console.log("Views" , l.views);
     const category = (l.categories?.[0]?.categoryName || "").toLowerCase();
     const city = (l.city?.city || "").toLowerCase();
     const shop = (l.shopName || "").toLowerCase();
@@ -179,6 +181,10 @@ const filteredListings = useMemo(() => {
       p.categoryName.toLowerCase()
     );
 
+    const serviceNames = (l.specializedServices || []).map(s =>
+      s.serviceName?.toLowerCase()
+    );
+
     const categoryMatch =
       !selectedCategory || category === selectedCategory.toLowerCase();
 
@@ -186,13 +192,26 @@ const filteredListings = useMemo(() => {
       !selectedCity || city === selectedCity.toLowerCase();
 
     const petMatch =
-      !selectedPet || petNames.includes(selectedPet.toLowerCase());
+      !selectedPets.length ||
+      (selectedPets.includes("all")
+        ? true
+        : (l.petCategories || []).some(p =>
+            selectedPets
+              .map(x => x.toLowerCase())
+              .includes(p.categoryName.toLowerCase())
+          ));
+
+    const serviceMatch =
+  !selectedService ||
+  (l.specializedServices || []).some(s =>
+    s.serviceName?.toLowerCase() === selectedService.toLowerCase()
+  );
 
     const searchMatch =
-      shop.includes(search.toLowerCase()) ||
-      category.includes(search.toLowerCase()) ||
-      city.includes(search.toLowerCase()) ||
-      petNames.some(p => p.includes(search.toLowerCase()));
+      shop.includes(searchLower) ||
+      category.includes(searchLower) ||
+      city.includes(searchLower) ||
+      petNames.some(p => p.includes(searchLower));
 
     const ratingMatch = rating >= minRating;
 
@@ -207,26 +226,24 @@ const filteredListings = useMemo(() => {
       petMatch &&
       searchMatch &&
       ratingMatch &&
-      quickFilterMatch
+      quickFilterMatch &&
+      serviceMatch
     );
   });
 
-  // 🔃 SORTING
+  // SORTING
   switch (sortBy) {
     case "rating":
       result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
       break;
-
     case "popular":
       result.sort((a, b) => (b.views || 0) - (a.views || 0));
       break;
-
     case "distance":
       result.sort((a, b) => (a.distance || 0) - (b.distance || 0));
       break;
-
     default:
-      break; // relevance (API order)
+      break;
   }
 
   return result;
@@ -234,13 +251,13 @@ const filteredListings = useMemo(() => {
   allListings,
   selectedCategory,
   selectedCity,
-  selectedPet,
+  selectedPets,
   search,
   quickFilter,
   sortBy,
-  minRating
+  minRating,
+  selectedService
 ]);
-
 
   // Pagination
   const totalPages = Math.ceil(filteredListings.length / PAGE_SIZE);
@@ -334,6 +351,109 @@ useEffect(() => {
   }
 }, [user]);
 
+const fetchCategoriesByPet = async (petIds) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/category/directory/byPetCategories`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ petCategories: petIds })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setCategories(data.categories);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+useEffect(() => {
+  if (!selectedPets.length || selectedPets.includes("all")) {
+    categoriesList(); // fallback → show all
+  } else {
+    // ⚠️ you must send IDs, not names
+    const selectedIds = petCategories
+      .filter(p => selectedPets.includes(p.categoryName))
+      .map(p => p._id);
+
+    fetchCategoriesByPet(selectedIds);
+  }
+}, [selectedPets]);
+const [specializedServices, setSpecializedServices] = useState([]);
+
+const fetchSpecializedServices = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/specialized-service/service/show`);
+    const data = await res.json();
+    if (data.success) {
+      setSpecializedServices(data.services);
+    }
+    console.log("services", specializedServices);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+useEffect(() => {
+  fetchSpecializedServices();
+}, []);
+const filteredServices = useMemo(() => {
+  if (!selectedPets.length && !selectedCategory) return specializedServices;
+
+  return specializedServices.filter(s => {
+
+    // PET MATCH (IDs)
+    const petMatch =
+  !selectedPets.length ||
+  (s.petCategories || []).some(p =>
+    selectedPets
+      .map(x => x.toLowerCase())
+      .includes(p.categoryName?.toLowerCase())
+  );
+
+    // CATEGORY MATCH (ID vs name ❌)
+    const categoryMatch =
+  !selectedCategory ||
+  s.category?.categoryName?.toLowerCase() === selectedCategory.toLowerCase();
+
+    return petMatch && categoryMatch;
+  });
+}, [selectedPets, selectedCategory, specializedServices]);
+const filteredCities = useMemo(() => {
+  if (!selectedPets.length && !selectedCategory) return cities;
+
+  const set = new Set();
+
+  allListings.forEach(l => {
+    const petMatch =
+      !selectedPets.length ||
+      (l.petCategories || []).some(p =>
+        selectedPets.includes(p.categoryName)
+      );
+
+    const categoryMatch =
+      !selectedCategory ||
+      (l.categories || []).some(c =>
+        c.categoryName.toLowerCase() === selectedCategory.toLowerCase()
+      );
+
+    if (petMatch && categoryMatch) {
+      if (l.city?.city) {
+        set.add(l.city.city.toLowerCase());
+      }
+    }
+  });
+
+  return cities.filter(c =>
+    set.has(c.city.toLowerCase())
+  );
+}, [selectedPets, selectedCategory, allListings, cities]);
+useEffect(() => {
+  setSelectedCategory("");
+}, [selectedPets]);
   useEffect(() => {
     fetchListings();
     fetchTopHomeAds();
@@ -348,17 +468,27 @@ useEffect(() => {
 
 useEffect(() => {
   // PET CATEGORY
+  // if (petCategories.length && routePet) {
+  //   if (routePet.toLowerCase() === "all") {
+  //     setSelectedPet("");
+  //   } else {
+  //     const match = petCategories.find(
+  //       p => p.categoryName.toLowerCase() === routePet.toLowerCase()
+  //     );
+  //     setSelectedPet(match ? match.categoryName : "");
+  //   }
+  // }
   if (petCategories.length && routePet) {
-    if (routePet.toLowerCase() === "all") {
-      setSelectedPet("");
-    } else {
-      const match = petCategories.find(
-        p => p.categoryName.toLowerCase() === routePet.toLowerCase()
-      );
-      setSelectedPet(match ? match.categoryName : "");
-    }
-  }
+  if (routePet.toLowerCase() === "all") {
+    setSelectedPets(["all"]);
+  } else {
+    const match = petCategories.find(
+      p => p.categoryName.toLowerCase() === routePet.toLowerCase()
+    );
 
+    setSelectedPets(match ? [match.categoryName] : []);
+  }
+}
   // CATEGORY
   if (categories.length && routeCategory) {
     if (routeCategory.toLowerCase() === "all") {
@@ -427,7 +557,9 @@ useEffect(() => {
     localStorage.setItem("entryTime", Date.now());
   }
 }, []);
-
+const showServiceFilter =
+  (selectedPets.length > 0 || selectedCategory) &&
+  filteredServices.length > 0;
 
 // console.log("all:",allListings)
   return (
@@ -500,7 +632,7 @@ useEffect(() => {
               value={search}
               onChange={handleSearchChange}
             />
-            <select value={selectedPet} onChange={e => {
+            {/* <select value={selectedPet} onChange={e => {
               setSelectedPet(e.target.value);
               setPage(1);
             }}>
@@ -511,20 +643,66 @@ useEffect(() => {
                   {pet.categoryName}
                 </option>
               ))}
-            </select>
+            </select> */}
+            <select
+  onChange={e => {
+    const value = e.target.value;
 
-            <select value={selectedCategory} onChange={handleCategoryChange}>
+    if (value === "all") {
+      setSelectedPets(["all"]);
+    } else {
+      setSelectedPets([value]);
+    }
+
+    setPage(1);
+  }}
+>
+  <option value="">All Pets</option>
+  <option value="all">All Types</option>
+  {petCategories.map(pet => (
+    <option key={pet._id} value={pet.categoryName}>
+      {pet.categoryName}
+    </option>
+  ))}
+</select>
+
+            {/* <select value={selectedCategory} onChange={handleCategoryChange}>
               <option value="">All Categories</option>
               {categories.map(cat => (
                 <option value={cat.categoryName} key={cat._id}>
                   {cat.categoryName}
                 </option>
               ))}
-            </select>
+            </select> */}
+           <select value={selectedCategory} onChange={handleCategoryChange}>
+  <option value="">All Categories</option>
+  {categories.map(cat => (
+    <option value={cat.categoryName} key={cat._id}>
+      {cat.categoryName}
+    </option>
+  ))}
+</select>
+          {showServiceFilter && (
+  <select
+    value={selectedService}
+    onChange={e => {
+      setSelectedService(e.target.value);
+      setPage(1);
+    }}
+  >
+    <option value="">All Services</option>
+
+    {filteredServices.map(s => (
+      <option key={s._id} value={s.serviceName}>
+        {s.serviceName}
+      </option>
+    ))}
+  </select>
+)}
             {!routeCity && (
               <select value={selectedCity} onChange={handleCityChange}>
                 <option value="">All Cities</option>
-                {cities.map(c => (
+                {filteredCities.map(c => (
                   <option value={c.city} key={c._id}>
                     {c.city}
                   </option>
@@ -684,6 +862,21 @@ useEffect(() => {
       )}
 
       </div>
+      {/* CATEGORY */}
+{listing.categories?.map((cat, index) => (
+  <span key={index} className="service-tag tag-orange">
+    {cat.categoryName}
+  </span>
+))}
+
+{/* ✅ SPECIALIZED SERVICES (GLOBAL) */}
+{listing.specializedServices
+  ?.filter(s => s.show !== false) // optional safety
+  .map((s, i) => (
+    <div key={i} className="text-muted small mt-1">
+      • {s.serviceName}
+    </div>
+))}
       {/* <div className="service-rating align-items-center d-flex gap-1">
           <span className='align-items-center d-flex' role="img" aria-label="star" style={{"verticalAlign" : "unset"}}> <BsStarFill /> </span> 
           <span className='d-block'>{listing.rating}</span>

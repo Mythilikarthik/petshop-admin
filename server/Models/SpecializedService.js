@@ -10,11 +10,17 @@ const SpecializedServiceSchema = new mongoose.Schema({
     ref: "Category",
     required: true
   },
-  petCategory: {
+  // petCategory: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "PetCategory",
+  //   required: true
+  // },
+  petCategories: [
+  {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "PetCategory",
-    required: true
-  },
+    ref: "PetCategory"
+  }
+],
 
   icon: String, // optional (store icon class or image path)
 
@@ -24,7 +30,23 @@ const SpecializedServiceSchema = new mongoose.Schema({
 
   created_at: { type: Date, default: Date.now }
 });
-
+// 🔥 Normalize before saving (sort IDs)
+SpecializedServiceSchema.pre("save", function (next) {
+  if (this.petCategories && this.petCategories.length) {
+    this.petCategories = this.petCategories
+      .map(id => id.toString())
+      .sort();
+  }
+  next();
+});
+SpecializedServiceSchema.index(
+  {
+    serviceName: 1,
+    category: 1,
+    petCategories: 1
+  },
+  { unique: true }
+);
 
 /**
  * Prevent delete if used in Listing
@@ -44,6 +66,38 @@ SpecializedServiceSchema.pre("findOneAndDelete", async function (next) {
     );
     err.code = 400;
     return next(err);
+  }
+
+  next();
+});
+SpecializedServiceSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+
+  if (update.petCategories && update.petCategories.length) {
+    update.petCategories = update.petCategories
+      .map(id => id.toString())
+      .sort();
+  }
+
+  next();
+});
+SpecializedServiceSchema.pre("save", function (next) {
+  if (this.serviceName) {
+    this.serviceName = this.serviceName.toLowerCase().trim();
+  }
+  next();
+});
+SpecializedServiceSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+
+  if (update.serviceName) {
+    update.serviceName = update.serviceName.toLowerCase().trim();
+  }
+
+  if (update.petCategories && update.petCategories.length) {
+    update.petCategories = update.petCategories
+      .map(id => id.toString())
+      .sort();
   }
 
   next();

@@ -68,6 +68,8 @@ const [businessHours, setBusinessHours] = useState(
     verificationMethod: "",
     verificationDocs: [],
     isClaimed: false,
+    isSignup: false,
+    signupStatus: "pending",
   });
 
   const { confirmLeave, markAsSaved, resetInitialSnapshot } =
@@ -204,9 +206,11 @@ useEffect(() => {
             status: data.listing.status === 'approved',
             isVerified: data.listing.isVerified || false, // 
             claimStatus: data.listing.claimStatus || "pending",
+            signupStatus: data.listing.signupStatus || "pending",
             verificationMethod: data.listing.verificationMethod || "",
             verificationDocs: data.listing.verificationDocs || [],
             isClaimed: data.listing.isClaimed || false,
+            isSignup: data.listing.isSignup || false,
           });
           // ✅ Load business hours from DB
           if (data.listing.businessHours && data.listing.businessHours.length > 0) {
@@ -802,6 +806,92 @@ formData.petCategories.length === petCategoryList.length
               <Form.Label>Meta Description</Form.Label>
               <Form.Control as="textarea" rows={3} name="metaDescription" value={formData.metaDescription} onChange={handleChange} />
             </Form.Group>
+
+            {formData.isSignup && (
+              <Form.Group className="mb-3">
+                <Form.Label>Verification Method</Form.Label>
+                <Form.Select
+                  value={formData.verificationMethod}
+                  disabled
+                >
+                  <option value="">Not selected</option>
+                  <option value="email">Email OTP</option>
+                  <option value="document">Document Verification</option>
+                </Form.Select>
+              </Form.Group>
+
+
+            )}
+
+            {formData.isSignup && formData.verificationMethod === "document" &&
+  formData.verificationDocs.length > 0 && (
+    <Form.Group className="mb-4">
+      <Form.Label>Verification Documents</Form.Label>
+
+      <Row>
+        {formData.verificationDocs.map((doc, idx) => {
+          const docUrl = doc.startsWith("http")
+            ? doc
+            : `${API_BASE}/${doc}`;
+
+          // ✅ Better detection
+          const lower = doc.toLowerCase();
+          const isPdf = lower.includes(".pdf");
+          const isImage =
+            lower.includes(".jpg") ||
+            lower.includes(".jpeg") ||
+            lower.includes(".png") ||
+            lower.includes(".webp");
+
+          return (
+            <Col key={idx} md={4} className="mb-3">
+
+              {/* ✅ IMAGE PREVIEW */}
+              {isImage && (
+                <a href={docUrl} target="_blank" rel="noreferrer">
+                  <img
+                    src={docUrl}
+                    alt={`doc-${idx}`}
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd"
+                    }}
+                  />
+                </a>
+              )}
+
+              {/* ✅ PDF VIEW BUTTON */}
+              {isPdf && (
+                <a
+                  href={docUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-danger w-100"
+                >
+                  View PDF {idx + 1}
+                </a>
+              )}
+
+              {/* ✅ FALLBACK */}
+              {!isPdf && !isImage && (
+                <a
+                  href={docUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary w-100"
+                >
+                  Open File {idx + 1}
+                </a>
+              )}
+            </Col>
+          );
+        })}
+      </Row>
+    </Form.Group>
+)}
 
             {formData.isClaimed && (
               <Form.Group className="mb-3">
