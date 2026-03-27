@@ -7,6 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { FaUser } from "react-icons/fa";
 import { HeadProvider, Meta, Title } from "react-head";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import AuthGateModal from "../hooks/AuthGateModel";
 
 
 const LOGIM_URI =
@@ -25,7 +26,8 @@ const Header = ({ home }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSetPassword, setShowSetPassword] = useState(false);
 const [showChangePassword, setShowChangePassword] = useState(false);
-
+const [showAuth, setShowAuth] = useState(false);
+const [authMode, setAuthMode] = useState("login");
 const openSetPassword = () => setShowSetPassword(true);
 const openChangePassword = () => setShowChangePassword(true);
 
@@ -442,7 +444,7 @@ const getPageTitle = () => {
             {/* RIGHT BUTTONS */}
             <div className="d-flex justify-content-center justify-content-lg-end gap-3 mt-3 mt-lg-0">
               
-              <button
+              {/* <button
                 className="login-btn py-2 px-4 border-2 border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition duration-300"
                 onClick={() => {
                   setExpanded(false);
@@ -460,7 +462,65 @@ const getPageTitle = () => {
                 }}
               >
                 Sign Up
-              </button>
+              </button> */}
+              {!user && (
+  <>
+    <NavDropdown
+      title="Login"
+      id="login-dropdown"
+      align="end"
+      className="login-btn py-2 px-4 border-2 border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition duration-300"
+    >
+      {/* Pet Parent Login */}
+      <NavDropdown.Item
+        onClick={() => {
+          setExpanded(false);
+          setAuthMode("login");
+          setShowAuth(true);
+        }}
+      >
+        Pet Parent Login
+      </NavDropdown.Item>
+
+      {/* Vendor Login */}
+      <NavDropdown.Item
+        onClick={() => {
+          setExpanded(false);
+          window.open(LOGIM_URI, "_self");
+        }}
+      >
+        Vendor Login
+      </NavDropdown.Item>
+    </NavDropdown>
+        <NavDropdown
+      title="Sign Up"
+      id="signup-dropdown"
+      align="end"
+      className="signup-btn px-4 py-2 border-2 border-orange-500 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition duration-300"
+    >
+      {/* Pet Parent Signup */}
+      <NavDropdown.Item
+        onClick={() => {
+          setExpanded(false);
+          setAuthMode("signup");
+          setShowAuth(true);
+        }}
+      >
+        Pet Parent Signup
+      </NavDropdown.Item>
+
+      {/* Vendor Signup */}
+      <NavDropdown.Item
+        onClick={() => {
+          setExpanded(false);
+          navigate("/register");
+        }}
+      >
+        Vendor Signup
+      </NavDropdown.Item>
+    </NavDropdown>
+  </>
+)}
               {/* {user && (
                 <div className="logged-in-user d-flex align-items-center gap-2">
                   {user.picture && user.picture.length > 0 && (
@@ -526,7 +586,11 @@ const getPageTitle = () => {
   show={showSetPassword}
   onClose={() => setShowSetPassword(false)}
 />
-
+<AuthGateModal
+  show={showAuth}
+  onClose={() => setShowAuth(false)}
+  defaultMode={authMode}
+/>
 <ChangePasswordModal
   show={showChangePassword}
   onClose={() => setShowChangePassword(false)}

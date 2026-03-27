@@ -1343,6 +1343,7 @@ router.post(
         city,
         categories: categories.map((id) => new mongoose.Types.ObjectId(id)),
         petCategories: petCategories.map((id) => new mongoose.Types.ObjectId(id)),
+        country: "India",
 
         created_by_type: "user",
         created_by_id: newUser._id,

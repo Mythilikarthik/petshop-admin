@@ -429,6 +429,7 @@ import { Form, Button, Container, Row, Col, Alert } from "react-bootstrap";
 import Select from "react-select";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -442,6 +443,11 @@ const LOGIN_URI =
 
 const Register = () => {
 const navigate= useNavigate();
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^[6-9]\d{9}$/;
+const formRef = useRef();
+const fileRef = useRef();
   /* ---------------- USER ---------------- */
   const [form, setForm] = useState({
     name: "",
@@ -536,28 +542,65 @@ const navigate= useNavigate();
     setListing({ ...listing, [e.target.name]: e.target.value });
 
   /* ---------------- VALIDATION ---------------- */
+  // const validateForm = () => {
+  //   if (!form.name) return "Name required";
+  //   if (!form.username) return "Username required";
+  //   if (!USERNAME_REGEX.test(form.username))
+  //     return "Invalid username";
+
+  //   if (!form.email) return "Email required";
+  //   if (!form.phone) return "Phone required";
+  //   if (!form.password) return "Password required";
+  //   if (form.password !== form.confirmPassword)
+  //     return "Passwords do not match";
+
+  //   if (!listing.shopName) return "Shop name required";
+  //   if (!listing.city) return "City required";
+  //   if (!listing.petCategories.length) return "Type required";
+  //   if (!listing.categories.length) return "Category required";
+
+  //   if (!role) return "Role required";
+  //   if (!verificationMethod) return "Verification method required";
+
+  //   return null;
+  // };
+
   const validateForm = () => {
-    if (!form.name) return "Name required";
-    if (!form.username) return "Username required";
-    if (!USERNAME_REGEX.test(form.username))
-      return "Invalid username";
+  if (!form.name) return "Name required";
 
-    if (!form.email) return "Email required";
-    if (!form.phone) return "Phone required";
-    if (!form.password) return "Password required";
-    if (form.password !== form.confirmPassword)
-      return "Passwords do not match";
+  if (!form.username) return "Username required";
+  if (!USERNAME_REGEX.test(form.username))
+    return "Invalid username";
 
-    if (!listing.shopName) return "Shop name required";
-    if (!listing.city) return "City required";
-    if (!listing.petCategories.length) return "Type required";
-    if (!listing.categories.length) return "Category required";
+  if (!form.email) return "Email required";
 
-    if (!role) return "Role required";
-    if (!verificationMethod) return "Verification method required";
+  // ✅ EMAIL VALIDATION
+  if (!EMAIL_REGEX.test(form.email))
+    return "Enter valid email address";
 
-    return null;
-  };
+  if (!form.phone) return "Phone required";
+
+if (!PHONE_REGEX.test(form.phone))
+  return "Enter valid 10-digit phone number";
+
+  if (!form.password) return "Password required";
+
+  if (!form.confirmPassword)
+    return "Confirm your password";
+
+  if (form.password !== form.confirmPassword)
+    return "Passwords do not match";
+
+  if (!listing.shopName) return "Shop name required";
+  if (!listing.city) return "City required";
+  if (!listing.petCategories.length) return "Type required";
+  if (!listing.categories.length) return "Category required";
+
+  if (!role) return "Role required";
+  if (!verificationMethod) return "Verification method required";
+
+  return null;
+};
 
   /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
@@ -660,7 +703,7 @@ const navigate= useNavigate();
               </Alert>
             )}
 
-            <Form onSubmit={handleSubmit}>
+            <Form ref={formRef} onSubmit={handleSubmit}>
 
               {/* USER */}
               <Form.Control className="mb-2" placeholder="Name" name="name" onChange={handleUserChange} />
@@ -669,8 +712,56 @@ const navigate= useNavigate();
               <Form.Control className="mb-2" placeholder="Phone" name="phone" onChange={handleUserChange} />
 
               {/* PASSWORD */}
-              <Form.Control className="mb-2" type="password" placeholder="Password" name="password" onChange={handleUserChange} />
-              <Form.Control className="mb-3" type="password" placeholder="Confirm Password" name="confirmPassword" onChange={handleUserChange} />
+              {/* <Form.Control className="mb-2" type="password" placeholder="Password" name="password" onChange={handleUserChange} />
+              <Form.Control className="mb-3" type="password" placeholder="Confirm Password" name="confirmPassword" onChange={handleUserChange} /> */}
+              <Form.Group className="mb-2 position-relative">
+  <Form.Control
+    type={showPassword ? "text" : "password"}
+    placeholder="Password"
+    name="password"
+    value={form.password}
+    onChange={handleUserChange}
+    style={{ paddingRight: "45px" }}
+  />
+
+  <span
+    onClick={() => setShowPassword(!showPassword)}
+    style={{
+      position: "absolute",
+      top: "50%",
+      right: "12px",
+      transform: "translateY(-50%)",
+      cursor: "pointer",
+      color: "#f97316",
+    }}
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
+</Form.Group>
+<Form.Group className="mb-3 position-relative">
+  <Form.Control
+    type={showConfirmPassword ? "text" : "password"}
+    placeholder="Confirm Password"
+    name="confirmPassword"
+    value={form.confirmPassword}
+    onChange={handleUserChange}
+    style={{ paddingRight: "45px" }}
+  />
+
+  <span
+    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+    style={{
+      position: "absolute",
+      top: "50%",
+      right: "12px",
+      transform: "translateY(-50%)",
+      cursor: "pointer",
+      color: "#f97316",
+    }}
+  >
+    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
+</Form.Group>
 
               {/* ROLE */}
               <Form.Select className="mb-3" onChange={(e) => setRole(e.target.value)}>
@@ -732,6 +823,7 @@ const navigate= useNavigate();
                     petCategories: selected.map(s => s.value),
                   }))
                 }
+                placeholder="Select Type"
               />
 
               {/* CATEGORY */}
@@ -748,6 +840,7 @@ const navigate= useNavigate();
                     categories: selected.map(s => s.value),
                   }))
                 }
+                placeholder="Select Category"
               />
 
               {/* <Button className="mt-4 w-100" type="submit" disabled={loading}>

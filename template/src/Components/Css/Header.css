@@ -48,6 +48,13 @@
 .hover\:bg-orange-500:hover {  
   background-color: rgb(249 115 22);
 }
+.hover\:bg-orange-500:hover #login-dropdown {  
+  background-color: rgb(249 115 22);
+  color: #fff;
+}
+.signup-btn #signup-dropdown {
+  color: #fff;
+}
 .py-2 {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;

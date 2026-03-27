@@ -25,6 +25,19 @@ const EditListing = () => {
   const [banner, setBanner] = useState(null);
 const [bannerPreview, setBannerPreview] = useState(null);
 const [existingBanner, setExistingBanner] = useState(null);
+const [serviceList, setServiceList] = useState([]);
+const daysOfWeek = [
+  "Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"
+];
+
+const [businessHours, setBusinessHours] = useState(
+  daysOfWeek.map(day => ({
+    day,
+    open: "",
+    close: "",
+    closed: false
+  }))
+);
 
   const [formData, setFormData] = useState({
     shopName: '',
@@ -37,6 +50,7 @@ const [existingBanner, setExistingBanner] = useState(null);
     description: '',
     categories: [],     // 🧩 will hold category _ids
     petCategories: [],  // 🧩 will hold petCategory _ids
+    specializedServices: [],
     photos: [],
     existingPhotos: [],
     metaTitle: '',
@@ -47,6 +61,42 @@ const [existingBanner, setExistingBanner] = useState(null);
 
   const { confirmLeave, markAsSaved, resetInitialSnapshot } =
     useUnsavedChanges(formData, { excludeKeys: ['photos', 'existingPhotos'] });
+
+
+ const fetchServices = async (categories) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/specialized-service/byCategories`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ categories })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setServiceList(
+        data.services.map(s => ({
+          value: s._id,
+          label: s.serviceName
+        }))
+      );
+    } else {
+      setServiceList([]);
+    }
+
+  } catch (err) {
+    console.error("Service fetch error", err);
+  }
+};
+useEffect(() => {
+  if (formData.categories.length > 0) {
+    fetchServices(formData.categories);
+  } else {
+    setServiceList([]);
+  }
+}, [formData.categories]);
 
   // ✅ Fetch categories, pet categories, and cities (ID + Name)
   useEffect(() => {
@@ -64,6 +114,7 @@ const [existingBanner, setExistingBanner] = useState(null);
         console.error("Error fetching categories:", err);
       }
     };
+   
 
     const fetchPetCategories = async () => {
       try {
@@ -97,6 +148,45 @@ const [existingBanner, setExistingBanner] = useState(null);
     fetchPetCategories();
     fetchCityList();
   }, []);
+  useEffect(() => {
+  if (!formData.petCategories || formData.petCategories.length === 0) {
+    setCategoryList([]);
+    return;
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/category/byPetCategories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          petCategories: formData.petCategories
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setCategoryList(
+          data.categories.map(c => ({
+            value: c._id,
+            label: c.categoryName
+          }))
+        );
+      } else {
+        setCategoryList([]);
+      }
+
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  fetchCategories();
+}, [formData.petCategories]);
+  
 
   // ✅ Fetch listing by ID
   useEffect(() => {
@@ -117,6 +207,8 @@ if (res.status === 404) {
   setListing(data.listing);
   setExistingBanner(data.listing.bannerImage || null);
 
+  
+
   setFormData({
     shopName: data.listing.shopName || '',
     email: data.listing.email || '',
@@ -128,6 +220,7 @@ if (res.status === 404) {
     description: data.listing.description || '',
     categories: data.listing.categories?.map(c => c._id || c) || [],
     petCategories: data.listing.petCategories?.map(c => c._id || c) || [],
+    specializedServices: data.listing.specializedServices?.map(s => s._id || s) || [],
     photos: [],
     existingPhotos: data.listing.photos || [],
     bannerImage: data.listing.bannerImage || null,
@@ -140,6 +233,9 @@ if (res.status === 404) {
     metaDescription: data.listing.metaDescription || '',
     status: data.listing.status === 'approved',
   });
+  if (data.listing.businessHours && data.listing.businessHours.length > 0) {
+            setBusinessHours(data.listing.businessHours);
+          }
 }
 
       } catch (err) {
@@ -160,6 +256,12 @@ if (res.status === 404) {
     }
   }, [loading, listing]);
 
+  const handleServiceChange = (selected) => {
+  setFormData(prev => ({
+    ...prev,
+    specializedServices: selected ? selected.map(s => s.value) : []
+  }));
+};
   // ✅ Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -256,11 +358,16 @@ const handleBannerChange = (e) => {
         metaDescription: formData.metaDescription,
         status: formData.status ? 'approved' : 'pending'
       }).forEach(([key, val]) => formDataToSend.append(key, val));
+      formData.specializedServices.forEach(service =>
+        formDataToSend.append("specializedServices[]", service)
+      );
 
       formData.categories.forEach(cat => formDataToSend.append('categories[]', cat));
       formData.petCategories.forEach(cat => formDataToSend.append('petCategories[]', cat));
       formData.photos.forEach(photo => formDataToSend.append('photos', photo));
       formData.existingPhotos.forEach(photo => formDataToSend.append('existingPhotos[]', photo));
+      formDataToSend.append("businessHours", JSON.stringify(businessHours));
+      
       if (banner) {
         formDataToSend.append("bannerImage", banner);
       }
@@ -293,7 +400,14 @@ const handleBannerChange = (e) => {
   };
 
   
-  
+  useEffect(() => {
+  setFormData(prev => ({
+    ...prev,
+    specializedServices: prev.specializedServices.filter(service =>
+      serviceList.some(s => s.value === service)
+    )
+  }));
+}, [serviceList]);
   if (loading) {
     return (
       <Container className="mt-5 text-center">
@@ -377,6 +491,54 @@ if (isPendingListing || isPendingClaim) {
             {/* Status Toggle */}
             
 
+             {/* Pet Type Select */}
+            {/* <Form.Group className="mb-3">
+              <Form.Label>Type <span className="text-danger">*</span></Form.Label>
+              <Select
+                isMulti
+                options={petCategoryList}
+                value={petCategoryList.filter(c => formData.petCategories.includes(c.value))}
+                onChange={handlePetCategoryChange}
+              />
+            </Form.Group>*/}
+            <Form.Group className="mb-3">
+              <Form.Label>Type <span className="text-danger">*</span></Form.Label>
+              <Select
+  isMulti
+  options={[
+    { value: "all", label: "All Types" },
+    ...petCategoryList
+  ]}
+  value={
+    petCategoryList.length > 0 &&
+    formData.petCategories.length === petCategoryList.length
+      ? [{ value: "all", label: "All Types" }]
+      : petCategoryList.filter(p =>
+          formData.petCategories.includes(p.value)
+        )
+  }
+  onChange={(selected) => {
+    if (!selected) {
+      setFormData(prev => ({ ...prev, petCategories: [] }));
+      return;
+    }
+
+    if (selected.some(s => s.value === "all")) {
+      setFormData(prev => ({
+        ...prev,
+        petCategories: petCategoryList.map(p => p.value)
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        petCategories: selected.map(s => s.value)
+      }));
+    }
+  }}
+/>
+            </Form.Group>
+            
+
             {/* Category Select */}
             <Form.Group className="mb-3">
               <Form.Label>Category <span className="text-danger">*</span></Form.Label>
@@ -387,17 +549,21 @@ if (isPendingListing || isPendingClaim) {
                 onChange={handleCategoryChange}
               />
             </Form.Group>
-
-            {/* Pet Type Select */}
             <Form.Group className="mb-3">
-              <Form.Label>Type <span className="text-danger">*</span></Form.Label>
+              <Form.Label>Specialized Services</Form.Label>
+
               <Select
                 isMulti
-                options={petCategoryList}
-                value={petCategoryList.filter(c => formData.petCategories.includes(c.value))}
-                onChange={handlePetCategoryChange}
+                options={serviceList}
+                value={serviceList.filter(s =>
+                  formData.specializedServices.includes(s.value)
+                )}
+                onChange={handleServiceChange}
+                placeholder="Select Services"
               />
             </Form.Group>
+
+           
 
             {/* Basic Fields */}
             <Form.Group className="mb-3">
@@ -414,6 +580,58 @@ if (isPendingListing || isPendingClaim) {
               <Form.Label>Phone <span className="text-danger">*</span></Form.Label>
               <Form.Control type="number" name="phone" value={formData.phone} onChange={handleChange} required />
             </Form.Group>
+            <Form.Group className="mb-4">
+  <Form.Label className="fw-bold">Business Hours</Form.Label>
+
+  {businessHours.map((item, index) => (
+    <Row key={index} className="align-items-center mb-2">
+      <Col md={3}><strong>{item.day}</strong></Col>
+
+      <Col md={3}>
+        <Form.Control
+          type="time"
+          value={item.open}
+          disabled={item.closed}
+          onChange={(e) => {
+            const updated = [...businessHours];
+            updated[index].open = e.target.value;
+            setBusinessHours(updated);
+          }}
+        />
+      </Col>
+
+      <Col md={3}>
+        <Form.Control
+          type="time"
+          value={item.close}
+          disabled={item.closed}
+          onChange={(e) => {
+            const updated = [...businessHours];
+            updated[index].close = e.target.value;
+            setBusinessHours(updated);
+          }}
+        />
+      </Col>
+
+      <Col md={3}>
+        <Form.Check
+          type="checkbox"
+          label="Closed"
+          checked={item.closed}
+          onChange={(e) => {
+            const updated = [...businessHours];
+            updated[index].closed = e.target.checked;
+            if (e.target.checked) {
+              updated[index].open = "";
+              updated[index].close = "";
+            }
+            setBusinessHours(updated);
+          }}
+        />
+      </Col>
+    </Row>
+  ))}
+</Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Address</Form.Label>
@@ -432,7 +650,7 @@ if (isPendingListing || isPendingClaim) {
 
             <Form.Group className="mb-3">
               <Form.Label>Country</Form.Label>
-              <Form.Control type="text" name="country" value={formData.country} onChange={handleChange} />
+              <Form.Control type="text" name="country" value={formData.country} onChange={handleChange} disabled />
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -476,7 +694,7 @@ if (isPendingListing || isPendingClaim) {
   />
 ) : existingBanner ? (
   <img
-    src={existingBanner.startsWith("http") ? existingBanner : `${API_BASE}${existingBanner}`}
+    src={existingBanner.startsWith("http") ? existingBanner : `${API_BASE}/${existingBanner}`}
     alt="Existing Banner"
     style={{ width: "100%", height: "300px", objectFit: "contain", background: "#f5f5f5", borderRadius: "8px", marginBottom: "10px" }}
   />

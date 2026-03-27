@@ -1775,6 +1775,15 @@ router.put(
         // preserve old banner if exists
         data.bannerImage = currentListing.bannerImage || null;
       }
+       /* -------------------- Parse business hours -------------------- */
+      if (data.businessHours) {
+        try {
+          data.businessHours = JSON.parse(data.businessHours);
+        } catch (err) {
+          console.error("Invalid businessHours JSON");
+          data.businessHours = [];
+        }
+      }
 
       // --- Find and Update ---
       let listing = await Listing.findOneAndUpdate(
