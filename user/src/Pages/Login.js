@@ -12,7 +12,7 @@ const API_BASE =
     ? process.env.REACT_APP_API_URL
     : "http://localhost:5000";
 const HOME = process.env.NODE_ENV === "production"
-    ? "https://petshop-template.onrender.com"
+    ? process.env.REACT_APP_URL
     : "http://localhost:3002";
 const Login = () => {
   const [username, setUsername] = useState('');

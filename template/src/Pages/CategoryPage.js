@@ -12,6 +12,10 @@ const API_BASE =
 const CategoryPage = () => {
   const navigate = useNavigate();
   const { categoryName } = useParams();
+
+const formattedCategoryName = categoryName
+  ?.replace(/-/g, " ")   // small-pets → small pets
+  ?.toLowerCase();
   // console.log("Category Name from URL:", categoryName);
   const [currentCategory, setCurrentCategory] = React.useState({
     name: '',
@@ -126,7 +130,8 @@ const CategoryPage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ categoryName }),
+            // body: JSON.stringify({ categoryName }),
+            body: JSON.stringify({ categoryName: formattedCategoryName }),
           });
           const data = await res.json();
 
@@ -157,7 +162,8 @@ const CategoryPage = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ categoryName }),
+            // body: JSON.stringify({ categoryName }),
+            body: JSON.stringify({ categoryName: formattedCategoryName }),
           });
           const data = await res.json();
 
@@ -192,7 +198,8 @@ const CategoryPage = () => {
     window.scrollTo(0, 0);
     const fetchCategoryData = async () => {
      try {
-      const res = await fetch(`${API_BASE}/api/categorypage/by-name/${categoryName}`);
+      // const res = await fetch(`${API_BASE}/api/categorypage/by-name/${categoryName}`);
+      const res = await fetch(`${API_BASE}/api/categorypage/by-name/${formattedCategoryName}`);
       const data = await res.json();
       if(data.success) {
         //console.log("Fetched category data:", data.page);

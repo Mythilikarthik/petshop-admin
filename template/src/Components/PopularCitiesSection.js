@@ -8,7 +8,13 @@ import cityBgChennai from '../city-bg-final.jpg';
 import cityBgDelhi from '../city-bg-delhi.jpg';
 import { HiOutlineArrowLongRight } from "react-icons/hi2";
 
-
+const slugify = (text = "") =>
+  text
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9\s]/g, "") // remove (), / , etc
+    .trim()
+    .replace(/\s+/g, "-");
 
 const PopularCitiesSection = ({cities}) => (
 
@@ -21,7 +27,8 @@ const PopularCitiesSection = ({cities}) => (
         <Row>
             {cities.map((city) => (
             <Col key={city.city} xs={3} className="d-none d-md-block mb-4">
-                <Link to={`/directory/${city.city.toLowerCase()}`} style={{ textDecoration: 'none' }}>
+                {/* <Link to={`/directory/${city.city.toLowerCase()}`} style={{ textDecoration: 'none' }}> */}
+                <Link to={`/directory/${slugify(city.city)}`}>
                 {/* <div className="cities-grid" 
                     style={{
                         background: '#FDBA74',

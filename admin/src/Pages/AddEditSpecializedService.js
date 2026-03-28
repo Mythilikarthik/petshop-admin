@@ -176,6 +176,7 @@ useEffect(() => {
   }
 
   const isAllSelected = form.petCategories.includes("all");
+  
 
   // ✅ Get ALL pet IDs from DB
   const totalPetIds = petCategories.map(p => String(p._id));
@@ -256,6 +257,9 @@ const allowedPets = (selectedCategory.petCategories || []).map(p =>
 //   allowedPets.includes(String(petId))
 // );
 const isAllSelected = form.petCategories.includes("all");
+const finalPetCategories = isAllSelected
+  ? petCategories.map(p => String(p._id))
+  : form.petCategories;
 
 if (!isAllSelected) {
   const selectedPets = form.petCategories.map(String);
@@ -283,7 +287,11 @@ if (!isAllSelected) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        // body: JSON.stringify(form),
+        body: JSON.stringify({
+  ...form,
+  petCategories: finalPetCategories
+})
       });
 
       const data = await res.json();

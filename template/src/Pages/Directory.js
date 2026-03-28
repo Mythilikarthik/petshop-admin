@@ -22,6 +22,14 @@ const API_BASE =
   process.env.NODE_ENV === "production"
     ? process.env.REACT_APP_API_URL
     : "http://localhost:5000";
+
+const normalize = (str = "") =>
+  str
+    .toLowerCase()
+    .replace(/&/g, "and")        // fix & vs and
+    .replace(/[^a-z0-9\s]/g, "") // remove special chars (), / , etc
+    .replace(/\s+/g, " ")        // normalize spaces
+    .trim();
 const Directory = () => {
   const { user, authLoading  } = useAuth();
   const engagementGate = useEngagementGate(user);
@@ -32,9 +40,23 @@ const [showAuthGate, setShowAuthGate] = useState(false);
   // const { city: routeCity, category: routeCategory, pet: routePet } = useParams();
   const params = useParams();
 
-const routeCity = params.city ? decodeURIComponent(params.city) : "";
-const routeCategory = params.category ? decodeURIComponent(params.category) : "";
-const routePet = params.pet ? decodeURIComponent(params.pet) : "";
+// const routeCity = params.city ? decodeURIComponent(params.city) : "";
+// const routeCategory = params.category ? decodeURIComponent(params.category) : "";
+// const routePet = params.pet ? decodeURIComponent(params.pet) : "";
+const routeCity =
+  params.city && params.city !== "all"
+    ? normalize(decodeURIComponent(params.city))
+    : "";
+
+const routeCategory =
+  params.category && params.category !== "all"
+    ? normalize(decodeURIComponent(params.category))
+    : "";
+
+const routePet =
+  params.pet && params.pet !== "all"
+    ? normalize(decodeURIComponent(params.pet))
+    : "";
 
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(routeCategory || '');
@@ -172,8 +194,10 @@ const filteredListings = useMemo(() => {
   const searchLower = search.toLowerCase();
 
   let result = allListings.filter(l => {
-    const category = (l.categories?.[0]?.categoryName || "").toLowerCase();
-    const city = (l.city?.city || "").toLowerCase();
+    // const category = (l.categories?.[0]?.categoryName || "").toLowerCase();
+    // const city = (l.city?.city || "").toLowerCase();
+    const category = normalize(l.categories?.[0]?.categoryName);
+const city = normalize(l.city?.city);
     const shop = (l.shopName || "").toLowerCase();
     const rating = Number(l.rating || 0);
 
@@ -185,11 +209,15 @@ const filteredListings = useMemo(() => {
       s.serviceName?.toLowerCase()
     );
 
+    // const categoryMatch =
+    //   !selectedCategory || category === selectedCategory.toLowerCase();
     const categoryMatch =
-      !selectedCategory || category === selectedCategory.toLowerCase();
+  !selectedCategory || category === normalize(selectedCategory);
 
+    // const cityMatch =
+    //   !selectedCity || city === selectedCity.toLowerCase();
     const cityMatch =
-      !selectedCity || city === selectedCity.toLowerCase();
+  !selectedCity || city === normalize(selectedCity);
 
     const petMatch =
       !selectedPets.length ||
@@ -452,8 +480,16 @@ const filteredCities = useMemo(() => {
   );
 }, [selectedPets, selectedCategory, allListings, cities]);
 useEffect(() => {
-  setSelectedCategory("");
-}, [selectedPets]);
+  if (!selectedCategory) return;
+
+  const exists = categories.some(
+    c => c.categoryName === selectedCategory
+  );
+
+  if (!exists) {
+    setSelectedCategory("");
+  }
+}, [categories]);
   useEffect(() => {
     fetchListings();
     fetchTopHomeAds();
@@ -466,58 +502,166 @@ useEffect(() => {
 //   if (routePet) setSearch(routePet);
 // }, [routeCity, routeCategory, routePet]);
 
-useEffect(() => {
-  // PET CATEGORY
-  // if (petCategories.length && routePet) {
-  //   if (routePet.toLowerCase() === "all") {
-  //     setSelectedPet("");
-  //   } else {
-  //     const match = petCategories.find(
-  //       p => p.categoryName.toLowerCase() === routePet.toLowerCase()
-  //     );
-  //     setSelectedPet(match ? match.categoryName : "");
-  //   }
-  // }
-  if (petCategories.length && routePet) {
-  if (routePet.toLowerCase() === "all") {
-    setSelectedPets(["all"]);
-  } else {
-    const match = petCategories.find(
-      p => p.categoryName.toLowerCase() === routePet.toLowerCase()
-    );
+// useEffect(() => {
+//   // PET CATEGORY
+//   // if (petCategories.length && routePet) {
+//   //   if (routePet.toLowerCase() === "all") {
+//   //     setSelectedPet("");
+//   //   } else {
+//   //     const match = petCategories.find(
+//   //       p => p.categoryName.toLowerCase() === routePet.toLowerCase()
+//   //     );
+//   //     setSelectedPet(match ? match.categoryName : "");
+//   //   }
+//   // }
+//   if (petCategories.length && routePet) {
+//   if (routePet.toLowerCase() === "all") {
+//     setSelectedPets(["all"]);
+//   } else {
+//     const match = petCategories.find(
+//       p => p.categoryName.toLowerCase() === routePet.toLowerCase()
+//     );
 
-    setSelectedPets(match ? [match.categoryName] : []);
+//     setSelectedPets(match ? [match.categoryName] : []);
+//   }
+// }
+//   // CATEGORY
+//   if (categories.length && routeCategory) {
+//     if (routeCategory.toLowerCase() === "all") {
+//       setSelectedCategory("");
+//     } else {
+//       const match = categories.find(
+//         c => c.categoryName.toLowerCase() === routeCategory.toLowerCase()
+//       );
+//       setSelectedCategory(match ? match.categoryName : "");
+//     }
+//   }
+
+//   // CITY
+//   if (cities.length && routeCity) {
+//     if (routeCity.toLowerCase() === "all") {
+//       setSelectedCity("");
+//     } else {
+//       const match = cities.find(
+//         c => c.city.toLowerCase() === routeCity.toLowerCase()
+//       );
+//       setSelectedCity(match ? match.city : "");
+//     }
+//   }
+
+//   // PET TYPE / SEARCH STRING
+//   if (routePet) {
+//     setSearch(routePet.toLowerCase() === "all" ? "" : routePet);
+//   }
+// }, [routeCity, routeCategory, routePet, categories, cities, petCategories]);
+// useEffect(() => {
+//   // PET
+//   if (petCategories.length && routePet) {
+//     const newPet =
+//       routePet.toLowerCase() === "all"
+//         ? ["all"]
+//         : (() => {
+//             const match = petCategories.find(
+//               p => p.categoryName.toLowerCase() === routePet.toLowerCase()
+//             );
+//             return match ? [match.categoryName] : [];
+//           })();
+
+//     // ✅ prevent loop
+//     if (JSON.stringify(newPet) !== JSON.stringify(selectedPets)) {
+//       setSelectedPets(newPet);
+//     }
+//   }
+
+//   // CATEGORY
+//   if (categories.length && routeCategory) {
+//     const newCategory =
+//       routeCategory.toLowerCase() === "all"
+//         ? ""
+//         : (() => {
+//             const match = categories.find(
+//               c => c.categoryName.toLowerCase() === routeCategory.toLowerCase()
+//             );
+//             return match ? match.categoryName : "";
+//           })();
+
+//     if (newCategory !== selectedCategory) {
+//       setSelectedCategory(newCategory);
+//     }
+//   }
+
+//   // CITY
+//   if (cities.length && routeCity) {
+//     const newCity =
+//       routeCity.toLowerCase() === "all"
+//         ? ""
+//         : (() => {
+//             const match = cities.find(
+//               c => c.city.toLowerCase() === routeCity.toLowerCase()
+//             );
+//             return match ? match.city : "";
+//           })();
+
+//     if (newCity !== selectedCity) {
+//       setSelectedCity(newCity);
+//     }
+//   }
+
+//   // SEARCH
+//   const newSearch =
+//     routePet && routePet.toLowerCase() !== "all" ? routePet : "";
+
+//   if (newSearch !== search) {
+//     setSearch(newSearch);
+//   }
+
+// }, [routeCity, routeCategory, routePet, categories, cities, petCategories]);
+useEffect(() => {
+  if (!petCategories.length || !categories.length || !cities.length) return;
+
+  // run ONLY on first load (important)
+  if (page !== 1) return;
+
+  if (routePet) {
+    if (routePet.toLowerCase() === "all") {
+      setSelectedPets(["all"]);
+    } else {
+      // const match = petCategories.find(
+      //   p => p.categoryName.toLowerCase() === routePet.toLowerCase()
+      // );
+      const match = petCategories.find(
+  p => normalize(p.categoryName) === routePet
+);
+      setSelectedPets(match ? [match.categoryName] : []);
+    }
   }
-}
-  // CATEGORY
-  if (categories.length && routeCategory) {
+
+  if (routeCategory) {
     if (routeCategory.toLowerCase() === "all") {
       setSelectedCategory("");
     } else {
+      // const match = categories.find(
+      //   c => c.categoryName.toLowerCase() === routeCategory.toLowerCase()
+      // );
       const match = categories.find(
-        c => c.categoryName.toLowerCase() === routeCategory.toLowerCase()
-      );
+  c => normalize(c.categoryName) === routeCategory
+);
       setSelectedCategory(match ? match.categoryName : "");
     }
   }
 
-  // CITY
-  if (cities.length && routeCity) {
+  if (routeCity) {
     if (routeCity.toLowerCase() === "all") {
       setSelectedCity("");
     } else {
       const match = cities.find(
-        c => c.city.toLowerCase() === routeCity.toLowerCase()
-      );
+  c => normalize(c.city) === routeCity
+);
       setSelectedCity(match ? match.city : "");
     }
   }
 
-  // PET TYPE / SEARCH STRING
-  if (routePet) {
-    setSearch(routePet.toLowerCase() === "all" ? "" : routePet);
-  }
-}, [routeCity, routeCategory, routePet, categories, cities, petCategories]);
+}, [routeCity, routeCategory, routePet, petCategories, categories, cities]);
 
 
 const [banner, setBanner] = useState(null);
@@ -561,7 +705,50 @@ const showServiceFilter =
   (selectedPets.length > 0 || selectedCategory) &&
   filteredServices.length > 0;
 
+
+  const handleClearFilters = () => {
+  // Reset all filters
+  setSearch("");
+  setSelectedPets(["all"]);
+  setSelectedCategory("");
+  setSelectedService("");
+  setSelectedCity("");
+  setQuickFilter("");
+  setSortBy("relevance");
+  setMinRating(0);
+  setPage(1);
+
+  // Navigate to base directory (remove params)
+  navigate("/directory");
+};
 // console.log("all:",allListings)
+const hasActiveFilters = useMemo(() => {
+  return (
+    search ||
+    selectedCategory ||
+    selectedService ||
+    selectedCity ||
+    (selectedPets.length && !selectedPets.includes("all")) ||
+    quickFilter ||
+    sortBy !== "relevance" ||
+    minRating > 0 ||
+    routeCity ||
+    routeCategory ||
+    routePet
+  );
+}, [
+  search,
+  selectedCategory,
+  selectedService,
+  selectedCity,
+  selectedPets,
+  quickFilter,
+  sortBy,
+  minRating,
+  routeCity,
+  routeCategory,
+  routePet
+]);
   return (
     <>
     <AuthGateModal
@@ -590,7 +777,7 @@ const showServiceFilter =
         <div className="directory-header">
         <h2>
           {/* {console.log("selcat:",selectedCategory)} */}
-          {selectedCategory ? selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1) : "All"} Services Directory
+          All Services Directory
         </h2>
         <p>Browse top-rated pet services by category and city</p>
       </div>
@@ -625,6 +812,7 @@ const showServiceFilter =
           <div className="directory-filters sticky-top shadow-sm  rounded p-3" style={{"top": "70px"}}>
             <Row className=" shadow-sm m-4 rounded  mb-0  ">
             <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Apply Filter</h5>
+            
             <div className=' d-flex gap-3 flex-column p-4'>
             <input
               type="text"
@@ -644,7 +832,7 @@ const showServiceFilter =
                 </option>
               ))}
             </select> */}
-            <select
+            {/* <select
   onChange={e => {
     const value = e.target.value;
 
@@ -658,6 +846,22 @@ const showServiceFilter =
   }}
 >
   {/* <option value="">All Pets</option> */}
+  {/*<option value="all">All Types</option>
+  {petCategories.map(pet => (
+    <option key={pet._id} value={pet.categoryName}>
+      {pet.categoryName}
+    </option>
+  ))}
+</select> */}
+<select
+  value={selectedPets[0] || "all"}
+  onChange={e => {
+    const value = e.target.value;
+    setSelectedPets(value === "all" ? ["all"] : [value]);
+      setSelectedCategory(""); // ✅ controlled reset
+    setPage(1);
+  }}
+>
   <option value="all">All Types</option>
   {petCategories.map(pet => (
     <option key={pet._id} value={pet.categoryName}>
@@ -701,15 +905,26 @@ const showServiceFilter =
 )}
             {!routeCity && (
               <select value={selectedCity} onChange={handleCityChange}>
-                <option value="">All Cities</option>
-                {filteredCities.map(c => (
-                  <option value={c.city} key={c._id}>
-                    {c.city}
-                  </option>
-                ))}
-              </select>
+  <option value="">All Cities</option>
+  {filteredCities.map(c => (
+    <option value={c.city} key={c._id}>
+      {c.city}
+    </option>
+  ))}
+</select>
+            )}
+
+            {hasActiveFilters && (
+            <div className="text-center mt-2">
+            <Button size="sm" variant="link"
+              onClick={handleClearFilters}
+            >
+              Clear All
+            </Button>
+          </div>
             )}
             </div>
+            
             </Row>
             <Row className='shadow-sm m-4 rounded  mb-0 '>
               <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Quick Filters</h5>
@@ -817,7 +1032,7 @@ const showServiceFilter =
     </Card.Header>
 
     <Card.Body className="pos-rel d-flex flex-column flex-grow-1">
-      <div className='status-updates mt-2 mb-2 d-flex gap-2'>
+      <div className='status-updates mt-5 mb-2 d-flex gap-2'>
         {listing.isVerified && (
           <div className='verified-identification'>
             <Badge pill bg="success" className='gap-1 d-flex'>
