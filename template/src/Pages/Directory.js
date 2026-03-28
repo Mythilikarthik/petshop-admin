@@ -27,7 +27,9 @@ const normalize = (str = "") =>
   str
     .toLowerCase()
     .replace(/&/g, "and")        // fix & vs and
-    .replace(/[^a-z0-9\s]/g, "") // remove special chars (), / , etc
+    // .replace(/[^a-z0-9\s]/g, "") // remove special chars (), / , etc
+    .replace(/-/g, " ")              // convert hyphen → space
+.replace(/[^a-z0-9\s]/g, "")    // remove other chars
     .replace(/\s+/g, " ")        // normalize spaces
     .trim();
 const Directory = () => {
