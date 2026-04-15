@@ -53,7 +53,9 @@ router.post('/', upload.fields([
 
     const bannerImage = req.files?.bannerImage?.[0]?.path || '';
     const contentImage = req.files?.contentImage?.[0]?.path || '';
-
+if (!date) {
+  date = undefined; // or null
+}
     const newBlog = new Blog({
       title, author, category, date, status, excerpt, content,
       bannerImage, contentImage
@@ -161,6 +163,9 @@ router.put('/:id', upload.fields([
     }
 
     const updateData = { ...req.body };
+    if (!updateData.date) {
+  delete updateData.date; // keeps existing OR uses default
+}
     if (req.files?.bannerImage) updateData.bannerImage = req.files.bannerImage[0].path;
     if (req.files?.contentImage) updateData.contentImage = req.files.contentImage[0].path;
 

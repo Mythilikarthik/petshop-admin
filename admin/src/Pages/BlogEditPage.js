@@ -79,9 +79,20 @@ const BlogEditPage = () => {
 
       const formData = new FormData();
 
+      // for (let key in blog) {
+      //   if (key === "category") {
+      //     blog[key].forEach((catId) => formData.append("category[]", catId));
+      //   } else if (key !== "bannerImage" && key !== "contentImage") {
+      //     formData.append(key, blog[key]);
+      //   }
+      // }
       for (let key in blog) {
         if (key === "category") {
           blog[key].forEach((catId) => formData.append("category[]", catId));
+        } else if (key === "date") {
+          if (blog.date) {
+            formData.append("date", blog.date);
+          }
         } else if (key !== "bannerImage" && key !== "contentImage") {
           formData.append(key, blog[key]);
         }

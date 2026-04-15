@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const BlogSchema = new Schema({
   title: { type: String, required: true, unique: true },
-  author: { type: String, required: true },
+  author: { type: String },
   category: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
   date: { type: Date, default: Date.now },
   status: { type: String, enum: ['draft', 'published'], default: 'draft' },

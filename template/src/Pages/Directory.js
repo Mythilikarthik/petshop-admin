@@ -234,7 +234,8 @@ const city = normalize(l.city?.city);
     const serviceMatch =
   !selectedService ||
   (l.specializedServices || []).some(s =>
-    s.serviceName?.toLowerCase() === selectedService.toLowerCase()
+    //s.serviceName?.toLowerCase() === selectedService.toLowerCase()
+    normalize(s.serviceName) === normalize(selectedService)
   );
 
     const searchMatch =
