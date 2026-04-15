@@ -183,6 +183,23 @@ router.patch("/:id/impression", async (req, res) => {
 //     fetch(`${API_BASE}/api/ads/${ad._id}/impression`, { method: "PATCH" });
 //   });
 // }, [ads]);
+//Working click routes
+// router.get("/:id/click", async (req, res) => {
+//   try {
+//     const ad = await Ad.findById(req.params.id);
+//     if (!ad) return res.status(404).send("Ad not found");
+
+//     ad.clicks += 1;
+//     await ad.save();
+
+//     // redirect to actual ad URL
+//     res.redirect(ad.url);
+//   } catch (err) {
+//     console.error("Click tracking error:", err);
+//     res.status(500).send("Server error");
+//   }
+// });
+//update click routes
 router.get("/:id/click", async (req, res) => {
   try {
     const ad = await Ad.findById(req.params.id);
@@ -191,8 +208,7 @@ router.get("/:id/click", async (req, res) => {
     ad.clicks += 1;
     await ad.save();
 
-    // redirect to actual ad URL
-    res.redirect(ad.url);
+    res.redirect(ad.url); // redirect to actual ad
   } catch (err) {
     console.error("Click tracking error:", err);
     res.status(500).send("Server error");
@@ -201,6 +217,30 @@ router.get("/:id/click", async (req, res) => {
 {/* <a href={`${API_BASE}/api/ads/${ad._id}/click`} target="_blank" rel="noopener noreferrer">
   <img src={ad.image} alt="Ad banner" />
 </a> */}
+
+// router.patch("/:id/click-track", async (req, res) => {
+//   try {
+//     await Ad.findByIdAndUpdate(req.params.id, {
+//       $inc: { clicks: 1 }
+//     });
+
+//     res.json({ success: true });
+//   } catch (err) {
+//     console.error("Click tracking error:", err);
+//     res.status(500).json({ success: false });
+//   }
+// });
+router.patch("/:id/click-track", async (req, res) => {
+  try {
+    await Ad.findByIdAndUpdate(req.params.id, {
+      $inc: { clicks: 1 }
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
 router.get("/earnings/:id", async (req, res) => {
   const ad = await Ad.findById(req.params.id);
   const CPM_RATE = 2.5; // ₹2.5 per 1000 views

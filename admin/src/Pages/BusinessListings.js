@@ -482,28 +482,59 @@ const addListingsFromRows = async (rows = []) => {
     // ✅ STRICT MATCH CHECK (FIXED)
     let hasIntersectionError = false;
 
-    for (const cat of categoriesRaw) {
-      const allowedPets = categoryPetMap[cat] || [];
+for (const cat of categoriesRaw) {
+  const allowedPets = categoryPetMap[cat] || [];
 
-      const sortedAllowed = [...allowedPets].sort();
-      const sortedGiven = [...petCategoriesRaw].sort();
+  // ✅ HANDLE "ALL" HERE
+  let normalizedPetTypes = [...petCategoriesRaw];
 
-      const isExactMatch =
-        sortedAllowed.length === sortedGiven.length &&
-        sortedAllowed.every((val, i) => val === sortedGiven[i]);
+  if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
+    normalizedPetTypes = [...allowedPets]; // 🔥 expand "all"
+  }
 
-      if (!isExactMatch) {
-        hasIntersectionError = true;
+  const sortedAllowed = [...allowedPets].sort();
+  const sortedGiven = [...normalizedPetTypes].sort();
 
-        intersectionErrors.push(
-          `Row ${idx + 2}: "${cat}" requires [${allowedPets.join(", ")}] but you provided [${petCategoriesRaw.join(", ")}]`
-        );
+  const isExactMatch =
+    sortedAllowed.length === sortedGiven.length &&
+    sortedAllowed.every((val, i) => val === sortedGiven[i]);
 
-        break;
-      }
-    }
+  if (!isExactMatch) {
+    hasIntersectionError = true;
 
-    if (hasIntersectionError) continue;
+    intersectionErrors.push(
+      `Row ${idx + 2}: "${cat}" requires [${allowedPets.join(", ")}] but you provided [${petCategoriesRaw.join(", ")}]`
+    );
+
+    break;
+  }
+}
+
+if (hasIntersectionError) continue;
+    // let hasIntersectionError = false;
+
+    // for (const cat of categoriesRaw) {
+    //   const allowedPets = categoryPetMap[cat] || [];
+
+    //   const sortedAllowed = [...allowedPets].sort();
+    //   const sortedGiven = [...petCategoriesRaw].sort();
+
+    //   const isExactMatch =
+    //     sortedAllowed.length === sortedGiven.length &&
+    //     sortedAllowed.every((val, i) => val === sortedGiven[i]);
+
+    //   if (!isExactMatch) {
+    //     hasIntersectionError = true;
+
+    //     intersectionErrors.push(
+    //       `Row ${idx + 2}: "${cat}" requires [${allowedPets.join(", ")}] but you provided [${petCategoriesRaw.join(", ")}]`
+    //     );
+
+    //     break;
+    //   }
+    // }
+
+    // if (hasIntersectionError) continue;
 
     // CATEGORY IDS
     const categoryIds = categoriesRaw
@@ -519,7 +550,16 @@ const addListingsFromRows = async (rows = []) => {
     let petCategoryIds = [];
 
     if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
-      petCategoryIds = Object.values(petCategoryMap);
+      // 🔥 assign ALL allowed pet types for that category
+      const allAllowed = new Set();
+
+      categoriesRaw.forEach(cat => {
+        (categoryPetMap[cat] || []).forEach(p => allAllowed.add(p));
+      });
+
+      petCategoryIds = [...allAllowed]
+        .map(name => petCategoryMap[name])
+        .filter(Boolean);
     } else {
       petCategoryIds = petCategoriesRaw
         .map(name => {
@@ -530,6 +570,19 @@ const addListingsFromRows = async (rows = []) => {
         })
         .filter(Boolean);
     }
+
+    // if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
+    //   petCategoryIds = Object.values(petCategoryMap);
+    // } else {
+    //   petCategoryIds = petCategoriesRaw
+    //     .map(name => {
+    //       if (!petCategoryMap[name]) {
+    //         missingPetCategories.add(name);
+    //       }
+    //       return petCategoryMap[name];
+    //     })
+    //     .filter(Boolean);
+    // }
 
     mapped.push({
       _id: `tmp-${timestamp}-${idx}`,
