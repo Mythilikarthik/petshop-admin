@@ -44,6 +44,7 @@ const BusinessListings = () => {
           phone: item.phone || '',
           categories: item.categories?.map(c => c.categoryName) || [],
           petCategories: item.petCategories?.map(p => p.categoryName) || [],
+          specializedServices: item.specializedServices?.map(s => s.serviceName) || [],
           city: item.city || null,
           status: item.status || 'pending',
           created_by_type : item.created_by_type,
@@ -837,6 +838,7 @@ const addListingsFromRows = async (rows = []) => {
               <th>Name</th>
               <th>Type</th>
               <th>Category</th>
+              <th>Specialized Service</th>
               <th>City</th>
               <th>Created By</th>
               <th>Status</th>
@@ -859,6 +861,7 @@ const addListingsFromRows = async (rows = []) => {
                 </td>
                 <td>{listing.petCategories?.join(",")}</td>
                 <td>{listing.categories?.join(", ")}</td>
+                <td>{listing.specializedServices?.join(", ")}</td>
                 <td>{listing.city?.city}</td>
                 <td>{listing.created_by_type.charAt(0).toUpperCase() + listing.created_by_type.slice(1)}</td>
                 <td>

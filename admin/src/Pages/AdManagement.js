@@ -309,7 +309,7 @@ console.log(catData);
               {formData.image && !bannerFile && (
                 <div className="mt-2 text-center">
                   <Image
-                    src={formData.image}
+                    src={`${API_BASE}/${formData.image}`}
                     thumbnail
                     style={{ width: "200px", height: "120px", objectFit: "cover" }}
                   />

@@ -112,7 +112,7 @@ router.post("/", uploadSingleWithError("image"), async (req, res) => {
       return res.status(400).json({ success: false, message: "Image is required" });
     }
 
-    const image = `/uploads/ads/${req.file.filename}`;
+    const image = `uploads/ads/${req.file.filename}`;
     const ad = new Ad({ category, city, position, url, image , page, fromDate: fromDate || null, toDate: toDate || null });
 
     await ad.save();
@@ -140,7 +140,7 @@ router.patch("/:id", uploadSingleWithError("image"), async (req, res) => {
 
     // Handle file upload
     if (req.file) {
-      updateData.image = `/uploads/ads/${req.file.filename}`;
+      updateData.image = `uploads/ads/${req.file.filename}`;
     }
 
     const updated = await Ad.findByIdAndUpdate(req.params.id, updateData, {

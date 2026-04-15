@@ -5,11 +5,18 @@ const SpecializedServiceSchema = new mongoose.Schema({
   serviceName: { type: String, required: true, trim: true },
 
   // Mapping
-  category: {
+  // category: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Category",
+  //   required: true
+  // },
+  category: [
+  {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
     required: true
-  },
+  }
+],
   // petCategory: {
   //   type: mongoose.Schema.Types.ObjectId,
   //   ref: "PetCategory",

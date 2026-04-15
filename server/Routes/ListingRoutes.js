@@ -1039,6 +1039,14 @@ router.get("/", async (req, res) => {
           foreignField: "_id",
           as: "petCategories"
         }
+      },
+      {
+        $lookup: {
+          from: "specializedservices",
+          localField: "specializedServices",
+          foreignField: "_id",
+          as: "specializedServices"
+        }
       }
     ]);
 

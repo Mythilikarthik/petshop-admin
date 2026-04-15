@@ -106,7 +106,12 @@ export default function SpecializedServiceList() {
       <tr key={service._id}>
         <td>{pagesVisited + index + 1}</td>
         <td>{service.serviceName}</td>
-        <td>{service.category?.categoryName}</td>
+        {/* <td>{service.category?.categoryName}</td> */}
+        <td>
+  {service.category?.length > 0
+    ? service.category.map(c => c.categoryName).join(", ")
+    : "-"}
+</td>
         <td>
   {service.petCategories?.length > 0
     ? service.petCategories.map(p => p.categoryName).join(", ")

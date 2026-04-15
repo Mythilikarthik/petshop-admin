@@ -19,7 +19,8 @@ export default function AddEditSpecializedService() {
   const [form, setForm] = useState({
     serviceName: "",
     petCategories: [],
-    category: "",
+    // category: "",
+    category: [],
     description: "",
     show: true,
   });
@@ -45,7 +46,8 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
           setForm({
           serviceName: data.serviceName || "",
           petCategories: data.petCategories || [],
-          category: data.category || "",
+          // category: data.category || "",
+          category: data.category ? data.category.map(c => c._id || c) : [],
           description: data.description || "",
           show: data.show ?? true,
         });
@@ -169,6 +171,51 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
 //   }
 
 // }, [form.petCategories, allCategories]);
+// useEffect(() => {
+//   if (!form.petCategories.length) {
+//     setFilteredCategories([]);
+//     return;
+//   }
+
+//   const isAllSelected = form.petCategories.includes("all");
+  
+
+//   // ✅ Get ALL pet IDs from DB
+//   const totalPetIds = petCategories.map(p => String(p._id));
+
+//   const filtered = allCategories.filter(cat => {
+//     if (!cat.show || !Array.isArray(cat.petCategories)) return false;
+
+//     const allowedPets = cat.petCategories.map(p => String(p._id));
+
+//     // ✅ CASE 1: ALL selected
+//     if (isAllSelected) {
+//       return (
+//         allowedPets.length === totalPetIds.length &&
+//         totalPetIds.every(id => allowedPets.includes(id))
+//       );
+//     }
+
+//     // ✅ CASE 2: Selected pets (exact match)
+//     const selectedPets = form.petCategories.map(String);
+
+//     return (
+//       allowedPets.length === selectedPets.length &&
+//       selectedPets.every(id => allowedPets.includes(id))
+//     );
+//   });
+
+//   setFilteredCategories(filtered);
+
+//   // reset invalid category
+//   if (!filtered.some(c => String(c._id) === String(form.category))) {
+//     setForm(prev => ({
+//       ...prev,
+//       category: filtered.length === 1 ? filtered[0]._id : ""
+//     }));
+//   }
+
+// }, [form.petCategories, allCategories, petCategories]);
 useEffect(() => {
   if (!form.petCategories.length) {
     setFilteredCategories([]);
@@ -176,9 +223,6 @@ useEffect(() => {
   }
 
   const isAllSelected = form.petCategories.includes("all");
-  
-
-  // ✅ Get ALL pet IDs from DB
   const totalPetIds = petCategories.map(p => String(p._id));
 
   const filtered = allCategories.filter(cat => {
@@ -186,7 +230,7 @@ useEffect(() => {
 
     const allowedPets = cat.petCategories.map(p => String(p._id));
 
-    // ✅ CASE 1: ALL selected
+    // ✅ ALL selected
     if (isAllSelected) {
       return (
         allowedPets.length === totalPetIds.length &&
@@ -194,7 +238,7 @@ useEffect(() => {
       );
     }
 
-    // ✅ CASE 2: Selected pets (exact match)
+    // ✅ Exact match
     const selectedPets = form.petCategories.map(String);
 
     return (
@@ -205,11 +249,11 @@ useEffect(() => {
 
   setFilteredCategories(filtered);
 
-  // reset invalid category
-  if (!filtered.some(c => String(c._id) === String(form.category))) {
+  // ✅ FIX for multi-category
+  if (!filtered.some(c => form.category.includes(String(c._id)))) {
     setForm(prev => ({
       ...prev,
-      category: filtered.length === 1 ? filtered[0]._id : ""
+      category: filtered.length === 1 ? [filtered[0]._id] : []
     }));
   }
 
@@ -223,7 +267,8 @@ useEffect(() => {
     setForm(prev => ({
       ...prev,
       petCategory: value,
-      category: ""
+      // category: ""
+      category: []
     }));
   } else {
     setForm(prev => ({
@@ -238,41 +283,88 @@ useEffect(() => {
     setLoading(true);
     setError("");
     setSuccess("");
-    const selectedCategory = allCategories.find(
-  c => String(c._id) === String(form.category)
+//     const selectedCategory = allCategories.find(
+//   c => String(c._id) === String(form.category)
+// );
+
+// if (!selectedCategory) {
+//   setError("Invalid category selected");
+//   setLoading(false);
+//   return;
+// }
+// 
+//
+//const selectedCategories = allCategories.filter(c =>
+//   form.category.includes(String(c._id))
+// );
+
+// if (!selectedCategories.length) {
+//   setError("Invalid category selected");
+//   setLoading(false);
+//   return;
+// }
+
+// const allowedPets = (selectedCategory.petCategories || []).map(p =>
+//   String(p._id)
+// );
+
+// // ✅ STRICT INTERSECTION CHECK
+// // const isValid = form.petCategories.every(petId =>
+// //   allowedPets.includes(String(petId))
+// // );
+// const isAllSelected = form.petCategories.includes("all");
+// const finalPetCategories = isAllSelected
+//   ? petCategories.map(p => String(p._id))
+//   : form.petCategories;
+
+// if (!isAllSelected) {
+//   const selectedPets = form.petCategories.map(String);
+
+//   const isExactMatch =
+//     allowedPets.length === selectedPets.length &&
+//     selectedPets.every(p => allowedPets.includes(p));
+
+//   if (!isExactMatch) {
+//     setError("Selected category is not valid for chosen pet types");
+//     setLoading(false);
+//     return;
+//   }
+const selectedCategories = allCategories.filter(c =>
+  form.category.includes(String(c._id))
 );
 
-if (!selectedCategory) {
+if (!selectedCategories.length) {
   setError("Invalid category selected");
   setLoading(false);
   return;
 }
 
-const allowedPets = (selectedCategory.petCategories || []).map(p =>
-  String(p._id)
-);
-
-// ✅ STRICT INTERSECTION CHECK
-// const isValid = form.petCategories.every(petId =>
-//   allowedPets.includes(String(petId))
-// );
 const isAllSelected = form.petCategories.includes("all");
+
 const finalPetCategories = isAllSelected
   ? petCategories.map(p => String(p._id))
   : form.petCategories;
 
+// ✅ Validate ALL selected categories
 if (!isAllSelected) {
   const selectedPets = form.petCategories.map(String);
 
-  const isExactMatch =
-    allowedPets.length === selectedPets.length &&
-    selectedPets.every(p => allowedPets.includes(p));
+  for (let cat of selectedCategories) {
+    const allowedPets = (cat.petCategories || []).map(p =>
+      String(p._id)
+    );
 
-  if (!isExactMatch) {
-    setError("Selected category is not valid for chosen pet types");
-    setLoading(false);
-    return;
+    const isExactMatch =
+      allowedPets.length === selectedPets.length &&
+      selectedPets.every(p => allowedPets.includes(p));
+
+    if (!isExactMatch) {
+      setError(`Category "${cat.categoryName}" is not valid for selected pet types`);
+      setLoading(false);
+      return;
+    }
   }
+
 }
 
 
@@ -387,13 +479,13 @@ if (!isAllSelected) {
       setForm(prev => ({
         ...prev,
         petCategories: ["all"],
-        category: ""
+        category: []
       }));
     } else {
       setForm(prev => ({
         ...prev,
         petCategories: values,
-        category: ""
+        category: []
       }));
     }
   }}
@@ -402,7 +494,7 @@ if (!isAllSelected) {
 </Form.Group>
 
           {/* Filtered Category */}
-          <Form.Group className="mb-3">
+          {/* <Form.Group className="mb-3">
             <Form.Label>Select Category</Form.Label>
             <Form.Select
               name="category"
@@ -418,7 +510,38 @@ if (!isAllSelected) {
                 </option>
               ))}
             </Form.Select>
-          </Form.Group>
+          </Form.Group> */}
+          <Form.Group className="mb-3">
+  <Form.Label>Select Categories</Form.Label>
+
+  <Select
+    isMulti
+    options={filteredCategories.map(cat => ({
+      value: cat._id,
+      label: cat.categoryName
+    }))}
+
+    value={filteredCategories
+      .filter(cat => form.category.includes(cat._id))
+      .map(cat => ({
+        value: cat._id,
+        label: cat.categoryName
+      }))
+    }
+
+    onChange={(selected) => {
+      const values = selected ? selected.map(s => s.value) : [];
+
+      setForm(prev => ({
+        ...prev,
+        category: values
+      }));
+    }}
+
+    placeholder="Select categories..."
+    isDisabled={!form.petCategories.length}
+  />
+</Form.Group>
 
           <Form.Group className="mb-3">
             <Form.Label>Service Name</Form.Label>
