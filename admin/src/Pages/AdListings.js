@@ -193,7 +193,7 @@ const AdListings = () => {
 
                     <td>
                       <img
-                        src={ad.image}
+                        src={`${API_BASE}/${ad.image}`}
                         alt="Ad"
                         style={{
                           width: "70px",

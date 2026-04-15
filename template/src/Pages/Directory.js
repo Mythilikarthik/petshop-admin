@@ -1172,13 +1172,13 @@ const hasActiveFilters = useMemo(() => {
   })()}
 </div>
 
-      <div className="service-tags mt-2">
+      {/* <div className="service-tags mt-2">
         {listing.categories?.map((cat, index) => (
           <span key={index} className="service-tag tag-orange">
             {cat.categoryName}
           </span>
         ))}
-      </div>
+      </div> */}
 
       {/* {listing.rating && (
         <div className="service-rating d-flex gap-2 mt-2">
