@@ -13,7 +13,7 @@ const CityListings = () => {
   const [listings, setListings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();

@@ -8,7 +8,7 @@ const API_BASE =
     ? process.env.REACT_APP_API_URL
     : "http://localhost:5000";
 
-const itemsPerPage = 8;
+const itemsPerPage = 10;
 
 const ReviewManagement = () => {
   const [reviews, setReviews] = useState([]);
