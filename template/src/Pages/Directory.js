@@ -23,14 +23,23 @@ const API_BASE =
     ? process.env.REACT_APP_API_URL
     : "http://localhost:5000";
 
+// const normalize = (str = "") =>
+//   str
+//     .toLowerCase()
+//     .replace(/&/g, "and")        // fix & vs and
+//     // .replace(/[^a-z0-9\s]/g, "") // remove special chars (), / , etc
+//     .replace(/-/g, " ")              // convert hyphen → space
+// .replace(/[^a-z0-9\s]/g, "")    // remove other chars
+//     .replace(/\s+/g, " ")        // normalize spaces
+//     .trim();
 const normalize = (str = "") =>
   str
     .toLowerCase()
-    .replace(/&/g, "and")        // fix & vs and
-    // .replace(/[^a-z0-9\s]/g, "") // remove special chars (), / , etc
-    .replace(/-/g, " ")              // convert hyphen → space
-.replace(/[^a-z0-9\s]/g, "")    // remove other chars
-    .replace(/\s+/g, " ")        // normalize spaces
+    .replace(/&/g, "and")
+    .replace(/[\/]/g, " ")       // ✅ convert "/" to space instead of removing
+    .replace(/-/g, " ")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
     .trim();
 const Directory = () => {
   const { user, authLoading  } = useAuth();
@@ -231,11 +240,20 @@ const city = normalize(l.city?.city);
               .includes(p.categoryName.toLowerCase())
           ));
 
-    const serviceMatch =
+  //   const serviceMatch =
+  // !selectedService ||
+  // (l.specializedServices || []).some(s =>
+  //   //s.serviceName?.toLowerCase() === selectedService.toLowerCase()
+  // );
+  console.log("Selected:", normalize(selectedService));
+  console.log(
+    "Services:",
+    l.specializedServices?.map(s => normalize(s.serviceName))
+  );
+  const serviceMatch =
   !selectedService ||
   (l.specializedServices || []).some(s =>
-    //s.serviceName?.toLowerCase() === selectedService.toLowerCase()
-    normalize(s.serviceName) === normalize(selectedService)
+    normalize(s.serviceName).includes(normalize(selectedService))
   );
 
     const searchMatch =
@@ -712,7 +730,7 @@ const showServiceFilter =
   const handleClearFilters = () => {
   // Reset all filters
   setSearch("");
-  setSelectedPets(["all"]);
+  setSelectedPets([]);
   setSelectedCategory("");
   setSelectedService("");
   setSelectedCity("");

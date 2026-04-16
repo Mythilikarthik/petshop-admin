@@ -1008,7 +1008,7 @@ router.get("/", async (req, res) => {
       { $match: {} }, // match everything
 
       // RANDOM SHUFFLE
-      { $sample: { size: 50 } }, // pick 50 random; increase if needed
+      //{ $sample: { size: 50 } }, // pick 50 random; increase if needed
 
       // populate city
       {
