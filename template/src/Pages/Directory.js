@@ -207,6 +207,9 @@ const filteredListings = useMemo(() => {
     // const category = (l.categories?.[0]?.categoryName || "").toLowerCase();
     // const city = (l.city?.city || "").toLowerCase();
     // const category = normalize(l.categories?.[0]?.categoryName);
+    const category = (l.categories || []).map(c =>
+  normalize(c.categoryName)
+);
 const city = normalize(l.city?.city);
     const shop = (l.shopName || "").toLowerCase();
     const rating = Number(l.rating || 0);
