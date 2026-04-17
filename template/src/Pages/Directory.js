@@ -36,9 +36,9 @@ const normalize = (str = "") =>
   str
     .toLowerCase()
     .replace(/&/g, "and")
-    .replace(/[\/]/g, " ")       // ✅ convert "/" to space instead of removing
+    .replace(/\s*\/\s*/g, "/")   // ✅ normalize spaces around "/"
     .replace(/-/g, " ")
-    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/[^a-z0-9\/\s]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 const Directory = () => {
@@ -250,10 +250,15 @@ const city = normalize(l.city?.city);
     "Services:",
     l.specializedServices?.map(s => normalize(s.serviceName))
   );
+  // const serviceMatch =
+  // !selectedService ||
+  // (l.specializedServices || []).some(s =>
+  //   normalize(s.serviceName).includes(normalize(selectedService))
+  // );
   const serviceMatch =
   !selectedService ||
   (l.specializedServices || []).some(s =>
-    normalize(s.serviceName).includes(normalize(selectedService))
+    normalize(s.serviceName) === normalize(selectedService)
   );
 
     const searchMatch =
