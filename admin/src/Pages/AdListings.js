@@ -180,6 +180,7 @@ const AdListings = () => {
                 <th>Type</th> */}
                 <th>Position</th>
                 <th>URL</th>
+                <th>Clicks</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -215,6 +216,7 @@ const AdListings = () => {
                         "-"
                       )}
                     </td>
+                    <td>{ad.clicks}</td>
                     <td>                      
                       <Button
                         variant="primary"

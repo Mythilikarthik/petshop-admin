@@ -221,7 +221,7 @@ console.log(catData);
             </Form.Group> */}
 
             {/* City */}
-            {/* <Form.Group className="mb-3">
+            <Form.Group className="mb-3">
               <Form.Label>City</Form.Label>
               <Select
                 name="city"
@@ -246,7 +246,7 @@ console.log(catData);
                   }))
                 }
               />
-            </Form.Group> */}
+            </Form.Group>
 
             {/* Position */}
             <Form.Group className="mb-3">
