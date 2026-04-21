@@ -511,6 +511,7 @@ const [sortOrder, setSortOrder] = useState("desc"); // asc | desc
   currentPage * itemsPerPage,
   (currentPage + 1) * itemsPerPage
 );
+console.log(displayedEnquiries);
 const handleSort = (field) => {
   if (sortField === field) {
     setSortOrder(prev => (prev === "asc" ? "desc" : "asc"));
@@ -757,6 +758,9 @@ const handleSort = (field) => {
           {selectedGroup &&
             selectedGroup.enquiries.map((enq) => (
               <div key={enq._id} className="mb-3 border-bottom pb-2">
+                <p><strong>Listing:</strong> {enq.listingId?.shopName || "N/A"}</p>
+                <p><strong>Name:</strong> {enq.userName || "N/A"}</p>
+                <p><strong>Email:</strong> {enq.userEmail || "N/A"}</p>
                 <p><strong>Action:</strong> {enq.action}</p>
                 <p><strong>IP:</strong> {enq.ip}</p>
                 <p><strong>Date:</strong> {new Date(enq.createdAt).toLocaleString()}</p>

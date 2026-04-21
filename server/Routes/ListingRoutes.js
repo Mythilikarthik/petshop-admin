@@ -326,6 +326,7 @@ router.post(
 //   }
 // );
 
+
 router.put(
   "/claim/:id",
   (req, res, next) => {
@@ -340,123 +341,259 @@ router.put(
     });
   },
   async (req, res) => {
-    try {
-      const { id } = req.params;
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-      const {
-        name,
-        username,
-        email,
-        phone,
-        password,
-        claimRole,
-        verificationMethod,
-      } = req.body;
+  try {
+    const { id } = req.params;
 
-      // 1️⃣ Validate listing
-      const listing = await Listing.findById(id);
-      if (!listing) {
-        return res.json({ success: false, message: "Listing not found" });
-      }
+    const {
+      name,
+      username,
+      email,
+      phone,
+      password,
+      claimRole,
+      verificationMethod,
+    } = req.body;
 
-      if (listing.isClaimed) {
-        return res.json({
-          success: false,
-          message: "Listing already claimed",
-        });
-      }
+    // 1️⃣ Validate listing
+    const listing = await Listing.findById(id).session(session);
 
-      // 2️⃣ Check existing user
-      const existingUser = await User.findOne({
-        $or: [{ username }, { email }],
-      });
-console.log(username, email);
-      if (existingUser) {
-        return res.json({
-          success: false,
-          message: "User already exists",
-        });
-      }
+    if (!listing) {
+      throw new Error("Listing not found");
+    }
 
-      // 3️⃣ Create user
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    if (listing.isClaimed) {
+      throw new Error("Listing already claimed");
+    }
 
-      const newUser = new User({
-        name,
-        username,
-        email,
-        phone,
-        password: hashedPassword,
-        otp,
-        otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
-        isVerified: false,
-      });
+    // 2️⃣ Check existing user
+    let user = await User.findOne({
+      $or: [{ username }, { email }],
+    }).session(session);
 
-      await newUser.save();
-      console.log("claimid", newUser._id);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // 4️⃣ Update listing (pending verification)
-      if (verificationMethod === "email") {
-  listing.claimStatus = "otp_pending";
+if (user) {
+  if (!user.isVerified) {
+    console.log("Reusing unverified user");
+
+    // 🔥 FIX: update OTP for existing user
+    user.otp = otp;
+    user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await user.save({ session });
+  } else {
+    throw new Error("User already exists");
+  }
 } else {
-  listing.claimStatus = "pending"; // waiting for admin review
+  // New user
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  user = new User({
+    name,
+    username,
+    email,
+    phone,
+    password: hashedPassword,
+    otp,
+    otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    isVerified: false,
+  });
+
+  await user.save({ session });
 }
 
-listing.isClaimed = true; // ❗ keep false until verified
-      // listing.isClaimed = true;
-      listing.claimedBy = newUser._id;
-      listing.claimRole = claimRole;
-      listing.verificationMethod = verificationMethod;
-      // listing.claimStatus = "otp_pending";
-      listing.status = "pending";
-      listing.claimedAt = new Date();
+    // 4️⃣ Update listing
+    listing.email= email;
+    listing.claimedBy = user._id;
+    listing.claimRole = claimRole;
+    listing.verificationMethod = verificationMethod;
+    listing.claimedAt = new Date();
 
-      if (req.files?.length) {
-        listing.verificationDocs = req.files.map((f) => f.path);
-      }
+    listing.claimStatus =
+      verificationMethod === "email" ? "otp_pending" : "pending";
 
-      await listing.save();
+    listing.isClaimed = true;
+    listing.status = "pending";
 
-      // 5️⃣ Send OTP if email verification
-      // if (verificationMethod.toLowerCase() === "email") {
-      //   await sendOtpEmail({
-      //     email,
-      //     name: username,
-      //     otp,
-      //   });
-      // }
-      if (verificationMethod.toLowerCase() === "email") {
-        try {
-          await sendOtpEmail({
-            email,
-            name: username,
-            otp,
-          });
-        } catch (err) {
-          console.error("Email failed:", err);
-
-          return res.json({
-            success: false,
-            message: "Failed to send OTP email",
-          });
-        }
-      }
-
-      const token = generateToken(newUser._id, "user");
-
-      res.json({
-        success: true,
-        message: "Claim initiated. OTP sent.",
-        userId: newUser._id,
-        token,
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: err.message });
+    if (req.files?.length) {
+      listing.verificationDocs = req.files.map((f) => f.path);
     }
+
+    await listing.save({ session });
+
+    // 5️⃣ Send OTP
+    if (verificationMethod === "email") {
+      try {
+        await sendOtpEmail({
+          email,
+          name: username,
+          otp: user.otp,
+        });
+      } catch (err) {
+        throw new Error("Failed to send OTP email");
+      }
+    }
+
+    const token = generateToken(user._id, "user");
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.json({
+      success: true,
+      message: "Claim initiated",
+      userId: user._id,
+      token,
+    });
+
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+
+    return res.json({
+      success: false,
+      message: err.message,
+    });
   }
-);
+});
+// 21/04/26
+// router.put(
+//   "/claim/:id",
+//   (req, res, next) => {
+//     docUpload.array("documents")(req, res, (err) => {
+//       if (err) {
+//         return res.status(400).json({
+//           success: false,
+//           message: err.message,
+//         });
+//       }
+//       next();
+//     });
+//   },
+//   async (req, res) => {
+//     try {
+//       const { id } = req.params;
+
+//       const {
+//         name,
+//         username,
+//         email,
+//         phone,
+//         password,
+//         claimRole,
+//         verificationMethod,
+//       } = req.body;
+
+//       // 1️⃣ Validate listing
+//       const listing = await Listing.findById(id);
+//       if (!listing) {
+//         return res.json({ success: false, message: "Listing not found" });
+//       }
+
+//       if (listing.isClaimed) {
+//         return res.json({
+//           success: false,
+//           message: "Listing already claimed",
+//         });
+//       }
+
+//       // 2️⃣ Check existing user
+//       const existingUser = await User.findOne({
+//         $or: [{ username }, { email }],
+//       });
+// console.log(username, email);
+//       if (existingUser) {
+//         return res.json({
+//           success: false,
+//           message: "User already exists",
+//         });
+//       }
+
+//       // 3️⃣ Create user
+//       const hashedPassword = await bcrypt.hash(password, 10);
+//       const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+//       const newUser = new User({
+//         name,
+//         username,
+//         email,
+//         phone,
+//         password: hashedPassword,
+//         otp,
+//         otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+//         isVerified: false,
+//       });
+
+//       await newUser.save();
+//       console.log("claimid", newUser._id);
+
+//       // 4️⃣ Update listing (pending verification)
+//       if (verificationMethod === "email") {
+//   listing.claimStatus = "otp_pending";
+// } else {
+//   listing.claimStatus = "pending"; // waiting for admin review
+// }
+
+// listing.isClaimed = true; // ❗ keep false until verified
+//       // listing.isClaimed = true;
+//       listing.claimedBy = newUser._id;
+//       listing.claimRole = claimRole;
+//       listing.verificationMethod = verificationMethod;
+//       // listing.claimStatus = "otp_pending";
+//       listing.status = "pending";
+//       listing.claimedAt = new Date();
+
+//       if (req.files?.length) {
+//         listing.verificationDocs = req.files.map((f) => f.path);
+//       }
+
+//       await listing.save();
+
+//       // 5️⃣ Send OTP if email verification
+//       // if (verificationMethod.toLowerCase() === "email") {
+//       //   await sendOtpEmail({
+//       //     email,
+//       //     name: username,
+//       //     otp,
+//       //   });
+//       // }
+//       if (verificationMethod.toLowerCase() === "email") {
+//         try {
+//           await sendOtpEmail({
+//             email,
+//             name: username,
+//             otp,
+//           });
+//         } catch (err) {
+//           console.error("Email failed:", err);
+
+//           return res.json({
+//             success: false,
+//             message: "Failed to send OTP email",
+//           });
+//         }
+//       }
+
+//       const token = generateToken(newUser._id, "user");
+
+//       res.json({
+//         success: true,
+//         message: "Claim initiated. OTP sent.",
+//         userId: newUser._id,
+//         token,
+//       });
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).json({ success: false, message: err.message });
+//     }
+//   }
+// );
+
+
+
 // router.put(
 //   "/claim/:id",
 //   verifyToken,

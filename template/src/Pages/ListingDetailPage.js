@@ -284,6 +284,14 @@ useEffect(() => {
       setAlert({ show: true, type: "danger", message: "Please enter a comment." });
       return;
     }
+    if (comment.length > 300) {
+      setAlert({
+        show: true,
+        type: "danger",
+        message: "Comment cannot exceed 300 characters.",
+      });
+      return;
+    }
 
     // if (!userName.trim() || !userEmail.trim()) {
     //   setAlert({
@@ -391,7 +399,24 @@ useEffect(() => {
   setIsTracking(false);
 };
 
+const handleFileChange = (e) => {
+  const files = Array.from(e.target.files);
 
+  for (let file of files) {
+    if (file.size > 2 * 1024 * 1024) {
+      setAlert({
+        show: true,
+        type: "danger",
+        message: `${file.name} exceeds 2MB limit`,
+      });
+
+      e.target.value = ""; // reset input
+      return;
+    }
+  }
+
+  setPhotos(files);
+};
 
 
   return (
@@ -716,7 +741,7 @@ useEffect(() => {
             ) : (
               <>
               <Form.Group className="mb-3">
-              <Form.Label>Your Name</Form.Label>
+              <Form.Label>Your Name <span className="text-red">*</span></Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Enter your name"
@@ -728,7 +753,7 @@ useEffect(() => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Your Email</Form.Label>
+              <Form.Label>Your Email <span className="text-red">*</span></Form.Label>
               <Form.Control
                 type="email"
                 placeholder="Enter your email"
@@ -749,7 +774,8 @@ useEffect(() => {
                 name="photos"
                 multiple
                 accept="image/*"
-                onChange={(e) => setPhotos(Array.from(e.target.files))}
+                // onChange={(e) => setPhotos(Array.from(e.target.files))}
+                onChange={handleFileChange}
                 ref = {fileInputRef}
               />
               <Form.Text className="text-muted">
@@ -757,7 +783,7 @@ useEffect(() => {
               </Form.Text>
             </Form.Group>
 
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
               <Form.Label>Comment <span className="text-red">*</span></Form.Label>
               <Form.Control
                 as="textarea"
@@ -767,7 +793,22 @@ useEffect(() => {
                 onChange={(e) => setComment(e.target.value)}
                 required
               />
-            </Form.Group>
+            </Form.Group> */}
+            <Form.Group className="mb-3">
+              <Form.Label>Comment <span className="text-red">*</span></Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  placeholder="Write your review..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  required
+                  maxLength={300} // ✅ limit to 300 characters
+                />
+              </Form.Group>                
+            <div className="text-end text-muted">
+              {comment.length}/300 characters
+            </div>
 
             <div className="mb-3">
               <Button

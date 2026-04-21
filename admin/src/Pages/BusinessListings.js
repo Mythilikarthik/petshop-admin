@@ -49,6 +49,7 @@ const BusinessListings = () => {
           status: item.status || 'pending',
           created_by_type : item.created_by_type,
           isClaimed: item.isClaimed || false,
+          claimStatus: item.claimStatus || false,
         }));
         setListings(normalized);
       }
@@ -97,12 +98,12 @@ const BusinessListings = () => {
     let matchesStatus = false;
 
 if (statusFilter === "approved") {
-  matchesStatus = l.status === "approved";
+  matchesStatus = l.status === "approved" && !l.isClaimed;
 } else if (statusFilter === "pending") {
   // matchesStatus = l.status === "pending";
-  matchesStatus = l.status === "pending" && !l.isClaimed; // 🔥 FIX
+  matchesStatus = l.status === "pending" || (l.isClaimed && l.claimStatus === "pending"); // 🔥 FIX
 } else if (statusFilter === "claimed") {
-  matchesStatus = l.isClaimed === true;
+  matchesStatus = l.isClaimed === true && l.claimStatus === "approved";
 }
     return matchesSearch && matchesCategory && matchesStatus && matchesType;
   });
@@ -394,16 +395,18 @@ const addListingsFromRows = async (rows = []) => {
   const timestamp = Date.now();
 
   // Fetch mapping data
-  const [catRes, petCatRes, cityRes] = await Promise.all([
+  const [catRes, petCatRes, cityRes, serviceRes] = await Promise.all([
     fetch(`${API_BASE}/api/category/show`),
     fetch(`${API_BASE}/api/pet-category/show`),
-    fetch(`${API_BASE}/api/city/show`)
+    fetch(`${API_BASE}/api/city/show`),
+    fetch(`${API_BASE}/api/specialized-service/service/show`) 
   ]);
 
-  const [catData, petCatData, cityData] = await Promise.all([
+  const [catData, petCatData, cityData, serviceData] = await Promise.all([
     catRes.json(),
     petCatRes.json(),
-    cityRes.json()
+    cityRes.json(),
+    serviceRes.json()
   ]);
 
   const categoryMap = Object.fromEntries(
@@ -422,6 +425,23 @@ const addListingsFromRows = async (rows = []) => {
   const petCategoryMap = Object.fromEntries(
     petCatData.petCategories.map(p => [p.categoryName.toLowerCase(), p._id])
   );
+  const serviceMap = Object.fromEntries(
+  serviceData.services.map(s => [s.serviceName.toLowerCase(), s._id])
+);
+const serviceRelationMap = Object.fromEntries(
+  serviceData.services.map(s => [
+    s.serviceName.toLowerCase(),
+    {
+      categories: (s.category || []).map(c =>
+        (c.categoryName || "").toLowerCase()
+      ),
+      petTypes: (s.petCategories || []).map(p =>
+        (p.categoryName || "").toLowerCase()
+      )
+    }
+  ])
+);
+
 
   const cityMap = Object.fromEntries(
     cityData.cities.map(city => [city.city.toLowerCase(), city._id])
@@ -432,6 +452,7 @@ const addListingsFromRows = async (rows = []) => {
   const missingCategories = new Set();
   const missingPetCategories = new Set();
   const intersectionErrors = [];
+  const missingServices = new Set();
 
   for (let idx = 0; idx < rows.length; idx++) {
     const row = rows[idx];
@@ -478,6 +499,10 @@ const addListingsFromRows = async (rows = []) => {
     // CITY CHECK
     const cityId = cityMap[cityName] || null;
     if (!cityId && cityName) missingCities.add(row.city);
+    const specializedRaw = safe(row.specializedServices)
+      .split(/[,;|]/)
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
 
     // ✅ STRICT MATCH CHECK (FIXED)
     let hasIntersectionError = false;
@@ -570,6 +595,33 @@ if (hasIntersectionError) continue;
         })
         .filter(Boolean);
     }
+    const specializedServiceIds = [];
+
+for (const serviceName of specializedRaw) {
+  const service = serviceRelationMap[serviceName];
+
+  if (!service) {
+    missingServices.add(serviceName);
+    continue;
+  }
+
+  const categoryMatch = categoriesRaw.some(cat =>
+    service.categories.includes(cat)
+  );
+
+  const petMatch = petCategoriesRaw.some(pet =>
+    service.petTypes.includes(pet)
+  );
+
+  if (!categoryMatch || !petMatch) {
+    intersectionErrors.push(
+      `Row ${idx + 2}: Service "${serviceName}" does not match selected Category/Type`
+    );
+    continue;
+  }
+
+  specializedServiceIds.push(serviceMap[serviceName]);
+}
 
     // if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
     //   petCategoryIds = Object.values(petCategoryMap);
@@ -593,6 +645,7 @@ if (hasIntersectionError) continue;
       city: cityId,
       categories: categoryIds,
       petCategories: petCategoryIds,
+      specializedServices: specializedServiceIds,
       businessHours,
       description: safe(row.description),
       mapUrl: safe(row.websiteUrl),
@@ -611,6 +664,7 @@ if (hasIntersectionError) continue;
     );
     return;
   }
+  
 
   // VALIDATION ERRORS
   if (missingCities.size || missingCategories.size || missingPetCategories.size) {
@@ -627,6 +681,12 @@ if (hasIntersectionError) continue;
     alert(message);
     return;
   }
+  if (missingServices.size) {
+  alert(
+    `Missing Specialized Services: ${Array.from(missingServices).join(", ")}`
+  );
+  return;
+}
 
   // 🚨 FINAL STRICT ERROR
   if (intersectionErrors.length > 0) {
@@ -733,7 +793,7 @@ if (hasIntersectionError) continue;
                 <Form.Group className="text-center">
                   <label
                     onClick={() => {
-                      const csvContent = `type,category,shopName,email,phone,businessHours,address,city,websiteUrl,description,metaTitle,metaKeyword,metaDescription`;
+                      const csvContent = `type,category,specializedServices,shopName,email,phone,businessHours,address,city,websiteUrl,description,metaTitle,metaKeyword,metaDescription`;
 
                       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
                       const link = document.createElement("a");
@@ -903,7 +963,7 @@ if (hasIntersectionError) continue;
               <tr key={listing._id}>
                 <td>{currentPage * itemsPerPage + index + 1}</td>
                 <td>{listing.shopName}
-                  {listing.isClaimed && (
+                  {listing.isClaimed && listing.claimStatus === "approved" && (
                     <span
                       className="badge bg-warning text-dark ms-2"
                       style={{ fontSize: "0.75rem" }}

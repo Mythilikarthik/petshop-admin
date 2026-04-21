@@ -51,7 +51,12 @@ router.get("/list/:listingId", async (req, res) => {
 //POST /api/reviews -with image
 router.post("/", upload.array("photos", 5), async (req, res) => {
   const { listingId, userId, userName, userEmail, rating, comment } = req.body;
-
+  if (!comment || comment.length > 300) {
+    return res.status(400).json({
+      success: false,
+      message: "Comment must be less than 300 characters",
+    });
+  }
   try {
     const photos = req.files
       ? req.files.map(file => `uploads/reviews/${file.filename}`)

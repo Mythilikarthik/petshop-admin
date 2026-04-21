@@ -28,25 +28,50 @@ const EditCategory = () => {
   const [petCategoryList, setPetCategoryList] = useState([]);
 
   // Fetch pet categories for dropdown
+  // useEffect(() => {
+  //   const fetchPetCategories = async () => {
+  //     try {
+  //       const res = await fetch(`${API_BASE}/api/pet-category/show`);
+  //       const data = await res.json();
+  //       if (data.success) {
+  //         setPetCategoryList(
+  //           data.petCategories.map(c => ({
+  //             value: c._id,
+  //             label: c.categoryName,
+  //           }))
+  //         );
+  //       }
+  //     } catch (err) {
+  //       console.error("Error loading pet categories:", err);
+  //     }
+  //   };
+  //   fetchPetCategories();
+  // }, []);
   useEffect(() => {
-    const fetchPetCategories = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/pet-category`);
-        const data = await res.json();
-        if (data.success) {
-          setPetCategoryList(
-            data.petCategories.map(c => ({
-              value: c._id,
-              label: c.categoryName,
-            }))
-          );
-        }
-      } catch (err) {
-        console.error("Error loading pet categories:", err);
+  const fetchPetCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/pet-category/show`);
+      const data = await res.json();
+
+      if (data.success) {
+        const options = data.petCategories.map(c => ({
+          value: c._id,
+          label: c.categoryName,
+        }));
+
+        // ✅ Add "All Types"
+        setPetCategoryList([
+          { value: "all", label: "All Types" },
+          ...options
+        ]);
       }
-    };
-    fetchPetCategories();
-  }, []);
+    } catch (err) {
+      console.error("Error loading pet categories:", err);
+    }
+  };
+
+  fetchPetCategories();
+}, []);
 
   // Preload category data
   useEffect(() => {
@@ -72,12 +97,37 @@ const EditCategory = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // const handlePetCategoryChange = (selected) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     petCategories: selected ? selected.map(s => s.value) : [],
+  //   }));
+  // };
   const handlePetCategoryChange = (selected) => {
+  if (!selected) {
+    setFormData(prev => ({ ...prev, petCategories: [] }));
+    return;
+  }
+
+  const isAllSelected = selected.some(s => s.value === "all");
+
+  if (isAllSelected) {
+    // ✅ Select all except "all"
+    const allValues = petCategoryList
+      .filter(opt => opt.value !== "all")
+      .map(opt => opt.value);
+
     setFormData(prev => ({
       ...prev,
-      petCategories: selected ? selected.map(s => s.value) : [],
+      petCategories: allValues
     }));
-  };
+  } else {
+    setFormData(prev => ({
+      ...prev,
+      petCategories: selected.map(s => s.value)
+    }));
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -138,9 +188,16 @@ const EditCategory = () => {
             <Select
               isMulti
               options={petCategoryList}
-              value={petCategoryList.filter(opt =>
-                formData.petCategories.includes(opt.value)
-              )}
+              // value={petCategoryList.filter(opt =>
+              //   formData.petCategories.includes(opt.value)
+              // )}
+              value={
+                  formData.petCategories.length === petCategoryList.length - 1
+                    ? [{ value: "all", label: "All Types" }]
+                    : petCategoryList.filter(opt =>
+                        formData.petCategories.includes(opt.value)
+                      )
+                }
               onChange={handlePetCategoryChange}
               placeholder="Choose related pet categories..."
             />
