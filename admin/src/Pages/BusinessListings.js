@@ -596,7 +596,8 @@ if (hasIntersectionError) continue;
         .filter(Boolean);
     }
     const specializedServiceIds = [];
-
+console.log("RAW specializedServices:", row.specializedServices);
+console.log("Parsed specializedRaw:", specializedRaw);
 for (const serviceName of specializedRaw) {
   const service = serviceRelationMap[serviceName];
 
@@ -605,14 +606,43 @@ for (const serviceName of specializedRaw) {
     continue;
   }
 
-  const categoryMatch = categoriesRaw.some(cat =>
-    service.categories.includes(cat)
-  );
+  // const categoryMatch = categoriesRaw.some(cat =>
+  //   service.categories.includes(cat)
+  // );
 
-  const petMatch = petCategoriesRaw.some(pet =>
-    service.petTypes.includes(pet)
-  );
+  // const petMatch = petCategoriesRaw.some(pet =>
+  //   service.petTypes.includes(pet)
+  // );
 
+  const sortedServiceCats = [...service.categories].sort();
+const sortedGivenCats = [...categoriesRaw].sort();
+
+const categoryMatch =
+  sortedServiceCats.length === sortedGivenCats.length &&
+  sortedServiceCats.every((val, i) => val === sortedGivenCats[i]);
+
+
+// 🔥 handle ALL here also
+let normalizedPets = [...petCategoriesRaw];
+
+if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
+  normalizedPets = [...service.petTypes];
+}
+
+const sortedServicePets = [...service.petTypes].sort();
+const sortedGivenPets = [...normalizedPets].sort();
+
+const petMatch =
+  sortedServicePets.length === sortedGivenPets.length &&
+  sortedServicePets.every((val, i) => val === sortedGivenPets[i]);
+
+  console.log("service.categories:", service.categories);
+console.log("categoriesRaw:", categoriesRaw);
+
+console.log("service.petTypes:", service.petTypes);
+console.log("petCategoriesRaw:", petCategoriesRaw);
+console.log("categoryMatch:", categoryMatch);
+  console.log("petMatch:", petMatch);
   if (!categoryMatch || !petMatch) {
     intersectionErrors.push(
       `Row ${idx + 2}: Service "${serviceName}" does not match selected Category/Type`

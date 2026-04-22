@@ -15,12 +15,12 @@ router.post("/", async (req, res) => {
   try {
     let data = req.body;
 
-    // ✅ Convert "all" → store empty OR special flag
-    if (data.petCategories?.includes("all")) {
-      data.petCategories = []; // means ALL
-      data.isAllPets = true;   // optional flag
-    }
-
+    // // ✅ Convert "all" → store empty OR special flag
+    // if (data.petCategories?.includes("all")) {
+    //   data.petCategories = []; // means ALL
+    //   data.isAllPets = true;   // optional flag
+    // }
+console.log(data);
     const service = await SpecializedService.create(data);
     res.status(201).json(service);
 

@@ -14,6 +14,7 @@ import { useEngagementGate } from "../hooks/useEngagementGate";
 import { useAuth } from "../contexts/AuthContext";
 import AuthGateModal from "../hooks/AuthGateModel";
 import StarRating from "../Components/StarRating";
+import { Helmet } from 'react-helmet-async';
 
 // Example data (replace with API data)
 
@@ -779,6 +780,13 @@ const hasActiveFilters = useMemo(() => {
 ]);
   return (
     <>
+    <Helmet>
+        <title>Pet Services Directory India – Find Vets, Clinics & Pet Care Near You</title>
+        <meta
+          name="description"
+          content="Explore the Vet & Pets directory to find nearby vets, clinics, pet shops, grooming, and services across India for all your pet care needs easily."
+        />
+    </Helmet>
     <AuthGateModal
   show={showAuthGate}
   onClose={() => setShowAuthGate(false)}

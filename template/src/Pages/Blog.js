@@ -139,6 +139,7 @@ import { Card, Col, Image, Row, Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { BsLightningFill } from "react-icons/bs";
 import backgroundImage from "../Components/Image/bg-image.svg";
+import { Helmet } from "react-helmet-async";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -254,6 +255,13 @@ const Blog = () => {
 
   return (
     <>
+    <Helmet>
+        <title>Pet Care Blog India – Expert Tips, Health Guides & Advice for Pets</title>
+        <meta
+          name="description"
+          content="Read expert pet care tips, health guides, nutrition advice, and training insights on the Vet & Pets blog to keep your pets healthy and happy."
+        />
+    </Helmet>
       {/* Banner */}
       {banner?.banner && (
         <Image

@@ -11,6 +11,7 @@ import { Container } from 'react-bootstrap';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import AdSlider from '../Components/AdSlider';
+import { Helmet } from "react-helmet-async";
 
 
 const API_BASE =
@@ -186,6 +187,15 @@ const fetchFaqs = async () => {
     fetchMiddleHomeAds();
   }, []);
   return (
+    <>
+    <Helmet>
+        <title>{home.metaTitle}</title>
+        <meta
+          name="description"
+          content={home.metaDescription || "Default description"}
+        />
+    </Helmet>
+      
     <div className='home'>
       <Banner home={home} />
       {topHomeAds.length > 0 && (
@@ -213,6 +223,7 @@ const fetchFaqs = async () => {
         </div>
       )}
     </div>
+    </>
   )
 }
 
