@@ -5,6 +5,7 @@ import * as GiIcons from "react-icons/gi";
 import { FaStar, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
 import './Css/CategoryPage.css';
 import dummyImage from '../dummy.jpg';
+import { Helmet } from 'react-helmet-async';
 const API_BASE =
   process.env.NODE_ENV === "production"
     ? process.env.REACT_APP_API_URL
