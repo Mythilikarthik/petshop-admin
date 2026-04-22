@@ -222,6 +222,14 @@ const formattedCategoryName = categoryName
   }, [categoryName])
 
   return (
+    <>
+    <Helmet>
+          <title>{currentCategory.metaTitle}</title>
+          <meta
+            name="description"
+            content={currentCategory.metaDescription || "Default description"}
+          />
+      </Helmet>
     <div className="category-page">
       {/* Hero Section */}
       <section
@@ -302,6 +310,7 @@ const formattedCategoryName = categoryName
       </section>
       
     </div>
+    </>
   );
 };
 
