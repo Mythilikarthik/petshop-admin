@@ -410,8 +410,6 @@ const handleGoBack = () => {
                 value={formData.pageTitle || ""} 
                 required 
                 onChange={handleChange} 
-                disabled
-                readOnly
               />
             </Form.Group>
             <Form.Group className="mb-4">
