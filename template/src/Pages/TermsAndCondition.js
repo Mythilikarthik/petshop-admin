@@ -35,7 +35,7 @@ const TermsAndConditions = () => {
     <section className='pet-health mt-5 mb-5'>
       <HeadProvider>
       <div>
-        <Title>{petHealth?.pageTitle || "Page"}</Title>
+        <Title>{petHealth?.metaTitle || "Page"}</Title>
         <Meta name="description" content={petHealth?.metaDescription || ""} />
         <Meta
           name="keywords"

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col, Spinner, Alert, Modal } from "react-bootstrap";
 import { DiscussionEmbed } from "disqus-react";   // <-- ADD THIS
+import { Helmet } from "react-helmet-async";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -62,6 +63,24 @@ const BlogDetail = () => {
   // -----------------------------------------------------------------------
 
   return (
+    <>
+    <Helmet>
+  <title>{blog.metaTitle}</title>
+
+  <meta
+    name="description"
+    content={blog.metaDescription || blog.excerpt}
+  />
+
+  <meta
+    name="keywords"
+    content={
+      Array.isArray(blog.metaKeyword)
+        ? blog.metaKeyword.join(", ")
+        : ""
+    }
+  />
+</Helmet>
     <div className="blog-detail pb-5">
       <div className="banner-section">
         {blog.bannerImage && (
@@ -172,6 +191,7 @@ const BlogDetail = () => {
         </Row>
       </Container>
     </div>
+    </>
   );
 };
 

@@ -11,7 +11,10 @@ const BlogSchema = new Schema({
   excerpt: { type: String, required: true },
   content: { type: String, required: true },
   bannerImage: { type: String, default: '' },   // URL or path to banner
-  contentImage: { type: String, default: '' }   // URL or path to content image
+  contentImage: { type: String, default: '' } ,  // URL or path to content image
+  metaTitle: { type: String, trim: true },
+  metaDescription: { type: String },
+  metaKeyword: [{ type: String }],
 });
 
 

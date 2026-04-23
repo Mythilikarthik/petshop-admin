@@ -20,6 +20,7 @@ const PageManagement = () => {
     category: Array.isArray(listing?.category) ? listing.category : [],
     city: listing?.city || '',
     pageTitle: listing?.pageTitle || '',
+      metaTitle: listing?.metaTitle || '', 
     metaKeyword: listing?.metaKeyword || '',
     metaDescription: listing?.metaDescription || '',
     content: listing?.content || '',        
@@ -278,6 +279,7 @@ useEffect(() => {
             category: Array.isArray(data.page.category) ? data.page.category : [],
             city: data.page.city || '',
             pageTitle: data.page.pageTitle || '',
+              metaTitle: data.page.metaTitle || '', 
             metaKeyword: data.page.metaKeyword || '',
             metaDescription: data.page.metaDescription || '',
             content: data.page.content || '',
@@ -408,6 +410,8 @@ const handleGoBack = () => {
                 value={formData.pageTitle || ""} 
                 required 
                 onChange={handleChange} 
+                disabled
+                readOnly
               />
             </Form.Group>
             <Form.Group className="mb-4">
@@ -432,18 +436,37 @@ const handleGoBack = () => {
                 </div>
               )}
             </Form.Group>
-
+            <Form.Group className='mb-4'>
+              <Form.Label>Meta Title</Form.Label>
+              <Form.Control 
+                type='text' 
+                name='metaTitle' 
+                value={formData.metaTitle || ""} 
+                onChange={handleChange} 
+                placeholder="Meta Title"
+              />
+            </Form.Group>
 
             {/* Meta Keyword */}
             <Form.Group className='mb-4'>
               <Form.Label>Meta Keyword</Form.Label>
-              <Form.Control 
+              {/* <Form.Control 
                 type='text' 
                 name='metaKeyword' 
                 value={formData.metaKeyword || ""} 
                 required 
                 onChange={handleChange} 
-              />
+              /> */}
+              <Form.Control 
+  type='text' 
+  name='metaKeyword' 
+  value={
+    Array.isArray(formData.metaKeyword)
+      ? formData.metaKeyword.join(", ")
+      : formData.metaKeyword || ""
+  }
+  onChange={handleChange}
+/>
             </Form.Group>
 
             {/* Meta Description */}

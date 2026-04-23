@@ -24,6 +24,8 @@ const formattedCategoryName = categoryName
     image: null,
     color: '#000',
     description: '',
+    metaTitle: "",
+    metaDescription: "",
     services: [],
     tips: []
   });
@@ -213,6 +215,8 @@ const formattedCategoryName = categoryName
           services: data.page.services,
           tips: data.page.tips,
           content: data.page.content,
+          metaTitle: data.page.metaTitle,
+          metaDescription: data.page.metaDescription,
         });
       }
      } catch (err) {

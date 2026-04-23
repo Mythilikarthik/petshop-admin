@@ -23,7 +23,10 @@ const BlogEditPage = () => {
     excerpt: '',
     content: '',
     bannerImage: '',
-    contentImage: ''
+    contentImage: '',
+    metaTitle: '',           
+  metaDescription: '',
+  metaKeyword: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -56,7 +59,10 @@ const BlogEditPage = () => {
             // setBlog(data.blog);      
             setBlog({
             ...data.blog,
-            category: data.blog.category.map(cat => cat._id), // ✅ FIX
+            category: data.blog.category.map(cat => cat._id), 
+            metaTitle: data.blog.metaTitle || '',
+  metaDescription: data.blog.metaDescription || '',
+  metaKeyword: data.blog.metaKeyword || ''
           });      
           } else if (data && !data.success) {
             console.warn('Fetch blog returned no success');
@@ -274,6 +280,36 @@ const BlogEditPage = () => {
                 )}
                 
               </Form.Group>
+              <Form.Group className="mb-4">
+  <Form.Label>Meta Title</Form.Label>
+  <Form.Control
+    value={blog.metaTitle || ""}
+    onChange={(e) => setBlog({ ...blog, metaTitle: e.target.value })}
+    
+  />
+</Form.Group>
+
+<Form.Group className="mb-4">
+  <Form.Label>Meta Description</Form.Label>
+  <Form.Control
+    as="textarea"
+    rows={3}
+    value={blog.metaDescription || ""}
+    onChange={(e) => setBlog({ ...blog, metaDescription: e.target.value })}
+  />
+</Form.Group>
+
+<Form.Group className="mb-4">
+  <Form.Label>Meta Keywords</Form.Label>
+  <Form.Control
+    value={
+      Array.isArray(blog.metaKeyword)
+        ? blog.metaKeyword.join(", ")
+        : blog.metaKeyword || ""
+    }
+    onChange={(e) => setBlog({ ...blog, metaKeyword: e.target.value })}
+  />
+</Form.Group>
 
               <Button type="submit" variant="primary">
                 Save

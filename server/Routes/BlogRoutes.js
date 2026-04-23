@@ -41,7 +41,7 @@ router.post('/', upload.fields([
         return res.status(400).json({ success: false, message: "Content image must be 500x500 pixels" });
       }
     }
-    const { title, author, category, date, status, excerpt, content } = req.body;
+    const { title, author, category, date, status, excerpt, content, metaTitle, metaDescription, metaKeyword } = req.body;
 
     // Duplicate title check (case-insensitive)
     const existing = await Blog.findOne({
@@ -56,9 +56,15 @@ router.post('/', upload.fields([
 if (!date) {
   date = undefined; // or null
 }
+let keywords = metaKeyword;
+if (typeof keywords === "string") {
+  keywords = keywords.split(",").map(k => k.trim());
+}
     const newBlog = new Blog({
       title, author, category, date, status, excerpt, content,
-      bannerImage, contentImage
+      bannerImage, contentImage,metaTitle,
+  metaDescription,
+  metaKeyword: keywords,
     });
 
     await newBlog.save();
@@ -161,7 +167,17 @@ router.put('/:id', upload.fields([
     if (existing) {
       return res.status(400).json({ success: false, message: 'Blog title already exists' });
     }
+let { metaKeyword } = req.body;
 
+if (typeof metaKeyword === "string") {
+  metaKeyword = metaKeyword.split(",").map(k => k.trim());
+  req.body.metaKeyword = metaKeyword;
+}
+
+// fallback
+if (!req.body.metaTitle && req.body.title) {
+  req.body.metaTitle = req.body.title;
+}
     const updateData = { ...req.body };
     if (!updateData.date) {
   delete updateData.date; // keeps existing OR uses default
