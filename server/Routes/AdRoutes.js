@@ -132,11 +132,27 @@ router.patch("/:id", uploadSingleWithError("image"), async (req, res) => {
     const updateData = {};
 
     // Add only non-empty fields
-    ["category", "city", "position", "url", "page","fromDate","toDate"].forEach((field) => {
+    // ["category", "city", "position", "url", "page","fromDate","toDate"].forEach((field) => {
+    //   if (req.body[field] && req.body[field] !== "") {
+    //     updateData[field] = req.body[field];
+    //   }
+    // });
+    ["category", "city", "position", "url", "page"].forEach((field) => {
       if (req.body[field] && req.body[field] !== "") {
         updateData[field] = req.body[field];
       }
     });
+    if ("fromDate" in req.body) {
+      updateData.fromDate = req.body.fromDate
+        ? new Date(req.body.fromDate)
+        : null;
+    }
+
+    if ("toDate" in req.body) {
+      updateData.toDate = req.body.toDate
+        ? new Date(req.body.toDate)
+        : null;
+    }
 
     // Handle file upload
     if (req.file) {

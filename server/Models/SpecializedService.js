@@ -15,7 +15,8 @@ const SpecializedServiceSchema = new mongoose.Schema({
   petCategories: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "PetCategory"
+      ref: "PetCategory",
+      required: true
     }
   ],
 

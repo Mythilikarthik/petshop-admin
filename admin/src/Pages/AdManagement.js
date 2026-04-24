@@ -276,7 +276,7 @@ console.log(catData);
               />
             </Form.Group>
             {/* From Date */}
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
             <Form.Label>From Date</Form.Label>
             <Form.Control
             type="date"
@@ -284,10 +284,44 @@ console.log(catData);
             value={formData.fromDate || ""}
             onChange={handleChange}
             />
-            </Form.Group>
+            </Form.Group> */}
+            
+               <Form.Group className="mb-3">
+                
+            <Form.Label>From Date</Form.Label>
+            <div style={{ position: "relative" }}>
+  <Form.Control
+    type="date"
+    name="fromDate"
+    value={formData.fromDate || ""}
+    onChange={handleChange}
+  />
+  
+
+  {formData.fromDate && (
+    <span
+      onClick={() =>
+        setFormData(prev => ({ ...prev, fromDate: "" }))
+      }
+      style={{
+        position: "absolute",
+        right: "40px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        cursor: "pointer",
+        fontSize: "16px",
+        color: "#888"
+      }}
+    >
+      ✕
+    </span>
+  )}
+  </div>
+  </Form.Group>
+
 
             {/* To Date */}
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
             <Form.Label>To Date</Form.Label>
             <Form.Control
             type="date"
@@ -295,7 +329,40 @@ console.log(catData);
             value={formData.toDate || ""}
             onChange={handleChange}
             />
-            </Form.Group>
+            </Form.Group> */}
+
+           
+              <Form.Group className="mb-3">
+            <Form.Label>To Date</Form.Label>
+             <div style={{ position: "relative" }}>
+  <Form.Control
+    type="date"
+    name="toDate"
+    value={formData.toDate || ""}
+    onChange={handleChange}
+  />
+
+  {formData.toDate && (
+    <span
+      onClick={() =>
+        setFormData(prev => ({ ...prev, toDate: "" }))
+      }
+      style={{
+        position: "absolute",
+        right: "40px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        cursor: "pointer",
+        fontSize: "16px",
+        color: "#888"
+      }}
+    >
+      ✕
+    </span>
+  )}
+  </div>
+  </Form.Group>
+
 
             {/* Banner Image */}
             <Form.Group className="mb-4">

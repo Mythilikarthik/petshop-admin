@@ -8,7 +8,7 @@ const API_BASE = process.env.NODE_ENV === "production"
 : "http://localhost:5000";
 
 const TermsAndConditions = () => {
-  const pagename = "termsandconditions";
+  const pagename = "terms-and-conditions";
   const [petHealth, setPetHealth] = useState({});
   const fetchPetHealth = async()  => {
     try {

@@ -8,7 +8,7 @@ const API_BASE = process.env.NODE_ENV === "production"
 : "http://localhost:5000";
 
 const CookiePolicy= () => {
-  const pagename = "cookiepolicy";
+  const pagename = "cookie-policy";
   const [petHealth, setPetHealth] = useState({});
   const fetchPetHealth = async()  => {
     try {
