@@ -217,10 +217,17 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
 
 // }, [form.petCategories, allCategories, petCategories]);
 useEffect(() => {
-  if (!form.petCategories.length) {
-    setFilteredCategories([]);
-    return;
-  }
+  // if (!form.petCategories.length) {
+  //   setFilteredCategories([]);
+  //   return;
+  // }
+  if (
+  !form.petCategories.length ||
+  !allCategories.length ||
+  !petCategories.length
+) {
+  return; 
+}
 
   const isAllSelected = form.petCategories.includes("all");
   const totalPetIds = petCategories.map(p => String(p._id));
@@ -250,7 +257,8 @@ useEffect(() => {
   setFilteredCategories(filtered);
 
   // ✅ FIX for multi-category
-  if (!filtered.some(c => form.category.includes(String(c._id)))) {
+  // if (!filtered.some(c => form.category.includes(String(c._id)))) {
+  if (!id && !filtered.some(c => form.category.includes(String(c._id)))) {
     setForm(prev => ({
       ...prev,
       category: filtered.length === 1 ? [filtered[0]._id] : []
@@ -522,7 +530,8 @@ if (!isAllSelected) {
     }))}
 
     value={filteredCategories
-      .filter(cat => form.category.includes(cat._id))
+      // .filter(cat => form.category.includes(cat._id))
+      .filter(cat => form.category.includes(String(cat._id)))
       .map(cat => ({
         value: cat._id,
         label: cat.categoryName
