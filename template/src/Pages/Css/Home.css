@@ -95,10 +95,10 @@
   object-fit: cover;
 }
 
-.ad-indicators {
-  /* display: none !important; */
-   /* hide dots in floating mode */
-}
+/* .ad-indicators {
+  display: none !important; 
+  hide dots in floating mode
+} */
 .floating-ad .ad-slider { height: auto; }
 
 .ad-close-btn {
