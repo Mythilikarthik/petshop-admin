@@ -13,7 +13,6 @@ const emailjs = require("@emailjs/nodejs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { log } = require("console");
-const sanitizeText = require("../Utils/SanitizeText");
 
 
 const generateToken = (id, role) => {
@@ -169,13 +168,6 @@ router.post(
         metaKeyword,
         metaDescription
       } = req.body;
-      shopName = sanitizeText(shopName);
-      email = sanitizeText(email);
-      address = sanitizeText(address);
-      description = sanitizeText(description);
-      metaTitle = sanitizeText(metaTitle);
-      metaKeyword = sanitizeText(metaKeyword);
-      metaDescription = sanitizeText(metaDescription);
 
       const status = req.userType === "admin" ? "approved" : "pending";
       const user_id = req.userType === "user" ? req.userId : null;
@@ -962,25 +954,9 @@ router.post("/bulk", verifyToken, async (req, res) => {
     }
 
     // 🧹 Clean _id + inject user info
-    // const cleanListings = listings.map(({ _id, ...rest }, idx) => ({
-    //   ...rest,
-    //   __row: idx + 2, // Excel row (assuming headers in row 1)
-    //   created_by_id: userId,
-    //   created_by_type: userType,
-    //   status,
-    //   country: "India",
-    // }));
     const cleanListings = listings.map(({ _id, ...rest }, idx) => ({
       ...rest,
-      shopName: sanitizeText(rest.shopName),
-      email: sanitizeText(rest.email),
-      address: sanitizeText(rest.address),
-      description: sanitizeText(rest.description),
-      metaTitle: sanitizeText(rest.metaTitle),
-      metaKeyword: sanitizeText(rest.metaKeyword),
-      metaDescription: sanitizeText(rest.metaDescription),
-
-      __row: idx + 2,
+      __row: idx + 2, // Excel row (assuming headers in row 1)
       created_by_id: userId,
       created_by_type: userType,
       status,
