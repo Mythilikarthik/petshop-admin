@@ -25,7 +25,7 @@ const Footer = ({home, categoryPage}) => {
                                 </span>
                                 <b>PetPals</b><span className='highlight'><b>India</b></span>
                                  */}
-                                 <img src={`${API_BASE}/${home.siteLogoLight}`} alt="PetPals India" className='site-logo' width={250} />
+                                 <img src={`${API_BASE}/${home.siteLogoLight}`} alt="Vet and Pets" className='site-logo' width={250} />
                             </div>
                             <p class="text-gray-400 mb-6 mt-4 text-justify">
                                 {home.footerDescription}

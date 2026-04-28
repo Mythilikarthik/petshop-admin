@@ -349,7 +349,7 @@ const Blog = () => {
                   currentBlogs.map((item) => (
                     <Col md={4} key={item._id} className="mb-4">
                       <Card className="pos-rel h-100 w-100">
-                        <Card.Header className="p-0">
+                        <Card.Header className="p-0 own-height-style">
                           {item.bannerImage ? (
                             <img
                               src={`${API_BASE}/${item.bannerImage}`}

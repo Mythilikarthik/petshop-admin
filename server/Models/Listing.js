@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
+const sanitizeText = require("../Utils/SanitizeText");
 
 const ListingSchema = new mongoose.Schema({
-  shopName: { type: String, required: true },
+  shopName: { type: String, required: true, set: v => sanitizeText(v) },
   slug: { type: String, index: true },
   email: { type: String, required: false },
   phone: { type: String, required: true },

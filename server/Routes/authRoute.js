@@ -595,7 +595,8 @@ router.put("/user/change-password/:id", async (req, res) => {
 router.get("/user/all", async (req, res) => {
   try {
     const users = await User.find({
-      _id: { $ne: req.userId } // exclude logged-in user
+      _id: { $ne: req.userId }, // exclude logged-in user
+      isVerified: true
     })
     .sort({ created_at: -1 })
     .select("-password");

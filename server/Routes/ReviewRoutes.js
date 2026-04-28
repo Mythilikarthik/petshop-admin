@@ -51,6 +51,7 @@ router.get("/list/:listingId", async (req, res) => {
 //POST /api/reviews -with image
 router.post("/", upload.array("photos", 5), async (req, res) => {
   const { listingId, userId, userName, userEmail, rating, comment } = req.body;
+  console.log(userId);
   if (!comment || comment.length > 300) {
     return res.status(400).json({
       success: false,
@@ -204,7 +205,7 @@ router.get("/single/:id", async (req, res) => {
 router.get("/user/user-listings", verifyToken, async (req, res) => {
   try {
     const userId = req.userId; // obtained from verifyToken middleware
-
+console.log(userId);
     // 1. Find all listings owned by this user
     const listings = await Listing.find({ user_id: userId }, "_id");
     if (!listings.length) {

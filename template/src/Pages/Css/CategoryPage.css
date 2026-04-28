@@ -130,7 +130,7 @@
 }
 
 .provider-card .card-img-top, .blog-card .card-img-top {
-  height: 100px;
+  height: 200px;
   object-fit: cover;
   transition: transform 0.3s ease;
 }

@@ -1189,7 +1189,7 @@ const hasActiveFilters = useMemo(() => {
     )
     .join(", ")}
 </div> */}
-<div className="service-location mt-2 d-flex gap-2 align-items-center">
+{/* <div className="service-location mt-2 d-flex gap-2 align-items-center">
   <BsClockFill /> 
   {(() => {
     const today = new Date().toLocaleString("en-US", { weekday: "long" });
@@ -1203,6 +1203,27 @@ const hasActiveFilters = useMemo(() => {
         ? "Closed Today"
         : `Open Today: ${todayHours.open} - ${todayHours.close}`
       : "Hours not available";
+  })()}
+</div> */}
+<div className="service-location mt-2 d-flex gap-2 align-items-center">
+  <BsClockFill /> 
+  {(() => {
+    const today = new Date().toLocaleString("en-US", { weekday: "long" });
+
+    const todayHours = listing.businessHours?.find(
+      (bh) => bh.day === today
+    );
+
+    if (!todayHours) return "Hours not available";
+
+    if (todayHours.closed) return "Closed Today";
+
+    // 🔥 FIX: check empty time
+    if (!todayHours.open || !todayHours.close) {
+      return "Hours not available";
+    }
+
+    return `Open Today: ${todayHours.open} - ${todayHours.close}`;
   })()}
 </div>
 

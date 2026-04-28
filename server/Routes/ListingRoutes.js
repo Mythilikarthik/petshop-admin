@@ -12,6 +12,8 @@ const mongoose = require("mongoose");
 const emailjs = require("@emailjs/nodejs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { log } = require("console");
+const sanitizeText = require("../Utils/SanitizeText");
 
 
 const generateToken = (id, role) => {
@@ -167,6 +169,13 @@ router.post(
         metaKeyword,
         metaDescription
       } = req.body;
+      shopName = sanitizeText(shopName);
+      email = sanitizeText(email);
+      address = sanitizeText(address);
+      description = sanitizeText(description);
+      metaTitle = sanitizeText(metaTitle);
+      metaKeyword = sanitizeText(metaKeyword);
+      metaDescription = sanitizeText(metaDescription);
 
       const status = req.userType === "admin" ? "approved" : "pending";
       const user_id = req.userType === "user" ? req.userId : null;
@@ -404,7 +413,7 @@ if (user) {
 
   await user.save({ session });
 }
-
+console.log(user._id);
     // 4️⃣ Update listing
     listing.email= email;
     listing.claimedBy = user._id;
@@ -953,9 +962,25 @@ router.post("/bulk", verifyToken, async (req, res) => {
     }
 
     // 🧹 Clean _id + inject user info
+    // const cleanListings = listings.map(({ _id, ...rest }, idx) => ({
+    //   ...rest,
+    //   __row: idx + 2, // Excel row (assuming headers in row 1)
+    //   created_by_id: userId,
+    //   created_by_type: userType,
+    //   status,
+    //   country: "India",
+    // }));
     const cleanListings = listings.map(({ _id, ...rest }, idx) => ({
       ...rest,
-      __row: idx + 2, // Excel row (assuming headers in row 1)
+      shopName: sanitizeText(rest.shopName),
+      email: sanitizeText(rest.email),
+      address: sanitizeText(rest.address),
+      description: sanitizeText(rest.description),
+      metaTitle: sanitizeText(rest.metaTitle),
+      metaKeyword: sanitizeText(rest.metaKeyword),
+      metaDescription: sanitizeText(rest.metaDescription),
+
+      __row: idx + 2,
       created_by_id: userId,
       created_by_type: userType,
       status,
@@ -1450,7 +1475,8 @@ router.get("/directory/approved", async (req, res) => {
 router.get("/counts", verifyToken, async (req, res) => {
   try {
     const user_id = req.userId;
-    const listings = await Listing.find({user_id, status: "approved" })
+    console/log("user id", user_id);
+    const listings = await Listing.find({claimedBy: user_id })
       .populate("categories", "categoryName")
       .populate("petCategories", "categoryName")
       .populate("city", "city")
@@ -1504,7 +1530,7 @@ router.get("/user/:id", async (req, res) => {
     res.json({ success: true, listing });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: err.message || "Server error" });
   }
 });
 router.get("/pending", async (req, res) => {
@@ -1932,7 +1958,7 @@ router.put(
 
       // --- Find and Update ---
       let listing = await Listing.findOneAndUpdate(
-        { user_id: userId },
+        { claimedBy: userId },
         {
           ...data,
           status,
@@ -1940,7 +1966,7 @@ router.put(
           created_by_id: req.userId,
           created_by_type: req.userType,
         },
-        { new: true, upsert: true } // upsert in case listing doesn't exist
+        { new: true } // upsert in case listing doesn't exist
       );
 
       return res.json({
@@ -1952,7 +1978,7 @@ router.put(
       console.error("Error in listing update/create:", err);
       res.status(500).json({
         success: false,
-        message: "Server error",
+        message:  err.message ||"Server error",
         error: err.message
       });
     }
