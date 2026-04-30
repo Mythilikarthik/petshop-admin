@@ -486,6 +486,7 @@ const ClaimListing = () => {
   const [claimRole, setClaimRole] = useState("");
   const [verificationMethod, setVerificationMethod] = useState("");
   const [documents, setDocuments] = useState([]);
+  const [agreeTerms, setAgreeTerms] = useState(false);
 
   const [user, setUser] = useState({
     name: "",
@@ -521,19 +522,39 @@ const ClaimListing = () => {
   };
 
   // ✅ Handle input change + clear field error
+  // const handleUserChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   setUser((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
+
+  //   setErrors((prev) => ({
+  //     ...prev,
+  //     [name]: "",
+  //   }));
+  // };
   const handleUserChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    setUser((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  let newValue = value;
 
-    setErrors((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
-  };
+  // 🚫 Remove spaces in username while typing
+  if (name === "username") {
+    newValue = value.replace(/\s/g, ""); // remove all spaces
+  }
+
+  setUser((prev) => ({
+    ...prev,
+    [name]: newValue,
+  }));
+
+  setErrors((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
+};
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -571,6 +592,9 @@ const ClaimListing = () => {
   if (!verificationMethod) {
     newErrors.verificationMethod =
       "Please select a verification method";
+  }
+  if (!agreeTerms) {
+    newErrors.terms = "You must accept Terms & Conditions";
   }
 
   if (Object.keys(newErrors).length > 0) {
@@ -973,6 +997,28 @@ const ClaimListing = () => {
               </Form.Control.Feedback>
             </div>
           </Form.Group>
+          <Form.Group className="mb-3">
+  <Form.Check
+    type="checkbox"
+    label={
+      <>
+        I agree to the{" "}
+        <a href="/terms-and-conditions" target="_blank">
+          Terms & Conditions
+        </a>
+      </>
+    }
+    checked={agreeTerms}
+    onChange={(e) => {
+      setAgreeTerms(e.target.checked);
+      setErrors((prev) => ({ ...prev, terms: "" }));
+    }}
+    isInvalid={!!errors.terms}
+  />
+  {errors.terms && (
+    <div className="text-danger small">{errors.terms}</div>
+  )}
+</Form.Group>
 
           <div className="text-center">
             <Button type="submit" disabled={loading}>

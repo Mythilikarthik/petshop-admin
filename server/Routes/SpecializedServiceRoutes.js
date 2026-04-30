@@ -60,7 +60,9 @@ router.post("/byCategories", async (req, res) => {
     }
 
     const services = await SpecializedService.find({
-      category: { $in: categories }
+      // category: { $in: categories },
+        category: { $size: categories.length, $all: categories },
+      show: true
     }).select("_id serviceName category");
 
     res.json({

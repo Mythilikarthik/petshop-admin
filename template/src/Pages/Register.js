@@ -475,6 +475,8 @@ const fileRef = useRef();
   const [cities, setCities] = useState([]);
   const [petCategories, setPetCategories] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [services, setServices] = useState([]);
+  const [selectedServices, setSelectedServices] = useState([]);
 
   /* ---------------- UI ---------------- */
   const [alert, setAlert] = useState({ show: false, type: "", message: "" });
@@ -484,6 +486,34 @@ const fileRef = useRef();
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+  useEffect(() => {
+  if (!listing.categories.length) {
+    setServices([]);
+    setSelectedServices([]);
+    return;
+  }
+
+  fetch(`${API_BASE}/api/specialized-service/byCategories`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      categories: listing.categories,
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        setServices(data.services || []);
+      } else {
+        setServices([]);
+      }
+      setSelectedServices([]);
+    })
+    .catch(() => setServices([]));
+}, [listing.categories]);
+console.log("services", services);
 
   /* ---------------- LOAD ---------------- */
   useEffect(() => {
@@ -527,16 +557,29 @@ const fileRef = useRef();
   }, [listing.petCategories]);
 
   /* ---------------- HANDLERS ---------------- */
+  // const handleUserChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   if (name === "username") {
+  //     if (value.includes(" ")) return;
+  //     if (value && !USERNAME_REGEX.test(value)) return;
+  //   }
+
+  //   setForm({ ...form, [name]: value });
+  // };
   const handleUserChange = (e) => {
-    const { name, value } = e.target;
+  let { name, value } = e.target;
 
-    if (name === "username") {
-      if (value.includes(" ")) return;
-      if (value && !USERNAME_REGEX.test(value)) return;
-    }
+  if (name === "username") {
+    // ✅ remove all spaces automatically
+    value = value.replace(/\s/g, "");
 
-    setForm({ ...form, [name]: value });
-  };
+    // ✅ allow only letters, numbers, underscore
+    if (value && !USERNAME_REGEX.test(value)) return;
+  }
+
+  setForm({ ...form, [name]: value });
+};
 
   const handleListingChange = (e) =>
     setListing({ ...listing, [e.target.name]: e.target.value });
@@ -628,6 +671,10 @@ if (!PHONE_REGEX.test(form.phone))
       formData.append("city", listing.city);
       formData.append("petCategories", JSON.stringify(listing.petCategories));
       formData.append("categories", JSON.stringify(listing.categories));
+      formData.append(
+  "specializedServices",
+  JSON.stringify(selectedServices)
+);
 
       // new fields
       formData.append("role", role);
@@ -674,6 +721,13 @@ if (!PHONE_REGEX.test(form.phone))
 
     setLoading(false);
   };
+  const petCategoryOptions = [
+  { value: "ALL", label: "All Types" }, // 👈 important
+  ...petCategories.map(p => ({
+    value: p._id,
+    label: p.categoryName,
+  }))
+];
 
   /* ---------------- UI ---------------- */
   return (
@@ -707,7 +761,7 @@ if (!PHONE_REGEX.test(form.phone))
 
               {/* USER */}
               <Form.Control className="mb-2" placeholder="Name" name="name" onChange={handleUserChange} />
-              <Form.Control className="mb-2" placeholder="Username" name="username" onChange={handleUserChange} />
+              <Form.Control className="mb-2" placeholder="Username" name="username" onChange={handleUserChange}  value={form.username} />
               <Form.Control className="mb-2" placeholder="Email" name="email" onChange={handleUserChange} />
               <Form.Control className="mb-2" placeholder="Phone" name="phone" onChange={handleUserChange} />
 
@@ -811,7 +865,7 @@ if (!PHONE_REGEX.test(form.phone))
               </Form.Select>
 
               {/* PET CATEGORY */}
-              <Select
+              {/* <Select
                 isMulti
                 options={petCategories.map(p => ({
                   value: p._id,
@@ -824,6 +878,39 @@ if (!PHONE_REGEX.test(form.phone))
                   }))
                 }
                 placeholder="Select Type"
+              /> */}
+              <Select
+                isMulti
+                options={petCategoryOptions}
+                onChange={(selected) => {
+                  const values = selected.map(s => s.value);
+
+                  // ✅ If "ALL" selected
+                  if (values.includes("ALL")) {
+                    const allIds = petCategories.map(p => p._id);
+
+                    setListing(prev => ({
+                      ...prev,
+                      petCategories: allIds,
+                    }));
+                  } else {
+                    setListing(prev => ({
+                      ...prev,
+                      petCategories: values,
+                    }));
+                  }
+                }}
+                value={
+  listing.petCategories.length === petCategories.length
+    ? [{ value: "ALL", label: "All Types" }]
+    : petCategories
+        .filter(p => listing.petCategories.includes(p._id))
+        .map(p => ({
+          value: p._id,
+          label: p.categoryName,
+        }))
+}
+                placeholder="Select Type"
               />
 
               {/* CATEGORY */}
@@ -835,13 +922,29 @@ if (!PHONE_REGEX.test(form.phone))
                   label: c.categoryName,
                 }))}
                 onChange={(selected) =>
+                {
                   setListing(prev => ({
                     ...prev,
                     categories: selected.map(s => s.value),
                   }))
+                  
+                }
                 }
                 placeholder="Select Category"
               />
+              <Select
+  isMulti
+  className="mt-3"
+  isDisabled={!services.length}
+  options={services.map((s) => ({
+    value: s._id,
+    label: s.serviceName,
+  }))}
+  onChange={(selected) =>
+    setSelectedServices(selected.map((s) => s.value))
+  }
+  placeholder="Select Specialized Services"
+/>
 
               {/* <Button className="mt-4 w-100" type="submit" disabled={loading}>
                 {loading ? "Submitting..." : "Register"}

@@ -1063,7 +1063,8 @@ router.post("/site/login", async (req, res) => {
       $or: [
         { email: email },
         { username: email }
-      ]
+      ],
+      site: "1",
     });
 
     if (!user)
@@ -1279,11 +1280,12 @@ router.post(
         city,
       } = req.body;
 
-      let { categories, petCategories } = req.body;
+      let { categories, petCategories, specializedServices } = req.body;
 
       // 🟡 parse arrays
       categories = categories ? JSON.parse(categories) : [];
       petCategories = petCategories ? JSON.parse(petCategories) : [];
+      specializedServices = specializedServices ? JSON.parse(specializedServices) : [];
 
       /* ---------------- VALIDATION ---------------- */
       if (
@@ -1344,6 +1346,7 @@ router.post(
         city,
         categories: categories.map((id) => new mongoose.Types.ObjectId(id)),
         petCategories: petCategories.map((id) => new mongoose.Types.ObjectId(id)),
+        specializedServices: specializedServices.map((id) => new mongoose.Types.ObjectId(id)),
         country: "India",
 
         created_by_type: "user",

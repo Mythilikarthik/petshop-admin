@@ -472,9 +472,16 @@ const filteredServices = useMemo(() => {
   );
 
     // CATEGORY MATCH (ID vs name ❌)
-    const categoryMatch =
+  //   const categoryMatch =
+  // !selectedCategory ||
+  // s.category?.categoryName?.toLowerCase() === selectedCategory.toLowerCase();
+  const categoryMatch =
   !selectedCategory ||
-  s.category?.categoryName?.toLowerCase() === selectedCategory.toLowerCase();
+  (s.category || []).some(p =>
+    p.categoryName
+      ?.toLowerCase()
+      .includes(selectedCategory.toLowerCase())
+  );
 
     return petMatch && categoryMatch;
   });
@@ -845,7 +852,7 @@ const hasActiveFilters = useMemo(() => {
       </div> */}
       <Row>
         <Col md={3} className='bg-grey'>
-          <div className="directory-filters sticky-top shadow-sm  rounded p-3" style={{"top": "70px"}}>
+          <div className="directory-filters sticky-top shadow-sm  rounded p-3" style={{"top": "70px", "zIndex" : "99"}}>
             <Row className=" shadow-sm m-4 rounded  mb-0  ">
             <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Apply Filter</h5>
             
