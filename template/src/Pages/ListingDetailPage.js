@@ -50,6 +50,8 @@ const [rating, setRating] = useState(0);
   const [reviews, setReviews] = useState([]);
  const [showPhone, setShowPhone] = useState(false);
 const [isTracking, setIsTracking] = useState(false);
+ const [showUrl, setShowUrl] = useState(false);
+const [urlIsTracking, setUrlIsTracking] = useState(false);
 
   const [form, setForm] = useState({
     userName: "",
@@ -398,6 +400,28 @@ useEffect(() => {
   setShowPhone(true);
   setIsTracking(false);
 };
+const handleShowUrl = async () => {
+  if (!user) {
+    setShowAuthGate(true);
+    return;
+  }
+
+  setUrlIsTracking(true);
+
+  await fetch(`${API_BASE}/api/enquiry/url`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      listingId: listing._id,
+      userName: user.name,
+      userEmail: user.email,
+      action: "url_view",
+    }),
+  });
+
+  setShowUrl(true);
+  setUrlIsTracking(false);
+};
 
 const handleFileChange = (e) => {
   const files = Array.from(e.target.files);
@@ -654,13 +678,28 @@ const handleFileChange = (e) => {
                 </li>
                 <li>
                   <strong>Website:</strong>{" "}
-                  <a
-                    href={listing.mapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {listing.mapUrl}
-                  </a>
+                   {listing.mapUrl &&
+                    listing.mapUrl.trim() !== "" &&
+                    (
+                  !showUrl ? (
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      onClick={handleShowUrl}
+                      disabled={urlIsTracking}
+                    >
+                      {isTracking ? "Please wait..." : "Show Website Url"}
+                    </Button>
+                  ) : (
+                    <a
+                      href={listing.mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {listing.mapUrl}
+                    </a>
+                  ))}
+                  
                 </li>
                 <li>
   <strong>Working Hours:</strong>

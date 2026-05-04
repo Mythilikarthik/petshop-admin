@@ -10,7 +10,7 @@ const ListingEnquirySchema = new mongoose.Schema({
   userEmail: String,
   action: {
     type: String,
-    enum: ["phone_view", "whatsapp", "email"],
+    enum: ["phone_view", "whatsapp", "email", "url_view"],
     required: true,
   },
   ip: String,

@@ -15,6 +15,7 @@ import { useAuth } from "../contexts/AuthContext";
 import AuthGateModal from "../hooks/AuthGateModel";
 import StarRating from "../Components/StarRating";
 import { Helmet } from 'react-helmet-async';
+import ReactPaginate from "react-paginate";
 
 // Example data (replace with API data)
 
@@ -335,6 +336,9 @@ const city = normalize(l.city?.city);
     // console.log("called");
   };
   const handlePageChange = newPage => setPage(newPage);
+  const handlePageClick = ({ selected }) => {
+    setPage(selected + 1); // because react-paginate is 0-based
+  };
   const fetchListings = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/listing/directory/approved`);
@@ -1273,7 +1277,7 @@ const hasActiveFilters = useMemo(() => {
       </Row>
       
 
-      {totalPages > 1 && (
+      {/* {totalPages > 1 && (
         <div className="directory-pagination">
           {[...Array(totalPages)].map((_, idx) => (
             <button
@@ -1285,6 +1289,25 @@ const hasActiveFilters = useMemo(() => {
             </button>
           ))}
         </div>
+      )} */}
+      {totalPages > 1 && (
+        <ReactPaginate
+          pageCount={totalPages}
+          onPageChange={handlePageClick}
+          containerClassName="pagination justify-content-center mt-4"
+          pageClassName="page-item"
+          pageLinkClassName="page-link"
+          previousLabel="«"
+          nextLabel="»"
+          previousClassName="page-item"
+          nextClassName="page-item"
+          previousLinkClassName="page-link"
+          nextLinkClassName="page-link"
+          activeClassName="active"
+          breakLabel="..."
+          marginPagesDisplayed={1}
+          pageRangeDisplayed={3}
+        />
       )}
       {/* <div className="directory-header">
         <h2>

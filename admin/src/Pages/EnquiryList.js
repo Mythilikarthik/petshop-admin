@@ -433,6 +433,7 @@ const [sortOrder, setSortOrder] = useState("desc"); // asc | desc
           userName: enq.userName?.trim() || "N/A",
           userEmail: enq.userEmail?.trim() || "N/A",
           shopName: shopNameRaw?.trim() || "N/A",
+          action: enq.action?.trim() || "N/A",
           count: 1,
           enquiries: [enq],
           latestDate: enq.createdAt,
@@ -658,6 +659,7 @@ const handleSort = (field) => {
             <th>Listing</th>
             <th>Name</th>
             <th>Email</th>
+            <th>Action</th>
             <th onClick={() => handleSort("count")} style={{ cursor: "pointer", display: "flex", justifyContent: "space-between" }}>
   Total Clicks{" "}
   <span className="ms-1">
@@ -691,6 +693,7 @@ const handleSort = (field) => {
                 <td>{group.shopName}</td>
                 <td>{group.userName}</td>
                 <td>{group.userEmail}</td>
+                <td>{group.action}</td>
                 {/* <td><strong>{group.count}</strong></td> */}
                 <td>
                   <strong>{group.count}</strong>
