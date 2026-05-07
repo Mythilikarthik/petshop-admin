@@ -216,28 +216,80 @@ const { resetInitialSnapshot, confirmLeave, markAsSaved } =
 //   }
 
 // }, [form.petCategories, allCategories, petCategories]);
+// useEffect(() => {
+//   // if (!form.petCategories.length) {
+//   //   setFilteredCategories([]);
+//   //   return;
+//   // }
+//   if (
+//   !form.petCategories.length ||
+//   !allCategories.length ||
+//   !petCategories.length
+// ) {
+//   return; 
+// }
+
+//   const isAllSelected = form.petCategories.includes("all");
+//   const totalPetIds = petCategories.map(p => String(p._id));
+
+//   const filtered = allCategories.filter(cat => {
+//     if (!cat.show || !Array.isArray(cat.petCategories)) return false;
+
+//     const allowedPets = cat.petCategories.map(p => String(p._id));
+
+//     // ✅ ALL selected
+//     if (isAllSelected) {
+//       return (
+//         allowedPets.length === totalPetIds.length &&
+//         totalPetIds.every(id => allowedPets.includes(id))
+//       );
+//     }
+
+//     // ✅ Exact match
+//     const selectedPets = form.petCategories.map(String);
+
+//     return (
+//       allowedPets.length === selectedPets.length &&
+//       selectedPets.every(id => allowedPets.includes(id))
+//     );
+//   });
+
+//   setFilteredCategories(filtered);
+
+//   // ✅ FIX for multi-category
+//   // if (!filtered.some(c => form.category.includes(String(c._id)))) {
+//   if (!id && !filtered.some(c => form.category.includes(String(c._id)))) {
+//     setForm(prev => ({
+//       ...prev,
+//       category: filtered.length === 1 ? [filtered[0]._id] : []
+//     }));
+//   }
+
+// }, [form.petCategories, allCategories, petCategories]);
 useEffect(() => {
-  // if (!form.petCategories.length) {
-  //   setFilteredCategories([]);
-  //   return;
-  // }
   if (
-  !form.petCategories.length ||
-  !allCategories.length ||
-  !petCategories.length
-) {
-  return; 
-}
+    !form.petCategories.length ||
+    !allCategories.length ||
+    !petCategories.length
+  ) {
+    return;
+  }
 
   const isAllSelected = form.petCategories.includes("all");
+
+  // ✅ ALL pet ids from DB
   const totalPetIds = petCategories.map(p => String(p._id));
 
   const filtered = allCategories.filter(cat => {
-    if (!cat.show || !Array.isArray(cat.petCategories)) return false;
+    if (!cat.show || !Array.isArray(cat.petCategories)) {
+      return false;
+    }
 
-    const allowedPets = cat.petCategories.map(p => String(p._id));
+    const allowedPets = cat.petCategories.map(p =>
+      String(p._id || p)
+    );
 
-    // ✅ ALL selected
+    // ✅ CASE 1 → ALL selected
     if (isAllSelected) {
       return (
         allowedPets.length === totalPetIds.length &&
@@ -245,23 +297,41 @@ useEffect(() => {
       );
     }
 
-    // ✅ Exact match
     const selectedPets = form.petCategories.map(String);
 
-    return (
+    // ✅ exact match
+    const isExactMatch =
       allowedPets.length === selectedPets.length &&
-      selectedPets.every(id => allowedPets.includes(id))
-    );
+      selectedPets.every(id => allowedPets.includes(id));
+
+    // ✅ category contains ALL pet types
+    const isAllTypesCategory =
+      allowedPets.length === totalPetIds.length &&
+      totalPetIds.every(id => allowedPets.includes(id));
+
+    // ✅ ONE selected → allow exact OR all-types category
+    if (selectedPets.length === 1) {
+      return isExactMatch || isAllTypesCategory;
+    }
+
+    // ✅ MULTIPLE selected → exact only
+    return isExactMatch;
   });
 
   setFilteredCategories(filtered);
 
-  // ✅ FIX for multi-category
-  // if (!filtered.some(c => form.category.includes(String(c._id)))) {
-  if (!id && !filtered.some(c => form.category.includes(String(c._id)))) {
+  // ✅ reset invalid selected categories
+  if (
+    !id &&
+    !filtered.some(c =>
+      form.category.includes(String(c._id))
+    )
+  ) {
     setForm(prev => ({
       ...prev,
-      category: filtered.length === 1 ? [filtered[0]._id] : []
+      category: filtered.length === 1
+        ? [String(filtered[0]._id)]
+        : []
     }));
   }
 
@@ -356,21 +426,41 @@ const finalPetCategories = isAllSelected
 // ✅ Validate ALL selected categories
 if (!isAllSelected) {
   const selectedPets = form.petCategories.map(String);
-
+const totalPetIds = petCategories.map(p => String(p._id));
   for (let cat of selectedCategories) {
     const allowedPets = (cat.petCategories || []).map(p =>
       String(p._id)
     );
 
-    const isExactMatch =
-      allowedPets.length === selectedPets.length &&
-      selectedPets.every(p => allowedPets.includes(p));
+    // const isExactMatch =
+    //   allowedPets.length === selectedPets.length &&
+    //   selectedPets.every(p => allowedPets.includes(p));
 
-    if (!isExactMatch) {
-      setError(`Category "${cat.categoryName}" is not valid for selected pet types`);
-      setLoading(false);
-      return;
-    }
+    // if (!isExactMatch) {
+    //   setError(`Category "${cat.categoryName}" is not valid for selected pet types`);
+    //   setLoading(false);
+    //   return;
+    // }
+    const isExactMatch =
+  allowedPets.length === selectedPets.length &&
+  selectedPets.every(p => allowedPets.includes(p));
+
+// ✅ category contains ALL pet types
+const isAllTypesCategory =
+  allowedPets.length === totalPetIds.length &&
+  totalPetIds.every(id => allowedPets.includes(id));
+
+// ✅ if only ONE selected pet type
+const isValid =
+  selectedPets.length === 1
+    ? (isExactMatch || isAllTypesCategory)
+    : isExactMatch;
+
+if (!isValid) {
+  setError(`Category "${cat.categoryName}" is not valid for selected pet types`);
+  setLoading(false);
+  return;
+}
   }
 
 }

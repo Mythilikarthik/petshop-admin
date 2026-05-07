@@ -330,6 +330,7 @@ useEffect(() => {
       setCategoryList([]);
     }
   };
+  console.log(categoryList);
 
   fetchCategories();
 }, [formData.petCategories]);

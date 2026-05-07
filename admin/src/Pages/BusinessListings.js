@@ -520,6 +520,16 @@ for (const cat of categoriesRaw) {
   const sortedAllowed = [...allowedPets].sort();
   const sortedGiven = [...normalizedPetTypes].sort();
 
+  // ✅ if uploaded only ONE pet type
+// allow categories mapped with ALL TYPES also
+
+const uploadedSinglePet = normalizedPetTypes.length === 1;
+
+const categorySupportsAll = [...allowedPets];
+
+if (uploadedSinglePet && categorySupportsAll) {
+  continue;
+}
   const isExactMatch =
     sortedAllowed.length === sortedGiven.length &&
     sortedAllowed.every((val, i) => val === sortedGiven[i]);
@@ -629,12 +639,51 @@ if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
   normalizedPets = [...service.petTypes];
 }
 
-const sortedServicePets = [...service.petTypes].sort();
-const sortedGivenPets = [...normalizedPets].sort();
+// const sortedServicePets = [...service.petTypes].sort();
+// const sortedGivenPets = [...normalizedPets].sort();
 
-const petMatch =
-  sortedServicePets.length === sortedGivenPets.length &&
-  sortedServicePets.every((val, i) => val === sortedGivenPets[i]);
+// const petMatch =
+//   sortedServicePets.length === sortedGivenPets.length &&
+//   sortedServicePets.every((val, i) => val === sortedGivenPets[i]);
+let petMatch = false;
+const servicePets = [...service.petTypes]
+  .map(v => v.toLowerCase().trim());
+
+const uploadedPets = [...normalizedPets]
+  .map(v => v.toLowerCase().trim());
+
+// ✅ uploaded ALL
+if (
+  uploadedPets.includes("all") ||
+  uploadedPets.includes("all types")
+) {
+
+  petMatch = true;
+
+} else {
+
+  // ✅ uploaded only ONE pet
+  const uploadedSinglePet = uploadedPets.length === 1;
+
+  // ✅ service supports ALL TYPES
+  const serviceSupportsAll = [...service.petTypes];
+
+  // ✅ allow single pet → ALL TYPE service
+  if (uploadedSinglePet && serviceSupportsAll) {
+
+    petMatch = true;
+
+  } else {
+
+    // exact match
+    const sortedServicePets = [...servicePets].sort();
+    const sortedGivenPets = [...uploadedPets].sort();
+
+    petMatch =
+      sortedServicePets.length === sortedGivenPets.length &&
+      sortedServicePets.every((val, i) => val === sortedGivenPets[i]);
+  }
+}
 
   console.log("service.categories:", service.categories);
 console.log("categoriesRaw:", categoriesRaw);
