@@ -4,7 +4,7 @@ import './Css/Directory.css';
 import { Row, Col, Card, Button, Container, Image, Badge, Modal } from "react-bootstrap";
 import { BsClock, BsClockFill, BsClockHistory, BsCloudCheckFill, BsGeoAltFill, BsStarFill } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
-import dummyImage from '../dummy.jpg';
+// import dummyImage from '../dummy.jpg';
 import AdSlider from '../Components/AdSlider';
 import { FaStar } from 'react-icons/fa';
 import { TiTick } from "react-icons/ti";
@@ -16,6 +16,19 @@ import AuthGateModal from "../hooks/AuthGateModel";
 import StarRating from "../Components/StarRating";
 import { Helmet } from 'react-helmet-async';
 import ReactPaginate from "react-paginate";
+import petFriendlyRestaurantImg from "../assets/dummies/pet-friendly-restaurant.jpg";
+import petSpaImg from "../assets/dummies/pet-spa.jpg";
+import petFriendlyCafeImg from "../assets/dummies/pet-friendly-cafe.jpg";
+import petSitterImg from "../assets/dummies/pet-sitter.jpg";
+import dayCareImg from "../assets/dummies/day-care.jpg";
+import petBoardingImg from "../assets/dummies/pet-boarding.jpg";
+import petTaxiImg from "../assets/dummies/pet-taxi.jpg";
+import forSaleImg from "../assets/dummies/for-sale.jpg";
+import care247Img from "../assets/dummies/care-247.jpg";
+import vetHospitalImg from "../assets/dummies/veterinary-hospital.jpg";
+import groomingImg from "../assets/dummies/grooming.jpg";
+import petRelocationImg from "../assets/dummies/pet-relocation.jpg";
+import defaultImg from "../dummy.jpg";
 
 // Example data (replace with API data)
 
@@ -24,6 +37,21 @@ const API_BASE =
   process.env.NODE_ENV === "production"
     ? process.env.REACT_APP_API_URL
     : "http://localhost:5000";
+
+const categoryDummyImages = {
+  "pet friendly restaurant": petFriendlyRestaurantImg,
+  "pet spa": petSpaImg,
+  "pet friendly cafe": petFriendlyCafeImg,
+  "pet sitter": petSitterImg,
+  "day care centre": dayCareImg,
+  "pet boarding services": petBoardingImg,
+  "pet taxi": petTaxiImg,
+  "for sale": forSaleImg,
+  "24/7 care": care247Img,
+  "veterinary hospital": vetHospitalImg,
+  "grooming": groomingImg,
+  "pet relocation": petRelocationImg,
+};
 
 // const normalize = (str = "") =>
 //   str
@@ -789,6 +817,13 @@ const hasActiveFilters = useMemo(() => {
   routeCategory,
   routePet
 ]);
+
+const getFallbackImage = (listing) => {
+  const firstCategory =
+    listing.categories?.[0]?.categoryName?.toLowerCase() || "";
+
+  return categoryDummyImages[firstCategory] || defaultImg;
+};
   return (
     <>
     <Helmet>
@@ -1069,10 +1104,15 @@ const hasActiveFilters = useMemo(() => {
       
       <Card.Img
         variant="top"
-        src={
+  //       src={
+  //   listing.bannerImage
+  //     ? `${API_BASE}/${listing.bannerImage}`
+  //     : dummyImage
+  // }
+  src={
     listing.bannerImage
       ? `${API_BASE}/${listing.bannerImage}`
-      : dummyImage
+      : getFallbackImage(listing)
   }
         alt={listing.shopName}
       />
