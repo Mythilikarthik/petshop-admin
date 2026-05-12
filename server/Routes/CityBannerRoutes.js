@@ -104,26 +104,73 @@ router.get("/name/:city", async (req, res) => {
 //   }
 // });
 
+// router.post("/", upload.single("banner"), async (req, res) => {
+//   try {
+//     const { city } = req.body;
+
+//     if (!city)
+//       return res.status(400).json({ message: "City is required" });
+
+//     // 🔴 CHECK if banner already exists
+//     const existing = await CityBanner.findOne({ city });
+//     if (existing) {
+//       return res.status(409).json({
+//         message: "Banner already exists for this city",
+//       });
+//     }
+
+//     const bannerPath = `${uploadDir}/${req.file.filename}`;
+
+//     const newBanner = new CityBanner({
+//       city,
+//       banner: bannerPath,
+//     });
+
+//     await newBanner.save();
+
+//     res.json({
+//       success: true,
+//       message: "City banner added successfully",
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
 router.post("/", upload.single("banner"), async (req, res) => {
   try {
-    const { city } = req.body;
+    const {
+      city,
+      content,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
+    } = req.body;
 
     if (!city)
       return res.status(400).json({ message: "City is required" });
 
-    // 🔴 CHECK if banner already exists
     const existing = await CityBanner.findOne({ city });
+
     if (existing) {
       return res.status(409).json({
         message: "Banner already exists for this city",
       });
     }
 
-    const bannerPath = `${uploadDir}/${req.file.filename}`;
+    let bannerPath = "";
+
+    if (req.file) {
+      bannerPath = `${uploadDir}/${req.file.filename}`;
+    }
 
     const newBanner = new CityBanner({
       city,
       banner: bannerPath,
+      content,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
     });
 
     await newBanner.save();
@@ -137,17 +184,52 @@ router.post("/", upload.single("banner"), async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+// router.put("/:cityId", upload.single("banner"), async (req, res) => {
+//   try {
+//     const { cityId } = req.params;
+
+//     const banner = await CityBanner.findOne({ city: cityId });
+//     if (!banner)
+//       return res.status(404).json({ message: "Banner not found" });
+
+//     if (req.file) {
+//       banner.banner = `${uploadDir}/${req.file.filename}`;
+//     }
+
+//     await banner.save();
+
+//     res.json({
+//       success: true,
+//       message: "City banner updated successfully",
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
 router.put("/:cityId", upload.single("banner"), async (req, res) => {
   try {
     const { cityId } = req.params;
 
+    const {
+      content,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
+    } = req.body;
+
     const banner = await CityBanner.findOne({ city: cityId });
+
     if (!banner)
       return res.status(404).json({ message: "Banner not found" });
 
     if (req.file) {
       banner.banner = `${uploadDir}/${req.file.filename}`;
     }
+
+    banner.content = content;
+    banner.metaTitle = metaTitle;
+    banner.metaDescription = metaDescription;
+    banner.metaKeywords = metaKeywords;
 
     await banner.save();
 

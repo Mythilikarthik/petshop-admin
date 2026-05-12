@@ -8,11 +8,38 @@ import { useNavigate } from 'react-router-dom';
 import dummyImage from '../dummy.jpg';
 import { FaStar } from 'react-icons/fa';
 import StarRating from './StarRating';
+import petFriendlyRestaurantImg from "../assets/dummies/pet-friendly-restaurant.jpg";
+import petSpaImg from "../assets/dummies/pet-spa.jpg";
+import petFriendlyCafeImg from "../assets/dummies/pet-friendly-cafe.jpg";
+import petSitterImg from "../assets/dummies/pet-sitter.jpg";
+import dayCareImg from "../assets/dummies/day-care.jpg";
+import petBoardingImg from "../assets/dummies/pet-boarding.jpg";
+import petTaxiImg from "../assets/dummies/pet-taxi.jpg";
+import forSaleImg from "../assets/dummies/for-sale.jpg";
+import care247Img from "../assets/dummies/care-247.jpg";
+import vetHospitalImg from "../assets/dummies/veterinary-hospital.jpg";
+import groomingImg from "../assets/dummies/grooming.jpg";
+import petRelocationImg from "../assets/dummies/pet-relocation.jpg";
+import defaultImg from "../dummy.jpg";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
     ? process.env.REACT_APP_API_URL
     : "http://localhost:5000";
+const categoryDummyImages = {
+  "pet friendly restaurant": petFriendlyRestaurantImg,
+  "pet spa": petSpaImg,
+  "pet friendly cafe": petFriendlyCafeImg,
+  "pet sitter": petSitterImg,
+  "day care centre": dayCareImg,
+  "pet boarding services": petBoardingImg,
+  "pet taxi": petTaxiImg,
+  "for sale": forSaleImg,
+  "24/7 care": care247Img,
+  "veterinary hospital": vetHospitalImg,
+  "grooming": groomingImg,
+  "pet relocation": petRelocationImg,
+};
 const services = [
     {
         id: 1,
@@ -130,6 +157,12 @@ const renderAvgStarsCal = (value) => {
     <FaStar key={i} color={i < full ? "#ffc107" : "#e4e5e9"} />
   ));
 };
+const getFallbackImage = (listing) => {
+  const firstCategory =
+    listing.category?.[0]?.toLowerCase() || "";
+
+  return categoryDummyImages[firstCategory] || defaultImg;
+};
 
     return (
     <div className="featured-section">
@@ -162,7 +195,7 @@ const renderAvgStarsCal = (value) => {
                                 {/* <div className="service-icon">
                                     <BsTagFill size={100} color="#ff8800" />
                                 </div> */}
-                                {service.bannerImage && service.bannerImage.length > 0 ? (
+                                {/* {service.bannerImage && service.bannerImage.length > 0 ? (
                                           <Card.Img 
                                           variant="top" 
                                           src={`${API_BASE}/${service.bannerImage}`}
@@ -170,7 +203,17 @@ const renderAvgStarsCal = (value) => {
                                         />
                                         ) : (
                                           <Card.Img variant="top" src={dummyImage} alt={service.shopName} className='w-100' />
-                                        )}
+                                        )} */}
+                                        <Card.Img
+                                            variant="top"
+                                            src={
+                                                service.bannerImage
+                                                ? `${API_BASE}/${service.bannerImage}`
+                                                : getFallbackImage(service)
+                                            }
+                                            alt={service.shopName}
+                                            className="w-100"
+                                            />
                                 
                             </Card.Header>
                             <Card.Body className='pos-rel d-flex flex-grow-1 flex-column '>

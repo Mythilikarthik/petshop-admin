@@ -826,12 +826,31 @@ const getFallbackImage = (listing) => {
 };
   return (
     <>
-    <Helmet>
+    {/* <Helmet>
         <title>Pet Services Directory India – Find Vets, Clinics & Pet Care Near You</title>
         <meta
           name="description"
           content="Explore the Vet & Pets directory to find nearby vets, clinics, pet shops, grooming, and services across India for all your pet care needs easily."
         />
+    </Helmet> */}
+    <Helmet>
+      <title>
+        {banner?.metaTitle ||
+          "Pet Services Directory India – Find Vets, Clinics & Pet Care Near You"}
+      </title>
+
+      <meta
+        name="description"
+        content={
+          banner?.metaDescription ||
+          "Explore the Vet & Pets directory to find nearby vets, clinics, pet shops, grooming, and services across India."
+        }
+      />
+
+      <meta
+        name="keywords"
+        content={banner?.metaKeywords || ""}
+      />
     </Helmet>
     <AuthGateModal
   show={showAuthGate}
@@ -845,12 +864,25 @@ const getFallbackImage = (listing) => {
         style={{ width: "100%", height: "300px", objectFit: "cover" }}
       />
     )}
+
+    
     {topHomeAds.length > 0 && (
       <AdSlider ads={topHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
     )}
     {middleHomeAds.length > 0 && (
       <AdSlider ads={middleHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} float={true}
       side="right" />
+    )}
+
+    {banner?.content && (
+      <section className="city-banner-content py-4">
+        <Container>
+          <div
+            className="city-content-box"
+            dangerouslySetInnerHTML={{ __html: banner.content }}
+          />
+        </Container>
+      </section>
     )}
     <section className="directory-inner-section">
       

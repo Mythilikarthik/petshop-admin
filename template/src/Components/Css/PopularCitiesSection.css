@@ -110,10 +110,14 @@
   justify-content: end;
   height: 100%;
   left: 0;
-  color: #ff9800;
+  /* color: #ff9800; */
+  color: #FF4E00;
+  font-weight: 600;
 }
 .city-listings-new {
-  color: #ff9800;
+  /* color: #ff9800; */
+  color: #FF4E00;
+  font-weight: 600;
 }
 .city-name-new {
   color: #000;

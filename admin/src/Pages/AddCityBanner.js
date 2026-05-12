@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Form, Button, Container, Row, Col, Breadcrumb } from "react-bootstrap";
 import useUnsavedChanges from "../Hooks/useUnsavedChanges";
+import ParaEditor from "../Layout/ParaEditor";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -19,9 +20,16 @@ console.log(cityId);
   const [banner, setBanner] = useState(null);
   const [bannerPreview, setBannerPreview] = useState(null);
 
+  // const [formData, setFormData] = useState({
+  //   city: "",
+  // });
   const [formData, setFormData] = useState({
-    city: "",
-  });
+  city: "",
+  content: "",
+  metaTitle: "",
+  metaDescription: "",
+  metaKeywords: "",
+});
 
   const { confirmLeave, markAsSaved } = useUnsavedChanges(formData);
 
@@ -49,7 +57,14 @@ console.log(cityId);
         const data = await res.json();
 
         if (data.banner) {
-          setFormData({ city: data.banner.city });
+          // setFormData({ city: data.banner.city });
+          setFormData({
+            city: data.banner.city?._id || data.banner.city,
+            content: data.banner.content || "",
+            metaTitle: data.banner.metaTitle || "",
+            metaDescription: data.banner.metaDescription || "",
+            metaKeywords: data.banner.metaKeywords || "",
+          });
           setBannerPreview(data.banner.banner);
         }
       } catch (err) {
@@ -116,6 +131,10 @@ const handleSubmit = async (e) => {
   try {
     const fd = new FormData();
     fd.append("city", formData.city);
+    fd.append("content", formData.content);
+    fd.append("metaTitle", formData.metaTitle);
+    fd.append("metaDescription", formData.metaDescription);
+    fd.append("metaKeywords", formData.metaKeywords);
     if (banner) fd.append("banner", banner);
 
     const url = cityId
@@ -227,7 +246,63 @@ const handleSubmit = async (e) => {
                 }}
               />
             )}
+            <Form.Group className="mb-4">
+              <Form.Label>Content</Form.Label>
 
+              <ParaEditor
+                value={formData.content}
+                onChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    content: value,
+                  })
+                }
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Meta Title</Form.Label>
+              <Form.Control
+                type="text"
+                value={formData.metaTitle}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    metaTitle: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Meta Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={formData.metaDescription}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    metaDescription: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Meta Keywords</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="pet clinic, vet, grooming"
+                value={formData.metaKeywords}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    metaKeywords: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
             <Button variant="primary" type="submit">
               Save
             </Button>
