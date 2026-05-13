@@ -112,7 +112,8 @@ function App() {
           <Route path="/cities" element={<ViewAllCitiesPage />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:id" element={<BlogDetail />} />
+          {/* <Route path="/blog/:id" element={<BlogDetail />} /> */}
+          <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/register" element={<Register />} />
           <Route path="/claim/:listingId" element={<ClaimListing />} />
           <Route path="/listing/:listingId" element={<ListingDetailPage />} />

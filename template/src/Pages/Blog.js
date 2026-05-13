@@ -390,7 +390,8 @@ const Blog = () => {
                             {item.excerpt?.slice(0, 100)}...
                           </Card.Text>
 
-                          <Link style={{ color: "#ff6b00" }}  to={`/blog/${item._id}`}>
+                          {/* <Link style={{ color: "#ff6b00" }}  to={`/blog/${item._id}`}> */}
+                          <Link style={{ color: "#ff6b00" }}  to={`/blog/${item.slug}`}>
                             Read More →
                           </Link>
                         </Card.Body>

@@ -10,7 +10,8 @@ const API_BASE =
     : "http://localhost:5000";
 
 const BlogDetail = () => {
-  const { id } = useParams();
+  // const { id } = useParams();
+  const { slug } = useParams();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,7 +21,8 @@ const BlogDetail = () => {
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/blog/${id}`);
+        // const res = await fetch(`${API_BASE}/api/blog/${id}`);
+        const res = await fetch(`${API_BASE}/api/blog/slug/${slug}`);
         const data = await res.json();
 
         if (!data.success) {
@@ -37,7 +39,7 @@ const BlogDetail = () => {
     };
 
     fetchBlog();
-  }, [id]);
+  }, [slug]);
 
   if (loading)
     return (

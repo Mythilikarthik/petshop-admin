@@ -139,6 +139,35 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+router.get('/slug/:slug', async (req, res) => {
+  try {
+
+    const blog = await Blog.findOne({
+      slug: req.params.slug
+    }).populate('category', 'categoryName');
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: 'Blog not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      blog
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Server error'
+    });
+  }
+});
 // Update a blog post by ID
 router.put('/:id', upload.fields([
   { name: 'bannerImage', maxCount: 1 },
@@ -185,10 +214,55 @@ if (!req.body.metaTitle && req.body.title) {
     if (req.files?.bannerImage) updateData.bannerImage = req.files.bannerImage[0].path;
     if (req.files?.contentImage) updateData.contentImage = req.files.contentImage[0].path;
 
-    const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, updateData, { new: true });
-    if (!updatedBlog) return res.status(404).json({ success: false, message: 'Blog not found' });
+    // const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    // if (!updatedBlog) return res.status(404).json({ success: false, message: 'Blog not found' });
 
-    res.json({ success: true, blog: updatedBlog });
+    // res.json({ success: true, blog: updatedBlog });
+    const blog = await Blog.findById(req.params.id);
+
+if (!blog) {
+  return res.status(404).json({
+    success: false,
+    message: 'Blog not found'
+  });
+}
+
+// update fields
+Object.assign(blog, updateData);
+
+// generate slug only if empty
+if (!blog.slug && blog.title) {
+
+  let baseSlug = require("slugify")(blog.title, {
+    lower: true,
+    strict: true
+  });
+
+  let slug = baseSlug;
+
+  let counter = 1;
+
+  while (
+    await Blog.findOne({
+      slug,
+      _id: { $ne: blog._id }
+    })
+  ) {
+
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
+  blog.slug = slug;
+}
+
+// save
+await blog.save();
+
+res.json({
+  success: true,
+  blog
+});
   } catch (error) {
     console.error('Error updating blog:', error);
     res.status(500).json({ success: false, message: error.message });
