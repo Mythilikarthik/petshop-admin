@@ -30,7 +30,6 @@ const BlogSchema = new Schema({
   slug: {
     type: String,
     unique: true,
-    required: true,
     lowercase: true
   },
 
