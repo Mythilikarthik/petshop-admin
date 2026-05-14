@@ -71,7 +71,7 @@ if (typeof keywords === "string") {
     res.status(201).json({ success: true, blog: newBlog });
   } catch (error) {
     console.error('Error creating blog:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
   }
 });
 router.post("/by-pet-category", async (req, res) => {
