@@ -115,47 +115,72 @@ router.post("/byPetCategories", async (req, res) => {
     });
 
     let matchCondition = {};
+// ✅ SINGLE OR MULTI SELECT
+matchCondition = {
+  $or: [
 
-    // ✅ SINGLE SELECT
-    if (objectIds.length === 1) {
-
-      matchCondition = {
-        $or: [
-
-          // exact match
-          {
-            $expr: {
-              $setEquals: [
-                "$petCategories",
-                objectIds
-              ]
-            }
-          },
-
-          // all pet types category
-          {
-            $expr: {
-              $eq: [
-                { $size: "$petCategories" },
-                totalPetTypes
-              ]
-            }
-          }
+    // selected pet types exist inside category
+    {
+      $expr: {
+        $setIsSubset: [
+          objectIds,
+          "$petCategories"
         ]
-      };
+      }
+    },
 
-    } else {
-
-      // ✅ MULTI SELECT = exact only
-      matchCondition = {
-        $expr: {
-          $setEquals: [
-            "$petCategories",
-            objectIds
-          ]
-        }
-      };
+    // all pet types category
+    {
+      $expr: {
+        $eq: [
+          { $size: "$petCategories" },
+          totalPetTypes
+        ]
+      }
     }
+
+  ]
+};
+    // ✅ SINGLE SELECT
+    // if (objectIds.length === 1) {
+
+    //   matchCondition = {
+    //     $or: [
+
+    //       // exact match
+    //       {
+    //         $expr: {
+    //           $setEquals: [
+    //             "$petCategories",
+    //             objectIds
+    //           ]
+    //         }
+    //       },
+
+    //       // all pet types category
+    //       {
+    //         $expr: {
+    //           $eq: [
+    //             { $size: "$petCategories" },
+    //             totalPetTypes
+    //           ]
+    //         }
+    //       }
+    //     ]
+    //   };
+
+    // } else {
+
+    //   // ✅ MULTI SELECT = exact only
+    //   matchCondition = {
+    //     $expr: {
+    //       $setEquals: [
+    //         "$petCategories",
+    //         objectIds
+    //       ]
+    //     }
+    //   };
+    // }
 
     const categories = await Category.aggregate([
       {

@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Select from "react-select";
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import { FaUpload, FaDownload } from "react-icons/fa";
+import { FaUpload, FaDownload, FaFileCsv, FaFileExcel, } from "react-icons/fa";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -482,6 +482,41 @@ const serviceRelationMap = Object.fromEntries(
       .split(/[,;|]/)
       .map(s => s.trim().toLowerCase())
       .filter(Boolean);
+      // ✅ VALIDATE "ALL TYPES" AGAINST CATEGORY
+const uploadedAllTypes = petCategoriesRaw.some(v =>
+  ["all", "all types"].includes(v.toLowerCase().trim())
+);
+
+if (uploadedAllTypes) {
+
+  // all pet types available in system
+  const allSystemPets = Object.keys(petCategoryMap)
+    .map(v => v.toLowerCase().trim())
+    .filter(v => !["all", "all types"].includes(v));
+
+  for (const cat of categoriesRaw) {
+
+    const allowedPets = (categoryPetMap[cat] || [])
+      .map(v => v.toLowerCase().trim());
+
+    const supportsAllPets =
+      allSystemPets.length === allowedPets.length &&
+      allSystemPets.every(p => allowedPets.includes(p));
+
+    if (!supportsAllPets) {
+
+      intersectionErrors.push(
+        `Row ${idx + 2}: "${cat}" supports only [${allowedPets.join(", ")}] but you selected ALL TYPES`
+      );
+
+      break;
+    }
+  }
+
+  if (intersectionErrors.length > 0) {
+    continue;
+  }
+}
 
     // REQUIRED CHECK
     const rowErrors = [];
@@ -504,48 +539,106 @@ const serviceRelationMap = Object.fromEntries(
       .map(s => s.trim().toLowerCase())
       .filter(Boolean);
 
-    // ✅ STRICT MATCH CHECK (FIXED)
-    let hasIntersectionError = false;
+    // ✅ STRICT MATCH CHECK (FIXED) working good
+//     let hasIntersectionError = false;
 
-for (const cat of categoriesRaw) {
-  const allowedPets = categoryPetMap[cat] || [];
+// for (const cat of categoriesRaw) {
+//   const allowedPets = categoryPetMap[cat] || [];
 
-  // ✅ HANDLE "ALL" HERE
-  let normalizedPetTypes = [...petCategoriesRaw];
+//   // ✅ HANDLE "ALL" HERE
+//   let normalizedPetTypes = [...petCategoriesRaw];
 
-  if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
-    normalizedPetTypes = [...allowedPets]; // 🔥 expand "all"
-  }
+//   if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
+//     normalizedPetTypes = [...allowedPets]; // 🔥 expand "all"
+//   }
 
-  const sortedAllowed = [...allowedPets].sort();
-  const sortedGiven = [...normalizedPetTypes].sort();
+//   const sortedAllowed = [...allowedPets].sort();
+//   const sortedGiven = [...normalizedPetTypes].sort();
 
-  // ✅ if uploaded only ONE pet type
-// allow categories mapped with ALL TYPES also
+//   // ✅ if uploaded only ONE pet type
+// // allow categories mapped with ALL TYPES also
 
-const uploadedSinglePet = normalizedPetTypes.length === 1;
+// const uploadedSinglePet = normalizedPetTypes.length === 1;
 
-const categorySupportsAll = [...allowedPets];
+// const categorySupportsAll = [...allowedPets];
 
-if (uploadedSinglePet && categorySupportsAll) {
-  continue;
-}
-  const isExactMatch =
-    sortedAllowed.length === sortedGiven.length &&
-    sortedAllowed.every((val, i) => val === sortedGiven[i]);
+// if (uploadedSinglePet && categorySupportsAll) {
+//   continue;
+// }
+//   const isExactMatch =
+//     sortedAllowed.length === sortedGiven.length &&
+//     sortedAllowed.every((val, i) => val === sortedGiven[i]);
 
-  if (!isExactMatch) {
-    hasIntersectionError = true;
+//   if (!isExactMatch) {
+//     hasIntersectionError = true;
 
-    intersectionErrors.push(
-      `Row ${idx + 2}: "${cat}" requires [${allowedPets.join(", ")}] but you provided [${petCategoriesRaw.join(", ")}]`
-    );
+//     intersectionErrors.push(
+//       `Row ${idx + 2}: "${cat}" requires [${allowedPets.join(", ")}] but you provided [${petCategoriesRaw.join(", ")}]`
+//     );
 
-    break;
-  }
-}
+//     break;
+//   }
+// }
 
-if (hasIntersectionError) continue;
+// if (hasIntersectionError) continue;
+
+// for (const serviceName of specializedRaw) {
+
+//   const service = serviceRelationMap[serviceName];
+
+//   if (!service) {
+//     missingServices.add(serviceName);
+//     continue;
+//   }
+
+//   // ✅ CATEGORY MATCH
+//   const serviceCategories = [...service.categories]
+//     .map(v => v.toLowerCase().trim());
+
+//   const uploadedCategories = [...categoriesRaw]
+//     .map(v => v.toLowerCase().trim());
+
+//   const categoryMatch =
+//     uploadedCategories.every(cat =>
+//       serviceCategories.includes(cat)
+//     );
+
+//   // ✅ HANDLE ALL
+//   let normalizedPets = [...petCategoriesRaw];
+
+//   if (
+//     petCategoriesRaw.some(v =>
+//       ["all", "all types"].includes(v.toLowerCase().trim())
+//     )
+//   ) {
+//     normalizedPets = [...service.petTypes];
+//   }
+
+//   const servicePets = [...service.petTypes]
+//     .map(v => v.toLowerCase().trim());
+
+//   const uploadedPets = [...normalizedPets]
+//     .map(v => v.toLowerCase().trim());
+
+//   // ✅ SUBSET MATCH
+//   const petMatch =
+//     uploadedPets.every(p =>
+//       servicePets.includes(p)
+//     );
+
+//   if (!categoryMatch || !petMatch) {
+
+//     intersectionErrors.push(
+//       `Row ${idx + 2}: Service "${serviceName}" does not match selected Category/Type`
+//     );
+
+//     continue;
+//   }
+
+//   specializedServiceIds.push(
+//     serviceMap[serviceName]
+//   );
+// }
     // let hasIntersectionError = false;
 
     // for (const cat of categoriesRaw) {
@@ -633,10 +726,44 @@ const categoryMatch =
 
 
 // 🔥 handle ALL here also
+// let normalizedPets = [...petCategoriesRaw];
+
+// if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
+//   normalizedPets = [...service.petTypes];
+// }
+// ✅ HANDLE "ALL TYPES"
 let normalizedPets = [...petCategoriesRaw];
 
-if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
-  normalizedPets = [...service.petTypes];
+const uploadedAllTypes = petCategoriesRaw.some(v =>
+  ["all", "all types"].includes(v.toLowerCase().trim())
+);
+
+// ALL pet categories available in system
+const allSystemPets = Object.keys(petCategoryMap)
+  .map(v => v.toLowerCase().trim())
+  .filter(v => !["all", "all types"].includes(v));
+
+// service supported pets
+const servicePets = [...service.petTypes]
+  .map(v => v.toLowerCase().trim());
+
+// ❌ User selected ALL TYPES
+if (uploadedAllTypes) {
+
+  const supportsAllPets =
+    allSystemPets.length === servicePets.length &&
+    allSystemPets.every(p => servicePets.includes(p));
+
+  if (!supportsAllPets) {
+
+    intersectionErrors.push(
+      `Row ${idx + 2}: "${serviceName}" supports only [${service.petTypes.join(", ")}] but you selected ALL TYPES`
+    );
+
+    continue;
+  }
+
+  normalizedPets = [...allSystemPets];
 }
 
 // const sortedServicePets = [...service.petTypes].sort();
@@ -646,8 +773,8 @@ if (petCategoriesRaw.some(v => ["all", "all types"].includes(v))) {
 //   sortedServicePets.length === sortedGivenPets.length &&
 //   sortedServicePets.every((val, i) => val === sortedGivenPets[i]);
 let petMatch = false;
-const servicePets = [...service.petTypes]
-  .map(v => v.toLowerCase().trim());
+// const servicePets = [...service.petTypes]
+//   .map(v => v.toLowerCase().trim());
 
 const uploadedPets = [...normalizedPets]
   .map(v => v.toLowerCase().trim());
@@ -808,6 +935,38 @@ console.log("categoryMatch:", categoryMatch);
     setUploadError("Server error during bulk upload.");
   }
 };
+const handleExport = () => {
+
+  const exportData = filteredListings.map((listing, index) => ({
+    "S.No": index + 1,
+    "Shop Name": listing.shopName || "",
+    "Email": listing.email || "",
+    "Phone": listing.phone || "",
+    "Types": listing.petCategories?.join(", ") || "",
+    "Categories": listing.categories?.join(", ") || "",
+    "Specialized Services": listing.specializedServices?.join(", ") || "",
+    "City": listing.city?.city || "",
+    "Created By": listing.created_by_type || "",
+    "Status": listing.status || "",
+    "Claimed": listing.isClaimed ? "Yes" : "No",
+    "Claim Status": listing.claimStatus || "",
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Business Listings"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    `business-listings-${Date.now()}.xlsx`
+  );
+};
 
   return (
     <div className="container mt-4">
@@ -899,6 +1058,26 @@ console.log("categoryMatch:", categoryMatch);
                 </Form.Group>
           
           </Col>
+          <Col xs={'auto'} className="d-flex align-items-center justify-content-center">
+
+  <Form.Group className="text-center">
+
+    <label
+      onClick={handleExport}
+      className="btn btn-warning d-flex flex-column align-items-center justify-content-center circular-button"
+      style={{
+        cursor: "pointer",
+        padding: "12px",
+        borderRadius: "100%",
+      }}
+    >
+      {/* <FaDownload size={20} /> */}
+      <FaFileExcel size={20} />
+    </label>
+
+  </Form.Group>
+
+</Col>
         </Row>
         <Row className='d-flex justify-content-center mb-5'>
           <Col md={6} >

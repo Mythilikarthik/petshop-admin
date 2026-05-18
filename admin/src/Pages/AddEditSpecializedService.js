@@ -299,23 +299,37 @@ useEffect(() => {
 
     const selectedPets = form.petCategories.map(String);
 
-    // ✅ exact match
-    const isExactMatch =
-      allowedPets.length === selectedPets.length &&
-      selectedPets.every(id => allowedPets.includes(id));
+    // ✅ exact match working good
+    // const isExactMatch =
+    //   allowedPets.length === selectedPets.length &&
+    //   selectedPets.every(id => allowedPets.includes(id));
 
-    // ✅ category contains ALL pet types
-    const isAllTypesCategory =
-      allowedPets.length === totalPetIds.length &&
-      totalPetIds.every(id => allowedPets.includes(id));
+    // // ✅ category contains ALL pet types
+    // const isAllTypesCategory =
+    //   allowedPets.length === totalPetIds.length &&
+    //   totalPetIds.every(id => allowedPets.includes(id));
 
-    // ✅ ONE selected → allow exact OR all-types category
-    if (selectedPets.length === 1) {
-      return isExactMatch || isAllTypesCategory;
-    }
+    // // ✅ ONE selected → allow exact OR all-types category
+    // if (selectedPets.length === 1) {
+    //   return isExactMatch || isAllTypesCategory;
+    // }
 
-    // ✅ MULTIPLE selected → exact only
-    return isExactMatch;
+    // // ✅ MULTIPLE selected → exact only
+    // return isExactMatch;
+    // ✅ selected pets must exist inside category
+const isSubsetMatch =
+  selectedPets.every(id => allowedPets.includes(id));
+
+// ✅ ALL TYPES category
+const isAllTypesCategory =
+  allowedPets.length === totalPetIds.length &&
+  totalPetIds.every(id => allowedPets.includes(id));
+
+// ✅ allow:
+// cats -> cats,dogs
+// dogs -> cats,dogs
+// cats,dogs -> cats,dogs
+return isSubsetMatch || isAllTypesCategory;
   });
 
   setFilteredCategories(filtered);
