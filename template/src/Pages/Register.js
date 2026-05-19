@@ -738,7 +738,7 @@ if (!PHONE_REGEX.test(form.phone))
           {/* LEFT */}
           <Col md={6} className="bg-color text-white d-flex align-items-center justify-content-center">
              <div className="p-5 text-center">
-               <h3>Welcome to PetShop Admin</h3>
+               <h3>Welcome to VetandPets Admin</h3>
                <p>Create account & list your shop easily</p>
              </div>
            </Col>

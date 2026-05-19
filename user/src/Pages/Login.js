@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from "../features/authSlice";
 import { FaEye, FaEyeSlash, FaHome } from "react-icons/fa";
 import { GoogleLogin } from '@react-oauth/google';
+import logo from "../images/logo.png";
 
 
 const API_BASE =
@@ -40,6 +41,11 @@ const Login = () => {
 
   return (
     <Container className="d-flex justify-content-center align-items-center vh-100 flex-column" >
+      <div className='logo-section' style={{"marginBottom" : "20px"}}>
+        <a href={`${HOME}`} target='_self'>
+          <img src={logo} alt='Vet and Pets' />
+        </a>
+      </div>
       <Card style={{ width: '400px' }} className="p-4 shadow">
         <h3 className="text-center mb-3">User Login</h3>
 

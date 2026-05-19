@@ -21,8 +21,8 @@ const menuItems = [
     path: "/business-listing", 
     icon: <MdMessage  />,
     children: [
-      { name: "Message List", path: "/messages", icon: <MdOutlineMenuBook   /> },
-      { name: "Send Message", path: "/send-message", icon: <MdOutlineSend  /> },
+      // { name: "Message List", path: "/messages", icon: <MdOutlineMenuBook   /> },
+      // { name: "Send Message", path: "/send-message", icon: <MdOutlineSend  /> },
     ]
   },
   { name: "Contact Admin", path: "/contact-admin", icon: <MdOutlineContactPhone  /> },

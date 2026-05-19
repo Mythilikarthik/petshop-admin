@@ -121,11 +121,12 @@ const Review = () => {
           <thead>
             <tr>
               <th>#</th>
-              <th>Listing</th>
+              {/* <th>Listing</th> */}
               <th>Reviewer</th>
               <th>Email</th>
               <th>Rating</th>
               <th>Comment</th>
+              <th>Image</th>
               <th>Status</th>
               <th>Date</th>
             </tr>
@@ -141,13 +142,16 @@ const Review = () => {
               displayedReviews.map((r, index) => (
                 <tr key={r._id}>
                   <td>{currentPage * itemsPerPage + index + 1}</td>
-                  <td>{r.listingId?.shopName || "—"}</td>
+                  {/* <td>{r.listingId?.shopName || "—"}</td> */}
                   <td>{r.userId?.name || r.userName || "Guest"}</td>
                   <td>{r.userEmail || "—"}</td>
                   <td>
                     <Badge bg="info">{r.rating}★</Badge>
                   </td>
                   <td style={{ maxWidth: "250px" }}>{r.comment}</td>
+                  <td>{r.photos?.length > 0 ? (
+                    <img src={`${API_BASE}/${r.photos}`} alt="Reviews" width={70}  />
+                  ) : "—"}</td>
                   <td>
                     <Badge
                       bg={

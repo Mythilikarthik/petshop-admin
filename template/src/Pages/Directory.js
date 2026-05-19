@@ -29,6 +29,7 @@ import vetHospitalImg from "../assets/dummies/veterinary-hospital.jpg";
 import groomingImg from "../assets/dummies/grooming.jpg";
 import petRelocationImg from "../assets/dummies/pet-relocation.jpg";
 import defaultImg from "../dummy.jpg";
+import Loader from '../Components/Loader';
 
 // Example data (replace with API data)
 
@@ -71,6 +72,7 @@ const normalize = (str = "") =>
     .replace(/\s+/g, " ")
     .trim();
 const Directory = () => {
+    const [loading, setLoading] = useState(true);
   const { user, authLoading  } = useAuth();
   const engagementGate = useEngagementGate(user);
 const [showAuthGate, setShowAuthGate] = useState(false);
@@ -369,6 +371,7 @@ const city = normalize(l.city?.city);
   };
   const fetchListings = async () => {
     try {
+            setLoading(true);
       const res = await fetch(`${API_BASE}/api/listing/directory/approved`);
       const data = await res.json();
       if(data.success) {
@@ -378,6 +381,10 @@ const city = normalize(l.city?.city);
     }
     catch (err) {
       console.error("Error fetching listings:", err);
+    }finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 1500); // optional delay for smooth loader
     }
   }
 
@@ -1106,7 +1113,7 @@ const getFallbackImage = (listing) => {
         </Col>
         <Col md={9}>
             <Row className="justify-content-center">
-  {paginatedListings.length === 0 ? (
+  {/* {paginatedListings.length === 0 ? (
     <div className="no-results mt-5 d-flex align-items-center justify-content-center">
       <span className='stylish-text'>
         <strong>
@@ -1116,7 +1123,22 @@ const getFallbackImage = (listing) => {
         </strong>
       </span>
     </div>
-  ) : (
+  ) : ( */}
+  {loading ? (
+  <div className="d-flex justify-content-center align-items-center w-100 py-5">
+    <Loader />
+  </div>
+) : paginatedListings.length === 0 ? (
+  <div className="no-results mt-5 d-flex align-items-center justify-content-center">
+    <span className='stylish-text'>
+      <strong>
+        <i className='animation text-orange-500'>
+          Coming Soon
+        </i>
+      </strong>
+    </span>
+  </div>
+) : (
     paginatedListings.map(listing => {
       const safeSlug = listing.slug && listing.slug !== "undefined"
         ? listing.slug
