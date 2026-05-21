@@ -13,6 +13,7 @@ const emailjs = require("@emailjs/nodejs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { log } = require("console");
+const slugify = require("slugify");
 
 
 const generateToken = (id, role) => {
@@ -954,14 +955,45 @@ router.post("/bulk", verifyToken, async (req, res) => {
     }
 
     // 🧹 Clean _id + inject user info
-    const cleanListings = listings.map(({ _id, ...rest }, idx) => ({
+    // const cleanListings = listings.map(({ _id, ...rest }, idx) => ({
+    //   ...rest,
+    //   __row: idx + 2, // Excel row (assuming headers in row 1)
+    //   created_by_id: userId,
+    //   created_by_type: userType,
+    //   status,
+    //   country: "India",
+    // }));
+    
+
+const cleanListings = await Promise.all(
+  listings.map(async ({ _id, ...rest }, idx) => {
+
+    // Generate base slug
+    let baseSlug = slugify(rest.shopName || "", {
+      lower: true,
+      strict: true,
+    });
+
+    let slug = baseSlug;
+    let counter = 1;
+
+    // Ensure unique slug
+    while (await Listing.findOne({ slug })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    return {
       ...rest,
-      __row: idx + 2, // Excel row (assuming headers in row 1)
+      slug, // ✅ add slug here
+      __row: idx + 2,
       created_by_id: userId,
       created_by_type: userType,
       status,
       country: "India",
-    }));
+    };
+  })
+);
 
     // ✅ Validate schema before proceeding
     for (const listing of cleanListings) {
@@ -1621,6 +1653,49 @@ router.get("/incviewsslug/:slugId", async (req, res) => {
 });
 
 
+router.get("/incviewsslug/slug/:slug", async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.socket.remoteAddress;
+
+    const listing = await Listing.findOne({
+      slug,
+      status: "approved",
+    })
+      .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("specializedServices", "serviceName")
+      .populate("city", "city");
+
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found or not approved",
+      });
+    }
+
+    if (!listing.viewedIPs.includes(ip)) {
+      listing.views += 1;
+      listing.viewedIPs.push(ip);
+      await listing.save();
+    }
+
+    res.json({
+      success: true,
+      listing,
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
 
 
 

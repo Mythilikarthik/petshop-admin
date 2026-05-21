@@ -8,6 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { incrementListingViews } from "../utils/engagementTracker";
 import { useEngagementGate } from "../hooks/useEngagementGate";
 import AuthGateModal from "../hooks/AuthGateModel";
+import { Helmet } from "react-helmet-async";
 
 
 
@@ -33,13 +34,14 @@ const [showAuthGate, setShowAuthGate] = useState(false);
 const [selectedImage, setSelectedImage] = useState(null);
   // const { listingId } = useParams(); // from URL
   // const id = listingId;
-  const { slugId } = useParams();
-  const getIdFromSlug = (slugId) => {
-  const parts = slugId.split("-");
-  return parts[parts.length - 1]; // last part = Mongo _id
-};
-const id = getIdFromSlug(slugId);
-console.log("Listing ID from slug:", id);
+//   const { slugId } = useParams();
+//   const getIdFromSlug = (slugId) => {
+//   const parts = slugId.split("-");
+//   return parts[parts.length - 1]; // last part = Mongo _id
+// };
+// const id = getIdFromSlug(slugId);
+const { slug } = useParams();
+console.log("Listing slug:", slug);
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState({ show: false, type: "", message: "" });
@@ -106,7 +108,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/listing/incviewsslug/${slugId}`);
+        const res = await fetch(`${API_BASE}/api/listing/incviewsslug/slug/${slug}`);
         const data = await res.json();
 
         if (data.success) {
@@ -115,13 +117,13 @@ useEffect(() => {
           console.log("Listing Data:", data.listing);
         }
       } catch (err) {
-        console.error("Error fetching listing:", err);
+        console.error("Error fetching listing:", err.message);
       }
       setLoading(false);
     };
 
     fetchListing();
-  }, [id]);
+  }, [slug]);
 
 // ============================================================
 
@@ -135,26 +137,53 @@ useEffect(() => {
     alertRef.current.focus();
   }
 }, [alert]);
+useEffect(() => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth", // optional
+  });
+}, [slug]);
 
   // ============================================================
   // 2️⃣ FETCH REVIEWS FOR THIS LISTING
   // ============================================================
+  // useEffect(() => {
+  //   const fetchReviews = async () => {
+  //     try {
+  //       const res = await fetch(`${API_BASE}/api/reviews/list/${listing._id}`);
+  //       const data = await res.json();
+
+  //       if (data.success) {
+  //         setReviews(data.reviews);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error fetching reviews:", err);
+  //     }
+  //   };
+
+  //   fetchReviews();
+  // }, [listing]);
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/reviews/list/${id}`);
-        const data = await res.json();
+  if (!listing?._id) return;
 
-        if (data.success) {
-          setReviews(data.reviews);
-        }
-      } catch (err) {
-        console.error("Error fetching reviews:", err);
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/reviews/list/${listing._id}`
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        setReviews(data.reviews);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+    }
+  };
 
-    fetchReviews();
-  }, [id]);
+  fetchReviews();
+}, [listing?._id]);
 
   // ============================================================
   // 3️⃣ CALCULATE AVERAGE RATING
@@ -315,7 +344,7 @@ useEffect(() => {
     setIsSubmitting(true);
 
   const formData = new FormData();
-  formData.append("listingId", id);
+  formData.append("listingId", listing._id);
   formData.append("userName", userName);
   formData.append("userEmail", userEmail);
   formData.append("rating", rating);
@@ -441,10 +470,43 @@ const handleFileChange = (e) => {
 
   setPhotos(files);
 };
+const shortAddress = (address) => {
+  if (!address) return "";
 
+  // Remove pincode
+  address = address.replace(/\b\d{6}\b/g, "").trim();
+
+  // Split by comma
+  let parts = address
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  // Take last 3 parts
+  if (parts.length >= 3) {
+    return parts.slice(-3).join(", ");
+  }
+
+  return address;
+};
 
   return (
-   
+   <>
+   <Helmet>
+  <title>
+    {`Vet and Pets - ${shortAddress(
+      listing?.address
+    )}`}
+  </title>
+
+  <meta
+    name="description"
+    content={
+      listing?.description ||
+      "Find trusted pet care services on Vet & Pets."
+    }
+  />
+</Helmet>
 
     <section className="listing-detail-section p-0 mt-0">
       
@@ -470,19 +532,7 @@ const handleFileChange = (e) => {
 
         <Row className="">
           <Col md={8}>
-          <div className="review-summary">
-            <div style={{ display: "flex", gap: 12, alignItems: "left" }}>
-              <div style={{ fontSize: 30, fontWeight: "bold" }}>
-                {averageRating()}
-              </div>
-              <div>
-                {renderAvgStarsCal(averageRating())}
-                <div style={{ fontSize: 14, color: "#666" }}>
-                  {reviews.length} review(s)
-                </div>
-              </div>
-            </div>
-          </div>
+          
             <h2  className="mb-3">{listing.shopName}</h2>
             <div className="d-flex gap-2">
              {console.log("petcats:",listing.petCategories)}
@@ -505,7 +555,7 @@ const handleFileChange = (e) => {
 
             <p className="listing-description text-align-justify">{listing.description}</p>
 
-            
+          {listing.categories?.length > 0 && (
         <div className="listing-category">
           {listing.categories?.map((cat, index) => (
           <span key={index} className="service-tag  bg-primary text-white">
@@ -513,6 +563,16 @@ const handleFileChange = (e) => {
           </span>
         ))}
         </div>
+        )}
+        {listing.specializedServices?.length > 0 && (
+        <div className="listing-specialized-service">
+          {listing.specializedServices?.map((cat, index) => (
+          <span key={index} className="service-tag  bg-warning text-black">
+            {cat.serviceName}
+          </span>
+        ))}        
+        </div>
+        )}
 
             
           </Col>
@@ -581,9 +641,22 @@ const handleFileChange = (e) => {
   </Modal.Body>
 </Modal>
         {/* REVIEWS SUMMARY */}
-        
+        <hr />
         {/* REVIEW LIST */}
         <div className="review-list mt-3 ">
+          <div className="review-summary mb-3">
+            <div style={{ display: "flex", gap: 12, alignItems: "left" }}>
+              <div style={{ fontSize: 30, fontWeight: "bold" }}>
+                {averageRating()}
+              </div>
+              <div>
+                {renderAvgStarsCal(averageRating())}
+                <div style={{ fontSize: 14, color: "#666" }}>
+                  {reviews.length} review(s)
+                </div>
+              </div>
+            </div>
+          </div>
           <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Customer Reviews</h5>
           {console.log(reviews)}
           {reviews.length === 0 ? (
@@ -616,7 +689,7 @@ const handleFileChange = (e) => {
                 <p>{r.comment}</p>
                 {r.photos && r.photos.length > 0 &&
                   r.photos.map((item, index) => (
-                    <img className="img-responsive"
+                    <img width={250}
                       key={index}
                       src={`${API_BASE}/${item}`}
                       alt={`Review-${index}`}
@@ -868,7 +941,7 @@ const handleFileChange = (e) => {
         
       </Container>
     </section>
-    
+    </>
   );
 };
 

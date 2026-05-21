@@ -81,7 +81,7 @@ const Footer = ({home, categoryPage}) => {
                         </Col>
                         <Col>
                             <ul className="list-unstyled d-flex gap-4 mb-0 justify-content-end">
-                                <li><Link to="/termsandconditions" className="text-white">Terms of Service</Link></li>
+                                <li><Link to="/termsandconditions" className="text-white">Terms and Conditions</Link></li>
                                 <li><Link to="/privacypolicy" className="text-white">Privacy Policy</Link></li>
                                 <li><Link to="/cookiepolicy" className="text-white">Cookie Policy</Link></li>
                             </ul>

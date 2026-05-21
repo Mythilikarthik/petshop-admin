@@ -105,7 +105,7 @@ const BlogDetail = () => {
           <Col md={8}>
             {/* {new Date(blog.date).toLocaleDateString()} */}
             {/* Author + Date */}
-<div className="listing-type">
+{/* <div className="listing-type">
           <span  className="">
             By {blog.author} - {new Date(blog.date).toLocaleDateString("en-US", {
                 month: "short",
@@ -113,7 +113,7 @@ const BlogDetail = () => {
                 year: "numeric"
             }).replace(" ", " ").replace(",", ",")}
           </span>
-          </div>
+          </div> */}
            
             {/* Title */}
             <h1 className="mb-2">{blog.title}</h1>

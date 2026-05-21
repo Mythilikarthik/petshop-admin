@@ -176,8 +176,10 @@ const AdListings = () => {
                 <th>#</th>
                 <th>Page</th>
                 <th>Image</th>
-                {/* <th>City</th>
-                <th>Type</th> */}
+                <th>City</th>
+                <th>From [Date]</th>
+                <th>To [Date]</th>
+                {/* <th>Type</th> */}
                 <th>Position</th>
                 <th>URL</th>
                 <th>Clicks</th>
@@ -204,8 +206,19 @@ const AdListings = () => {
                         }}
                       />
                     </td>
-                    {/* <td>{ad.city?.city || "-"}</td>
-                    <td>{ad.category?.categoryName || "-"}</td> */}
+                    <td>{ad.city?.city || "-"}</td>
+                    <td>
+  {ad.fromDate
+    ? new Date(ad.fromDate).toLocaleDateString()
+    : "-"}
+</td>
+
+<td>
+  {ad.toDate
+    ? new Date(ad.toDate).toLocaleDateString()
+    : "-"}
+</td>
+                    {/* <td>{ad.category?.categoryName || "-"}</td> */}
                     <td>{ad.position}</td>
                     <td>
                       {ad.url ? (

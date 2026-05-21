@@ -98,15 +98,42 @@ signupStatus: {
 //   next();
 // });
 
-ListingSchema.pre("save", function (next) {
+ListingSchema.pre("save", async function (next) {
   if (this.isModified("shopName")) {
-    this.slug = slugify(this.shopName, {
+    const Listing = this.constructor;
+
+    let baseSlug = slugify(this.shopName, {
       lower: true,
-      strict: true, // removes special chars
+      strict: true,
     });
+
+    let slug = baseSlug;
+    let counter = 1;
+
+    while (
+      await Listing.findOne({
+        slug,
+        _id: { $ne: this._id },
+      })
+    ) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    this.slug = slug;
   }
+
   next();
 });
+// ListingSchema.pre("save", function (next) {
+//   if (this.isModified("shopName")) {
+//     this.slug = slugify(this.shopName, {
+//       lower: true,
+//       strict: true, // removes special chars
+//     });
+//   }
+//   next();
+// });
 // ListingSchema.index(
 //   { slug: 1, city: 1 },
 //   { unique: true }

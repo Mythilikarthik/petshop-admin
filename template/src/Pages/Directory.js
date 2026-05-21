@@ -1355,7 +1355,7 @@ const getFallbackImage = (listing) => {
         className="details-btn mt-auto"
         // onClick={() => navigate(`/listing/${listing._id}`)} 
         
-        onClick = {() => navigate(`/listings/${safeSlug}-${listing._id}`)}
+        onClick = {() => navigate(`/listings/${listing.slug}`)}
       >
         View Details
       </Button>

@@ -118,7 +118,8 @@ function App() {
           <Route path="/claim/:listingId" element={<ClaimListing />} />
           <Route path="/listing/:listingId" element={<ListingDetailPage />} />
           <Route path="/directory/:city?/:category?/:pet?" element={<Directory />} />
-          <Route path="/listings/:slugId" element={<ListingDetailPage />} />
+          {/* <Route path="/listings/:slugId" element={<ListingDetailPage />} /> */}
+          <Route path="/listings/:slug" element={<ListingDetailPage />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

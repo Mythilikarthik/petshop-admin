@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Container } from 'react-bootstrap';
+import { Image, Container } from 'react-bootstrap';
 import DOMPurify from "dompurify";
 import { HeadProvider, Title, Meta } from "react-head";
 
@@ -32,6 +32,15 @@ const TermsAndConditions = () => {
   }, [])
     const safeHTML = DOMPurify.sanitize(petHealth?.content || "");
   return (    
+    <>
+    {petHealth?.banner && (
+          <Image
+            className='img-responsive'
+            src={`${API_BASE}/${petHealth.banner}`}
+            alt="Banner"
+            style={{ width: "100%", height: "450px", objectFit: "cover" }}
+          />
+        )}
     <section className='pet-health mt-5 mb-5'>
       <HeadProvider>
       <div>
@@ -53,6 +62,7 @@ const TermsAndConditions = () => {
         </div>
       </Container>
     </section>
+    </>
   )
 }
 
