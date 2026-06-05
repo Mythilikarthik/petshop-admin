@@ -1,7 +1,7 @@
 import React from 'react'
 import './Css/Footer.css'
 import { Container, Row, Col } from 'react-bootstrap'
-import { AiFillFacebook, AiFillInstagram, AiFillTwitterCircle, AiFillYoutube, AiOutlineHeart } from 'react-icons/ai'
+import { AiFillFacebook, AiFillInstagram, AiFillLinkedin, AiFillTwitterCircle, AiFillYoutube, AiOutlineHeart } from 'react-icons/ai'
 import { Link } from 'react-router-dom'
 import { HiOutlineLocationMarker, HiOutlineMail, HiOutlinePhone, HiOutlineClock} from "react-icons/hi";
 import CategoryPage from '../Pages/CategoryPage'
@@ -31,10 +31,25 @@ const Footer = ({home, categoryPage}) => {
                                 {home.footerDescription}
                             </p>
                             <ul className="social-links list-unstyled d-flex gap-2">
-                                <li><Link to="/" className="text-white"><AiFillFacebook size={25} /></Link></li>
-                                <li><Link to="/" className="text-white"><AiFillTwitterCircle size={25} /></Link></li>
-                                <li><Link to="/" className="text-white"><AiFillInstagram size={25} /></Link></li>
-                                <li><Link to="/" className="text-white"><AiFillYoutube size={25}/></Link></li>
+                                <li>
+                                    <a 
+    href="https://www.facebook.com/people/Vet-and-Pets/61578650970508/" 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    className="text-white"
+  ><AiFillFacebook size={25} /></a></li>
+                                <li><a 
+    href="https://www.instagram.com/vet_and_pets25/" 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    className="text-white"
+  ><AiFillInstagram size={25} /></a></li>
+                                <li><a 
+    href="https://www.linkedin.com/in/vet-and-pets/" 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    className="text-white"
+  ><AiFillLinkedin size={25}/></a></li>
                             </ul>
                         </Col>
                         <Col>
