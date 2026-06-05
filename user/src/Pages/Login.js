@@ -43,7 +43,7 @@ const Login = () => {
     <Container className="d-flex justify-content-center align-items-center vh-100 flex-column" >
       <div className='logo-section' style={{"marginBottom" : "20px"}}>
         <a href={`${HOME}`} target='_self'>
-          <img src={logo} alt='Vet and Pets' />
+          <img src={logo} width={300} alt='Vet and Pets' />
         </a>
       </div>
       <Card style={{ width: '400px' }} className="p-4 shadow">

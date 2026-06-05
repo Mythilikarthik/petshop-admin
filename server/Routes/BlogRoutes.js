@@ -119,7 +119,7 @@ router.post("/by-pet-category", async (req, res) => {
 // Get all blog posts
 router.get('/', async (req, res) => {
   try { 
-    const blogs = await Blog.find().populate('category', 'categoryName').sort({ date: -1 });
+    const blogs = await Blog.find({status : "published"}).populate('category', 'categoryName').sort({ date: -1 });
     res.json({ success: true, blogs });
   } catch (error) {
     console.error('Error fetching blogs:', error);

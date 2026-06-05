@@ -55,7 +55,8 @@ const [businessHours, setBusinessHours] = useState(
     metaDescription: listing?.metaDescription || ""
   });
 
-  const [previewUrls, setPreviewUrls] = useState([]);
+  // const [previewUrls, setPreviewUrls] = useState([]);
+  const [galleryImages, setGalleryImages] = useState([]);
 const { shouldBlockNavigation, confirmLeave, markAsSaved } =
     useUnsavedChanges(formData);
 
@@ -92,17 +93,33 @@ const handleBannerChange = (e) => {
   };
 
   // handle photo selection
-  const handlePhotoChange = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData((prev) => ({
-      ...prev,
-      photos: files
-    }));
+  // const handlePhotoChange = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     photos: files
+  //   }));
 
-    // image previews
-    const urls = files.map((file) => URL.createObjectURL(file));
-    setPreviewUrls(urls);
-  };
+  //   // image previews
+  //   const urls = files.map((file) => URL.createObjectURL(file));
+  //   setPreviewUrls(urls);
+  // };
+  const handlePhotoChange = (e) => {
+  const files = Array.from(e.target.files);
+
+  setFormData((prev) => ({
+    ...prev,
+    photos: files
+  }));
+
+  const images = files.map((file) => ({
+    file,
+    preview: URL.createObjectURL(file),
+    alt: ""
+  }));
+
+  setGalleryImages(images);
+};
 
   useEffect(() => {
   if (!formData.categories.length) {
@@ -255,9 +272,18 @@ const getTypes = async () => {
 
 console.log(formDataToSend.getAll("categories[]"));
       // append image files
-      formData.photos.forEach((photo) => {
-        formDataToSend.append("photos", photo);
-      });
+      // formData.photos.forEach((photo) => {
+      //   formDataToSend.append("photos", photo);
+      // });
+      galleryImages.forEach((img) => {
+  formDataToSend.append("photos", img.file);
+});
+formDataToSend.append(
+  "photoAlts",
+  JSON.stringify(
+    galleryImages.map((img) => img.alt)
+  )
+);
 if (banner) {
   formDataToSend.append("bannerImage", banner);
 }
@@ -688,7 +714,7 @@ useEffect(() => {
             </Form.Group>
 
             {/* Preview */}
-            {previewUrls.length > 0 && (
+            {/* {previewUrls.length > 0 && (
               <Row className="mb-4">
                 {previewUrls.map((url, index) => (
                   <Col key={index} xs={6} md={4} lg={3} className="mb-3">
@@ -696,7 +722,28 @@ useEffect(() => {
                   </Col>
                 ))}
               </Row>
-            )}
+            )} */}
+            {galleryImages.length > 0 && (
+  <Row className="mb-4">
+    {galleryImages.map((img, index) => (
+      <Col key={index} xs={6} md={4} lg={3} className="mb-3">
+        <Image src={img.preview} thumbnail fluid />
+
+        <Form.Control
+          className="mt-2"
+          type="text"
+          placeholder="Image Alt Text"
+          value={img.alt}
+          onChange={(e) => {
+            const updated = [...galleryImages];
+            updated[index].alt = e.target.value;
+            setGalleryImages(updated);
+          }}
+        />
+      </Col>
+    ))}
+  </Row>
+)}
 
             {/* Meta Fields */}
             <Form.Group className="mb-4">

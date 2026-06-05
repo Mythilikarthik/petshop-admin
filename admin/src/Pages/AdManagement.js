@@ -154,6 +154,7 @@ console.log(catData);
       </div>
     );
   }
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <Container className="mt-4">
@@ -189,6 +190,7 @@ console.log(catData);
                 <option value="">-- Select Page --</option>
                 <option value="home">Home Page</option>
                 <option value="directory">Directory Page</option>
+                <option value="city">City Page</option>
                 <option value="blog">Blog Page</option>
               </Form.Select>
             </Form.Group>
@@ -221,7 +223,7 @@ console.log(catData);
             </Form.Group> */}
 
             {/* City */}
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
               <Form.Label>City</Form.Label>
               <Select
                 name="city"
@@ -246,7 +248,38 @@ console.log(catData);
                   }))
                 }
               />
-            </Form.Group>
+            </Form.Group> */}
+            {/* City (Only for City Page) */}
+{formData.page === "city" && (
+  <Form.Group className="mb-3">
+    <Form.Label>City</Form.Label>
+
+    <Select
+      name="city"
+      options={cityList.map((c) => ({
+        value: c._id,
+        label: c.city,
+      }))}
+      value={
+        formData.city
+          ? {
+              value: formData.city,
+              label:
+                cityList.find((x) => x._id === formData.city)?.city ||
+                "Select City",
+            }
+          : null
+      }
+      onChange={(selected) =>
+        setFormData((prev) => ({
+          ...prev,
+          city: selected ? selected.value : "",
+        }))
+      }
+    />
+
+  </Form.Group>
+)}
 
             {/* Position */}
             <Form.Group className="mb-3">
@@ -295,6 +328,7 @@ console.log(catData);
     name="fromDate"
     value={formData.fromDate || ""}
     onChange={handleChange}
+    min={today}
   />
   
 
@@ -340,6 +374,7 @@ console.log(catData);
     name="toDate"
     value={formData.toDate || ""}
     onChange={handleChange}
+     min={formData.fromDate || today}
   />
 
   {formData.toDate && (

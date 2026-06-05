@@ -25,6 +25,7 @@ const EditListing = () => {
   const [banner, setBanner] = useState(null);
 const [bannerPreview, setBannerPreview] = useState(null);
 const [existingBanner, setExistingBanner] = useState(null);
+const [newPhotoAlts,setNewPhotoAlts] = useState([]);
 
 const daysOfWeek = [
   "Monday",
@@ -188,7 +189,11 @@ useEffect(() => {
             specializedServices: data.listing.specializedServices?.map(s => s._id || s) || [],
             photos: [],
             bannerImage: data.listing.bannerImage || null,
-            existingPhotos: data.listing.photos || [],
+            existingPhotos:
+  (data.listing.photos || []).map(photo => ({
+    url: photo.url || photo,
+    alt: photo.alt || ""
+  })),
             metaTitle: data.listing.metaTitle || '',
             metaKeyword: data.listing.metaKeyword
             ? (
@@ -231,6 +236,45 @@ useEffect(() => {
 
     fetchListing();
   }, [id, navigate]);
+  const handleExistingPhotoAltChange = (index,value)=>{
+
+  setFormData(prev=>{
+
+    const updatedPhotos = [...prev.existingPhotos];
+
+    updatedPhotos[index] = {
+      ...updatedPhotos[index],
+      alt:value
+    };
+
+    console.log("UPDATED PHOTO ALT:", updatedPhotos[index]);
+
+    return {
+      ...prev,
+      existingPhotos:updatedPhotos
+    };
+
+  });
+
+};
+const handleDeleteExistingPhoto = (index) => {
+
+  setFormData(prev => {
+
+    const updatedPhotos = prev.existingPhotos.filter(
+      (_, i) => i !== index
+    );
+
+    console.log("AFTER DELETE EXISTING PHOTOS:", updatedPhotos);
+
+    return {
+      ...prev,
+      existingPhotos: updatedPhotos
+    };
+
+  });
+
+};
   const handleServiceChange = (selected) => {
   setFormData(prev => ({
     ...prev,
@@ -315,11 +359,31 @@ useEffect(() => {
     }));
   };
 
+  // const handlePhotoChange = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   setFormData(prev => ({ ...prev, photos: files }));
+  //   setPreviewUrls(files.map(file => URL.createObjectURL(file)));
+  // };
   const handlePhotoChange = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData(prev => ({ ...prev, photos: files }));
-    setPreviewUrls(files.map(file => URL.createObjectURL(file)));
-  };
+
+  const files = Array.from(e.target.files);
+    console.log("Selected files:", files);
+  setFormData(prev => ({
+    ...prev,
+    photos: files
+  }));
+
+
+  setNewPhotoAlts(
+    files.map(() => "")
+  );
+
+
+  setPreviewUrls(
+    files.map(file => URL.createObjectURL(file))
+  );
+
+};
 
   const handleStatusToggle = () => {
     setFormData(prev => ({ ...prev, status: !prev.status }));
@@ -372,18 +436,61 @@ useEffect(() => {
 formDataToSend.append("businessHours", JSON.stringify(businessHours));
       formData.categories.forEach(cat => formDataToSend.append('categories[]', cat));
       formData.petCategories.forEach(cat => formDataToSend.append('petCategories[]', cat));
-      formData.photos.forEach(photo => formDataToSend.append('photos', photo));
+      // formData.photos.forEach(photo => formDataToSend.append('photos', photo));
+      formData.photos.forEach((photo,index)=>{
+
+ formDataToSend.append(
+   "photos",
+   photo
+ );
+
+
+ formDataToSend.append(
+   "newPhotoAlts[]",
+   newPhotoAlts[index] || ""
+ );
+
+});
       formData.specializedServices.forEach(service =>
   formDataToSend.append("specializedServices[]", service)
 );
-      formData.existingPhotos.forEach(photo => formDataToSend.append('existingPhotos[]', photo));
+      formData.existingPhotos.forEach(photo => {
+
+ formDataToSend.append(
+   "existingPhotos[]",
+   JSON.stringify(photo)
+ );
+
+});
       if (banner) {
   formDataToSend.append("bannerImage", banner);  
 }
 if (formData.isClaimed) {
   formDataToSend.append("claimStatus", formData.claimStatus);
 }
-console.log("Submitting claimStatus:", formData.claimStatus);
+// console.log("Submitting claimStatus:", formData.claimStatus);
+console.log("=== NEW PHOTOS ===");
+
+for (let pair of formDataToSend.entries()) {
+  if (pair[0] === "photos") {
+    console.log("Photo file:", pair[1]);
+  }
+
+  if (pair[0] === "newPhotoAlts[]") {
+    console.log("Photo Alt:", pair[1]);
+  }
+}
+
+console.log("=== EXISTING PHOTOS ===");
+
+for (let pair of formDataToSend.entries()) {
+  if (pair[0] === "existingPhotos[]") {
+    console.log(
+      "Existing Photo:",
+      JSON.parse(pair[1])
+    );
+  }
+}
       const res = await fetch(`${API_BASE}/api/listing/${id}`, {
         method: 'PUT',
         headers: {
@@ -451,7 +558,7 @@ console.log("Submitting claimStatus:", formData.claimStatus);
         </Row>
 
         <div className='form-container'>
-          {console.log("Form Data:", formData)}
+          {/* {console.log("Form Data:", formData)} */}
           <Form onSubmit={handleSubmit}>
             {formData.u_name && (
               <h3 className="mb-4">Created by : {formData.u_name.toUpperCase()}</h3>
@@ -734,23 +841,123 @@ formData.petCategories.length === petCategoryList.length
             </Form.Group>
 
             {/* Existing Photo Previews */}
-            {formData.existingPhotos.length > 0 && (
-              <Row className="mb-3">
-                {formData.existingPhotos.map((url, idx) => {
-                  const imageUrl = url.startsWith("http")
-                    ? url
-                    : `${url}`;
-                  return (
-                    <Col key={idx} xs={6} md={4} lg={3} className="mb-2">
-                      <Image src={`${API_BASE}/${imageUrl}`} thumbnail fluid />
-                    </Col>
-                  );
-                })}
-              </Row>
-            )}
+            {/* {formData.existingPhotos.length > 0 && (
+<Row className="mb-3">
+
+{formData.existingPhotos.map((photo, idx)=>{
+
+const imageUrl =
+photo.url?.startsWith("http")
+? photo.url
+: `${API_BASE}/${photo.url.replace(/^\/+/,"")}`;
+
+
+return (
+
+<Col key={idx} xs={6} md={4} lg={3} className="mb-3">
+
+<Image 
+src={imageUrl}
+thumbnail
+fluid
+/>
+
+
+<Form.Control
+className="mt-2"
+type="text"
+placeholder="Image Alt Text"
+value={photo.alt || ""}
+onChange={(e)=>
+ handleExistingPhotoAltChange(
+ idx,
+ e.target.value
+ )
+}
+/>
+
+
+</Col>
+
+)
+
+})}
+
+</Row>
+)} */}
+{formData.existingPhotos.length > 0 && (
+<Row className="mb-3">
+
+{formData.existingPhotos.map((photo, idx)=>{
+
+const imageUrl =
+photo.url?.startsWith("http")
+? photo.url
+: `${API_BASE}/${photo.url.replace(/^\/+/,"")}`;
+
+
+return (
+
+<Col 
+key={idx} 
+xs={6} 
+md={4} 
+lg={3} 
+className="mb-3 position-relative"
+>
+
+
+{/* DELETE BUTTON */}
+<Button
+  variant="danger"
+  size="sm"
+  className="position-absolute"
+  style={{
+    right:"15px",
+    top:"5px",
+    borderRadius:"50%",
+    width:"30px",
+    height:"30px",
+    zIndex:10
+  }}
+  onClick={() => handleDeleteExistingPhoto(idx)}
+>
+  ✕
+</Button>
+
+
+<Image 
+src={imageUrl}
+thumbnail
+fluid
+/>
+
+
+<Form.Control
+className="mt-2"
+type="text"
+placeholder="Image Alt Text"
+value={photo.alt || ""}
+onChange={(e)=>
+ handleExistingPhotoAltChange(
+ idx,
+ e.target.value
+ )
+}
+/>
+
+
+</Col>
+
+)
+
+})}
+
+</Row>
+)}
 
             {/* New Photo Previews */}
-            {previewUrls.length > 0 && (
+            {/* {previewUrls.length > 0 && (
               <Row className="mb-3">
                 {previewUrls.map((url, idx) => (
                   <Col key={idx} xs={6} md={4} lg={3} className="mb-2">
@@ -758,7 +965,32 @@ formData.petCategories.length === petCategoryList.length
                   </Col>
                 ))}
               </Row>
-            )}
+            )} */}
+            {previewUrls.map((url,idx)=>(
+
+<Col key={idx} xs={6} md={4}>
+
+<Image src={url} thumbnail fluid />
+
+
+<Form.Control
+ className="mt-2"
+ placeholder="Image Alt Text"
+ value={newPhotoAlts[idx] || ""}
+ onChange={(e)=>{
+
+   const copy=[...newPhotoAlts];
+
+   copy[idx]=e.target.value;
+
+   setNewPhotoAlts(copy);
+
+ }}
+/>
+
+</Col>
+
+))}
 
             {/* Meta Fields */}
             <Form.Group className="mb-3">
@@ -771,7 +1003,7 @@ formData.petCategories.length === petCategoryList.length
               <Form.Label>Meta Keywords</Form.Label>
 
               <div className="d-flex flex-wrap gap-2 mb-2">
-                {console.log("Current keywords:", formData.metaKeyword)}
+                {/* {console.log("Current keywords:", formData.metaKeyword)} */}
                 {formData.metaKeyword.map((keyword, idx) => (
                   <span key={idx} className="badge bg-secondary d-flex align-items-center">
                     {keyword}

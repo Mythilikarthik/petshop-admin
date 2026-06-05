@@ -170,7 +170,9 @@ const Blog = () => {
   /* ---------------- BLOG DATA ---------------- */
   const blogData = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/blog`);
+      const res = await fetch(`${API_BASE}/api/blog`, {
+        method: "GET"
+      });
       const data = await res.json();
       if (data.success) {
         setBlog(data.blogs);

@@ -609,13 +609,13 @@ const shortAddress = (address) => {
           <div
             className="gallery-item"
             onClick={() => {
-              setSelectedImage(img);
+              setSelectedImage(img.url);
               setShowGalleryModal(true);
             }}
           >
             <img
-              src={`${API_BASE}/${img}`}
-              alt={`${listing.shopName}-${i}`}
+              src={`${API_BASE}/${img.url}`}
+              alt={img.alt || `${listing.shopName}-${i}`}
               className="gallery-img"
             />
           </div>

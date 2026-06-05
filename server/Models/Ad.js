@@ -30,7 +30,7 @@ const adSchema = new mongoose.Schema(
     earnings: { type: Number, default: 0 } ,
     page: {
   type: String,
-  enum: ["home", "directory", "blog"],
+  enum: ["home", "directory", "city", "blog"],
   required: true
 },
 fromDate: { type: Date, default: null },

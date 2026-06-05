@@ -456,7 +456,7 @@ router.post("/user/login", async (req, res) => {
     console.log(username, password);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found or not verified" });
+      return res.status(404).json({ success: false, message: "User not found or not verified. Please contact admin" });
     }
 
     if (!user.password) {

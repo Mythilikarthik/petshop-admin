@@ -207,7 +207,14 @@ router.get("/user/user-listings", verifyToken, async (req, res) => {
     const userId = req.userId; // obtained from verifyToken middleware
 console.log(userId);
     // 1. Find all listings owned by this user
-    const listings = await Listing.find({ user_id: userId }, "_id");
+    const listings = await Listing.find(
+      {
+        $or: [
+          { user_id: userId }, 
+          {claimedBy: userId}
+        ]
+      },
+       "_id");
     if (!listings.length) {
       return res.json([]);
     }
@@ -215,11 +222,11 @@ console.log(userId);
     const listingIds = listings.map((l) => l._id);
 
     // 2. Find all reviews for these listings
-    const reviews = await Review.find({ listingId: { $in: listingIds } })
+    const reviews = await Review.find({ listingId: { $in: listingIds }, status: "approved" })
       .populate("listingId", "shopName city")
       .populate("userId", "name email");
 
-    res.json({reviews});
+    res.json({reviews, listingIds});
   } catch (err) {
     console.error("Error fetching reviews for user listings:", err);
     res.status(500).json({ message: "Server error", error: err.message });

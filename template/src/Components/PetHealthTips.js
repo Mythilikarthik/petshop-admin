@@ -88,7 +88,8 @@ const PetHealthTips = ({ blog, showViewAll= true , banner=false}) => (
                                     {/* Blog Link */}
                                     <Link 
                                         style={{ color: "#ff6b00" }} 
-                                        to={`/blog/${item._id}`}
+                                        // to={`/blog/${item._id}`}
+                                        to={`/blog/${item.slug}`}
                                     >
                                         Read More
                                     </Link>

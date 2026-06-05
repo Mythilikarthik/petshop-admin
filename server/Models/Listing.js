@@ -25,7 +25,18 @@ const ListingSchema = new mongoose.Schema({
   specializedServices: [{ type: mongoose.Schema.Types.ObjectId, ref: "SpecializedService"}],
 
   description: String,
-  photos: [String],
+  // photos: [String],
+  photos: [
+  {
+    url: {
+      type: String,
+    },
+    alt: {
+      type: String,
+      default: ""
+    }
+  }
+],
   bannerImage: { type: String }, 
   metaTitle: String,
   metaKeyword: [String],
