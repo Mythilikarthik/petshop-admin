@@ -1458,7 +1458,7 @@ const ClaimListing = () => {
   </div>
 )}
 {console.log(Object.keys(errors).length)}
-{Object.keys(errors).length > 0 && !errors.api && !errors.success && (
+{/* {Object.keys(errors).length > 0 && !errors.api && !errors.success && (
   <div ref={errorRef} tabIndex={-1} className="text-danger mb-3OutlineNone">
     
     <Alert variant="danger">
@@ -1474,7 +1474,19 @@ const ClaimListing = () => {
       </ul>
     </Alert>
     </div>
-  )}
+  )} */}
+  {Object.values(errors).some(msg => !!msg) && (
+  <div ref={errorRef} tabIndex={-1} className="mb-3" style={{ outline: "none" }}>
+    <Alert variant="danger">
+      <h6 className="fw-bold">Please correct the following errors:</h6>
+      <ul className="mb-0 ps-3">
+        {Object.entries(errors).map(([key, message]) => 
+          message ? <li key={key}>{message}</li> : null
+        )}
+      </ul>
+    </Alert>
+  </div>
+)}
 
         <Form onSubmit={handleSubmit}>
           <h2>Listing Information</h2>
