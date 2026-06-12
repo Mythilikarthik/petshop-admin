@@ -269,7 +269,7 @@ const Blog = () => {
         <Image
           src={`${API_BASE}/${banner.banner}`}
           alt="Banner"
-          style={{ width: "100%", height: "450px", objectFit: "cover" }}
+          style={{ width: "100%", height: "auto", objectFit: "cover" }}
         />
       )}
 

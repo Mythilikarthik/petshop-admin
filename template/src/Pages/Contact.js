@@ -97,7 +97,7 @@ console.log(data);
   return (
     <div className="contact-page">
       <div className="banner">
-        <Image  style={{ width: "100%", height: "450px", objectFit: "cover" }} src={banner} alt="Contact Us" />
+        <Image  style={{ width: "100%", height: "auto", objectFit: "cover" }} src={banner} alt="Contact Us" />
       </div>
       <Container className="mt-5 mb-5">
         <Row className="justify-content-center">

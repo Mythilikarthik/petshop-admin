@@ -38,7 +38,7 @@ const PetHealth = () => {
             className='img-responsive'
             src={`${API_BASE}/${petHealth.banner}`}
             alt="Banner"
-            style={{ width: "100%", height: "450px", objectFit: "cover" }}
+            style={{ width: "100%", height: "auto", objectFit: "cover" }}
           />
         )}
     <section className='pet-health mt-5 mb-5'>
