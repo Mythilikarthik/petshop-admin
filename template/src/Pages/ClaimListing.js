@@ -1457,6 +1457,7 @@ const ClaimListing = () => {
     {success}
   </div>
 )}
+{console.log(Object.keys(errors).length)}
 {Object.keys(errors).length > 0 && !errors.api && !errors.success && (
   <div ref={errorRef} tabIndex={-1} className="text-danger mb-3OutlineNone">
     
