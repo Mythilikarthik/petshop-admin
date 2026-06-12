@@ -23,7 +23,7 @@ const CategoryPageForm = () => {
     image: null,
     imagePreview: "",
     icon: "GiPawHeart",
-    color: "#ff9800",
+    color: "#ff4e00",
     services: [],
     metaTitle: "",
     metaDescription: "",

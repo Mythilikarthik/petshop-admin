@@ -9,6 +9,7 @@ import { incrementListingViews } from "../utils/engagementTracker";
 import { useEngagementGate } from "../hooks/useEngagementGate";
 import AuthGateModal from "../hooks/AuthGateModel";
 import { Helmet } from "react-helmet-async";
+import { validateField } from "../utils/formValidation";
 
 
 
@@ -311,18 +312,38 @@ useEffect(() => {
     setAlert({ show: true, type: "danger", message: "Please select a rating." });
     return;
   }
-  if (!comment.trim()) {
-      setAlert({ show: true, type: "danger", message: "Please enter a comment." });
+  if (!user) {
+      const nameError = validateField("name", userName);
+      if (nameError) {
+        setAlert({ show: true, type: "danger", message: nameError });
+        return;
+      }
+      const emailError = validateField("email", userEmail);
+      if (emailError) {
+        setAlert({ show: true, type: "danger", message: emailError });
+        return;
+      }
+    }
+    const commentError = validateField("reviewText", comment, {
+      maxLength: 300,
+      label: "Comment"
+    });
+    if (commentError) {
+      setAlert({ show: true, type: "danger", message: commentError });
       return;
     }
-    if (comment.length > 300) {
-      setAlert({
-        show: true,
-        type: "danger",
-        message: "Comment cannot exceed 300 characters.",
-      });
-      return;
-    }
+  // if (!comment.trim()) {
+  //     setAlert({ show: true, type: "danger", message: "Please enter a comment." });
+  //     return;
+  //   }
+  //   if (comment.length > 300) {
+  //     setAlert({
+  //       show: true,
+  //       type: "danger",
+  //       message: "Comment cannot exceed 300 characters.",
+  //     });
+  //     return;
+  //   }
 
     // if (!userName.trim() || !userEmail.trim()) {
     //   setAlert({
@@ -747,7 +768,7 @@ const shortAddress = (address) => {
                   <strong>Address:</strong> {listing.address}
                 </li>
                 <li>
-                  <strong>City:</strong> {listing.city?.city} {","} {listing.country}
+                  <strong>City:</strong> {listing.city?.city} {" "} {listing.country}
                 </li>
                 <li>
                   <strong>Website:</strong>{" "}

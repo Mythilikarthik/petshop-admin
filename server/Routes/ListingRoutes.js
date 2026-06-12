@@ -1541,6 +1541,7 @@ router.get("/user/:id", async (req, res) => {
 })
     .populate("categories", "categoryName")
       .populate("petCategories", "categoryName")
+      .populate("specializedServices")
       .populate("city", "city").sort({ created_at: -1 }); 
       console.log(req.params.id);
       if (!listing) {
@@ -2932,6 +2933,770 @@ router.put(
 //     res.status(500).json({ success: false, message: "Server error", error: err.message });
 //   }
 // });
+// router.put(
+//   "/user/:id",
+//   verifyToken,
+//   upload.fields([
+//     { name: "photos", maxCount: 10 },
+//     { name: "bannerImage", maxCount: 1 }
+//   ]),
+//   async (req, res) => {
+//     try {
+//       const userId = req.params.id;
+//       const data = req.body;
+//       const status = req.userType === "admin" ? "approved" : "pending";
+
+//       console.log("Update or create listing for user:", userId, data);
+
+//       // --- Parse categories ---
+//       if (data["categories[]"]) {
+//         data.categories = Array.isArray(data["categories[]"])
+//           ? data["categories[]"]
+//           : [data["categories[]"]];
+//       }
+
+//       if (data["petCategories[]"]) {
+//         data.petCategories = Array.isArray(data["petCategories[]"])
+//           ? data["petCategories[]"]
+//           : [data["petCategories[]"]];
+//       }
+
+//       // --- Existing photos ---
+//       let existingPhotos = [];
+//       if (data["existingPhotos[]"]) {
+//         existingPhotos = Array.isArray(data["existingPhotos[]"])
+//           ? data["existingPhotos[]"]
+//           : [data["existingPhotos[]"]];
+//       }
+
+//       // --- Uploaded photos ---
+//       let uploadedPhotos = [];
+//       if (req.files && req.files.photos) {
+//         uploadedPhotos = req.files.photos.map(f => `${uploadDir}/${f.filename}`);
+//       }
+
+//       // --- Preserve old photos if nothing sent ---
+//       const currentListing = await Listing.findOne({ user_id: userId });
+//       if (!uploadedPhotos.length && !existingPhotos.length && currentListing) {
+//         existingPhotos = currentListing.photos || [];
+//       }
+
+//       // --- Merge photos ---
+//       data.photos = [...existingPhotos, ...uploadedPhotos];
+
+//       // --- Handle banner image ---
+//       if (req.files && req.files.bannerImage && req.files.bannerImage[0]) {
+//         data.bannerImage = `${uploadDir}/${req.files.bannerImage[0].filename}`;
+//       } else if (currentListing && !data.bannerImage) {
+//         // preserve old banner if exists
+//         data.bannerImage = currentListing.bannerImage || null;
+//       }
+//        /* -------------------- Parse business hours -------------------- */
+//       if (data.businessHours) {
+//         try {
+//           data.businessHours = JSON.parse(data.businessHours);
+//         } catch (err) {
+//           console.error("Invalid businessHours JSON");
+//           data.businessHours = [];
+//         }
+//       }
+
+//       // --- Find and Update ---
+//       let listing = await Listing.findOneAndUpdate(
+//         { claimedBy: userId },
+//         {
+//           ...data,
+//           status,
+//           user_id: userId,
+//           created_by_id: req.userId,
+//           created_by_type: req.userType,
+//         },
+//         { new: true } // upsert in case listing doesn't exist
+//       );
+
+//       return res.json({
+//         success: true,
+//         message: "Listing updated successfully",
+//         listing
+//       });
+//     } catch (err) {
+//       console.error("Error in listing update/create:", err);
+//       res.status(500).json({
+//         success: false,
+//         message:  err.message ||"Server error",
+//         error: err.message
+//       });
+//     }
+//   }
+// );
+// router.put(
+//   "/user/:id",
+//   verifyToken,
+//   upload.fields([
+//     { name: "photos", maxCount: 10 },
+//     { name: "bannerImage", maxCount: 1 }
+//   ]),
+//   async (req, res) => {
+
+//     try {
+
+//       const userId = req.params.id;
+
+//       const data = req.body;
+
+
+//       const status =
+//         req.userType === "admin"
+//           ? "approved"
+//           : "pending";
+
+
+//       console.log("Updating listing:", userId);
+
+
+
+//       /*
+//       ==========================
+//       ARRAY FIELDS
+//       ==========================
+//       */
+
+//       if (data["categories[]"]) {
+
+//         data.categories =
+//           Array.isArray(data["categories[]"])
+//             ? data["categories[]"]
+//             : [data["categories[]"]];
+
+//       }
+//       else {
+//         data.categories = [];
+//       }
+
+
+
+//       if (data["petCategories[]"]) {
+
+//         data.petCategories =
+//           Array.isArray(data["petCategories[]"])
+//             ? data["petCategories[]"]
+//             : [data["petCategories[]"]];
+
+//       }
+//       else {
+//         data.petCategories = [];
+//       }
+
+
+
+//       if (data["specializedServices[]"]) {
+
+//         data.specializedServices =
+//           Array.isArray(data["specializedServices[]"])
+//             ? data["specializedServices[]"]
+//             : [data["specializedServices[]"]];
+
+//       }
+//       else {
+
+//         data.specializedServices = [];
+
+//       }
+
+
+
+//       /*
+//       ==========================
+//       EXISTING PHOTOS
+//       ==========================
+//       */
+
+
+//       let existingPhotos = [];
+
+
+//       if (data["existingPhotos[]"]) {
+
+
+//         let photos =
+//           Array.isArray(data["existingPhotos[]"])
+//             ? data["existingPhotos[]"]
+//             : [data["existingPhotos[]"]];
+
+
+//         existingPhotos = photos.map(p => {
+
+//           try {
+//             return JSON.parse(p);
+//           }
+//           catch {
+//             return {
+//               url:p,
+//               alt:""
+//             };
+//           }
+
+//         });
+
+//       }
+
+
+
+//       /*
+//       ==========================
+//       NEW PHOTOS
+//       ==========================
+//       */
+
+
+//       let uploadedPhotos = [];
+
+
+//       let altTexts = [];
+
+
+//       if(req.body["photoAlts[]"]){
+
+//         altTexts =
+//           Array.isArray(req.body["photoAlts[]"])
+//           ? req.body["photoAlts[]"]
+//           : [req.body["photoAlts[]"]];
+
+//       }
+
+
+
+//       if(req.files && req.files.photos){
+
+
+//         uploadedPhotos =
+//           req.files.photos.map((file,index)=>({
+
+//             url:`${uploadDir}/${file.filename}`,
+
+//             alt:
+//               altTexts[index] || ""
+
+//           }));
+
+//       }
+
+
+
+//       const currentListing =
+//         await Listing.findOne({
+//           user_id:userId
+//         });
+
+
+
+//       /*
+//       preserve old images
+//       */
+
+//       if(
+//         !uploadedPhotos.length &&
+//         !existingPhotos.length &&
+//         currentListing
+//       ){
+
+//         existingPhotos =
+//           currentListing.photos || [];
+
+//       }
+
+
+
+//       data.photos = [
+//         ...existingPhotos,
+//         ...uploadedPhotos
+//       ];
+
+
+
+
+
+//       /*
+//       ==========================
+//       BANNER
+//       ==========================
+//       */
+
+
+//       if(
+//         req.files &&
+//         req.files.bannerImage &&
+//         req.files.bannerImage[0]
+//       ){
+
+//         data.bannerImage =
+//           `${uploadDir}/${req.files.bannerImage[0].filename}`;
+
+//       }
+//       else if(currentListing){
+
+//         data.bannerImage =
+//           currentListing.bannerImage;
+
+//       }
+
+
+
+
+
+//       /*
+//       ==========================
+//       BUSINESS HOURS
+//       ==========================
+//       */
+
+
+//       if(data.businessHours){
+
+//         try {
+
+//           data.businessHours =
+//             JSON.parse(data.businessHours);
+
+//         }
+//         catch(err){
+
+//           data.businessHours=[];
+
+//         }
+
+//       }
+
+
+
+
+
+//       /*
+//       ==========================
+//       UPDATE
+//       ==========================
+//       */
+
+
+//       const listing =
+//         await Listing.findOneAndUpdate(
+
+//           {
+//             user_id:userId
+//           },
+
+//           {
+
+//             ...data,
+
+//             user_id:userId,
+
+//             status,
+
+
+//             // keep ownership
+//             updatedAt:new Date()
+
+//           },
+
+
+//           {
+//             new:true,
+//             upsert:true
+//           }
+
+//         );
+
+
+
+
+//       res.json({
+
+//         success:true,
+
+//         message:"Listing updated successfully",
+
+//         listing
+
+//       });
+
+
+
+//     }
+//     catch(err){
+
+//       console.error(err);
+
+
+//       res.status(500).json({
+
+//         success:false,
+
+//         message:err.message
+
+//       });
+
+//     }
+
+//   }
+// );
+// router.put(
+//   "/user/:id",
+//   verifyToken,
+//   upload.fields([
+//     { name: "photos", maxCount: 10 },
+//     { name: "bannerImage", maxCount: 1 }
+//   ]),
+//   async (req, res) => {
+
+//     try {
+
+//       const userId = req.params.id;
+
+//       let data = req.body;
+
+
+//       console.log("BODY:", data);
+//       console.log("FILES:", req.files);
+
+
+
+//       const currentListing = await Listing.findOne({
+//         user_id: userId
+//       });
+
+
+
+//       /*
+//       ============================
+//       ARRAY FIX
+//       ============================
+//       */
+
+//       const getArray = (key) => {
+
+//         let value = data[key];
+
+//         if(!value){
+//           return null;
+//         }
+
+//         if(Array.isArray(value)){
+//           return value;
+//         }
+
+//         return [value];
+
+//       };
+
+
+
+//       const categories =
+//         getArray("categories[]");
+
+
+//       const petCategories =
+//         getArray("petCategories[]");
+
+
+//       const specializedServices =
+//         getArray("specializedServices[]");
+
+
+
+//       if(categories){
+//         data.categories = categories;
+//       }
+
+
+//       if(petCategories){
+//         data.petCategories = petCategories;
+//       }
+
+
+//       if(specializedServices){
+//         data.specializedServices =
+//           specializedServices;
+//       }
+
+
+
+//       /*
+//       ============================
+//       PHOTOS
+//       ============================
+//       */
+
+
+//       let oldPhotos = [];
+
+
+//       const existing =
+//         getArray("existingPhotos[]");
+
+
+//       if(existing){
+
+
+//         oldPhotos = existing.map(item=>{
+
+
+//           try{
+
+//             return JSON.parse(item);
+
+//           }
+//           catch{
+
+//             return {
+//               url:item,
+//               alt:""
+//             };
+
+//           }
+
+//         });
+
+//       }
+//       else if(currentListing){
+
+//         oldPhotos =
+//           currentListing.photos || [];
+
+//       }
+
+
+
+
+
+//       let newPhotos = [];
+
+
+//       let altTexts =
+//         getArray("photoAlts[]") || [];
+
+
+
+//       if(req.files?.photos){
+
+
+//         newPhotos =
+//         req.files.photos.map((file,index)=>({
+
+//           url:
+//           `${uploadDir}/${file.filename}`,
+
+//           alt:
+//           altTexts[index] || ""
+
+//         }));
+
+//       }
+
+
+
+//       data.photos = [
+//         ...oldPhotos,
+//         ...newPhotos
+//       ];
+
+
+
+
+
+//       /*
+//       ============================
+//       BANNER
+//       ============================
+//       */
+
+
+//       if(req.files?.bannerImage?.length){
+
+
+//         data.bannerImage =
+//         `${uploadDir}/${req.files.bannerImage[0].filename}`;
+
+
+//       }
+//       else if(currentListing){
+
+
+//         data.bannerImage =
+//           currentListing.bannerImage;
+
+
+//       }
+
+
+
+
+
+//       /*
+//       ============================
+//       BUSINESS HOURS
+//       ============================
+//       */
+
+
+//       if(data.businessHours){
+
+
+//         try{
+
+//           data.businessHours =
+//             JSON.parse(data.businessHours);
+
+//         }
+//         catch{
+
+//           data.businessHours = [];
+
+//         }
+
+//       }
+
+
+
+
+
+//       /*
+//       ============================
+//       META KEYWORDS
+//       ============================
+//       */
+
+
+//       if(data.metaKeyword){
+
+//         data.metaKeyword =
+//           data.metaKeyword
+//           .split(",")
+//           .map(x=>x.trim())
+//           .filter(Boolean);
+
+//       }
+
+
+
+
+
+//       /*
+//       ============================
+//       OWNER
+//       ============================
+//       */
+
+
+//       data.user_id = userId;
+
+
+//       data.status =
+//       req.userType === "admin"
+//       ? "approved"
+//       : "pending";
+
+
+
+
+//       /*
+//       ============================
+//       UPDATE
+//       ============================
+//       */
+
+
+//       let listing;
+
+
+
+//       if(currentListing){
+
+
+//         listing =
+//         await Listing.findByIdAndUpdate(
+
+//           currentListing._id,
+
+//           {
+//             $set:data
+//           },
+
+//           {
+//             new:true,
+//             runValidators:true
+//           }
+
+//         );
+
+
+//       }
+//       else{
+
+
+//         listing =
+//         new Listing({
+
+//           ...data,
+
+//           created_by_id:req.userId,
+
+//           created_by_type:req.userType
+
+//         });
+
+
+//         await listing.save();
+
+//       }
+
+
+
+
+
+//       listing =
+//       await Listing.findById(listing._id)
+//       .populate("petCategories")
+//       .populate("categories")
+//       .populate("specializedServices")
+//       .populate("city");
+
+
+
+
+//       return res.json({
+
+//         success:true,
+
+//         message:"Listing updated successfully",
+
+//         listing
+
+//       });
+
+
+
+//     }
+//     catch(err){
+
+//       console.log(
+//         "UPDATE ERROR",
+//         err
+//       );
+
+
+//       return res.status(500).json({
+
+//         success:false,
+
+//         message:err.message
+
+//       });
+
+//     }
+
+//   }
+// );
 router.put(
   "/user/:id",
   verifyToken,
@@ -2940,92 +3705,431 @@ router.put(
     { name: "bannerImage", maxCount: 1 }
   ]),
   async (req, res) => {
+
     try {
+
       const userId = req.params.id;
-      const data = req.body;
-      const status = req.userType === "admin" ? "approved" : "pending";
 
-      console.log("Update or create listing for user:", userId, data);
+      let data = req.body;
 
-      // --- Parse categories ---
-      if (data["categories[]"]) {
-        data.categories = Array.isArray(data["categories[]"])
-          ? data["categories[]"]
-          : [data["categories[]"]];
+
+      const currentListing =
+        await Listing.findOne({
+          user_id:userId
+        });
+
+
+      console.log("UPDATE DATA:", data);
+
+
+
+      /*
+      =========================
+      ARRAY VALUES
+      =========================
+      */
+
+      const getArray=(key)=>{
+
+let value = data[key];
+
+
+// handle multer converting [] keys
+if(!value){
+
+  const clean =
+  key.replace("[]","");
+
+  value = data[clean];
+
+}
+
+
+if(!value)
+ return null;
+
+
+
+return Array.isArray(value)
+? value
+: [value];
+
+
+};
+
+
+
+      const categories =
+        getArray("categories[]");
+
+
+      const petCategories =
+        getArray("petCategories[]");
+
+
+      const specializedServices =
+        getArray("specializedServices[]");
+
+
+
+      if(categories)
+        data.categories = categories;
+
+
+      if(petCategories)
+        data.petCategories = petCategories;
+
+
+      if(specializedServices)
+        data.specializedServices =
+          specializedServices;
+
+
+
+
+      /*
+      =========================
+      PHOTOS FIX
+      =========================
+      */
+
+
+      let photos=[];
+
+
+      const existing =
+  getArray("existingPhotos") || 
+  getArray("existingPhotos[]");
+
+
+
+      if(existing){
+
+
+        photos =
+        existing.map(item=>{
+
+
+          let img;
+
+
+          try{
+
+            img = JSON.parse(item);
+
+          }
+          catch{
+
+            img={
+              url:item
+            };
+
+          }
+
+
+
+          return {
+
+            url: img.url,
+
+            alt: img.alt || ""
+
+          };
+
+
+        });
+
+
       }
 
-      if (data["petCategories[]"]) {
-        data.petCategories = Array.isArray(data["petCategories[]"])
-          ? data["petCategories[]"]
-          : [data["petCategories[]"]];
+console.log("photsEx", photos);
+
+
+      /*
+      new uploads
+      */
+
+
+      let altTexts =
+  getArray("newPhotoAlts") ||
+  getArray("newPhotoAlts[]") ||
+  [];
+
+console.log("AltText:", altTexts);
+
+      if(req.files?.photos){
+
+
+        req.files.photos.forEach(
+          (file,index)=>{
+
+
+            photos.push({
+
+              url:
+              `${uploadDir}/${file.filename}`,
+
+              alt:
+              altTexts[index] || ""
+
+            });
+
+
+          }
+        );
+        console.log("photos:", photos);
+
       }
 
-      // --- Existing photos ---
-      let existingPhotos = [];
-      if (data["existingPhotos[]"]) {
-        existingPhotos = Array.isArray(data["existingPhotos[]"])
-          ? data["existingPhotos[]"]
-          : [data["existingPhotos[]"]];
+
+
+
+      // if no photos sent keep DB
+      if(
+        photos.length===0 &&
+        currentListing
+      ){
+
+        photos =
+        currentListing.photos.map(p=>({
+
+          url:p.url,
+
+          alt:p.alt || ""
+
+        }));
+
       }
 
-      // --- Uploaded photos ---
-      let uploadedPhotos = [];
-      if (req.files && req.files.photos) {
-        uploadedPhotos = req.files.photos.map(f => `${uploadDir}/${f.filename}`);
-      }
 
-      // --- Preserve old photos if nothing sent ---
-      const currentListing = await Listing.findOne({ user_id: userId });
-      if (!uploadedPhotos.length && !existingPhotos.length && currentListing) {
-        existingPhotos = currentListing.photos || [];
-      }
 
-      // --- Merge photos ---
-      data.photos = [...existingPhotos, ...uploadedPhotos];
 
-      // --- Handle banner image ---
-      if (req.files && req.files.bannerImage && req.files.bannerImage[0]) {
-        data.bannerImage = `${uploadDir}/${req.files.bannerImage[0].filename}`;
-      } else if (currentListing && !data.bannerImage) {
-        // preserve old banner if exists
-        data.bannerImage = currentListing.bannerImage || null;
-      }
-       /* -------------------- Parse business hours -------------------- */
-      if (data.businessHours) {
-        try {
-          data.businessHours = JSON.parse(data.businessHours);
-        } catch (err) {
-          console.error("Invalid businessHours JSON");
-          data.businessHours = [];
-        }
-      }
-
-      // --- Find and Update ---
-      let listing = await Listing.findOneAndUpdate(
-        { claimedBy: userId },
-        {
-          ...data,
-          status,
-          user_id: userId,
-          created_by_id: req.userId,
-          created_by_type: req.userType,
-        },
-        { new: true } // upsert in case listing doesn't exist
+      console.log(
+        "FINAL PHOTO ARRAY:",
+        JSON.stringify(
+          photos,
+          null,
+          2
+        )
       );
 
+
+
+      data.photos = photos;
+
+
+
+
+
+
+      /*
+      =========================
+      BANNER
+      =========================
+      */
+
+
+      if(req.files?.bannerImage?.[0]){
+
+
+        data.bannerImage =
+        `${uploadDir}/${req.files.bannerImage[0].filename}`;
+
+
+      }
+      else if(currentListing){
+
+
+        data.bannerImage =
+        currentListing.bannerImage;
+
+
+      }
+
+
+
+
+
+      /*
+      =========================
+      HOURS
+      =========================
+      */
+
+
+      if(data.businessHours){
+
+        try{
+
+          data.businessHours =
+          JSON.parse(data.businessHours);
+
+        }
+        catch{
+
+          data.businessHours=[];
+
+        }
+
+      }
+
+
+
+
+
+      /*
+      =========================
+      META
+      =========================
+      */
+
+
+      if(data.metaKeyword){
+
+
+        data.metaKeyword =
+        data.metaKeyword
+        .split(",")
+        .map(x=>x.trim())
+        .filter(Boolean);
+
+
+      }
+
+
+
+
+
+
+      /*
+      =========================
+      STATUS
+      =========================
+      */
+
+
+      data.user_id=userId;
+
+
+      data.status =
+      req.userType==="admin"
+      ? "approved"
+      : "pending";
+
+
+
+
+
+
+      /*
+      =========================
+      SAVE
+      =========================
+      */
+
+
+      let listing;
+
+
+
+      if(currentListing){
+
+
+        Object.keys(data)
+        .forEach(key=>{
+
+
+          currentListing[key]=data[key];
+
+
+        });
+
+
+
+        // REQUIRED FOR NESTED ARRAY UPDATE
+        currentListing.markModified(
+          "photos"
+        );
+
+
+        await currentListing.save();
+
+
+        listing=currentListing;
+
+
+      }
+      else{
+
+
+        listing =
+        new Listing({
+
+          ...data,
+
+          created_by_id:req.userId,
+
+          created_by_type:req.userType
+
+        });
+
+
+        await listing.save();
+
+      }
+
+
+
+
+
+      listing =
+      await Listing.findById(
+        listing._id
+      )
+      .populate("categories")
+      .populate("petCategories")
+      .populate("specializedServices")
+      .populate("city")
+      .lean();
+
+
+
+
       return res.json({
-        success: true,
-        message: "Listing updated successfully",
+
+        success:true,
+
+        message:
+        "Listing updated successfully",
+
         listing
+
       });
-    } catch (err) {
-      console.error("Error in listing update/create:", err);
-      res.status(500).json({
-        success: false,
-        message:  err.message ||"Server error",
-        error: err.message
-      });
+
+
+
     }
+    catch(err){
+
+
+      console.log(
+        "UPDATE LISTING ERROR",
+        err
+      );
+
+
+      return res.status(500).json({
+
+        success:false,
+
+        message:err.message
+
+      });
+
+
+    }
+
+
   }
 );
 

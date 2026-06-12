@@ -75,7 +75,7 @@ const PopularCitiesSection = ({cities}) => (
                         <div className="">
                             <h5 className='city-name-new'>{city.city}</h5>
                         </div>
-                        <div className="city-listings-new">{city.listingsCount}+ listings</div>
+                        <div className="city-listings-new">{city.listingsCount} listings</div>
                         <div className='pos-abs icon-arrow'>
                             <HiOutlineArrowLongRight />
                         </div>

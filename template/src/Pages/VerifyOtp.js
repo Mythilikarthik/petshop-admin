@@ -67,7 +67,7 @@ const VerifyOtp = () => {
   };
 
   return (
-    <Container className="mt-5" style={{ maxWidth: "400px" }}>
+    <Container className="mt-5 mb-5" style={{ maxWidth: "400px" }}>
       <h3 className="text-center">Verify OTP</h3>
       <p className="text-muted text-center">
         OTP sent to {state.email || state.phone}

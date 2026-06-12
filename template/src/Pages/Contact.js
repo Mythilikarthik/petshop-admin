@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Form, Button, Alert, Container, Row, Col, Image } from "react-bootstrap";
 import banner from "../contact.jpg";
+import { validateField } from "../utils/formValidation";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -14,17 +15,52 @@ const Contact = () => {
     phone: "",
     message: "",
   });
+  const alertRef = useRef(null);
+  const formRef = useRef(null);
 
   const [status, setStatus] = useState({ success: "", error: "" });
+  const [loading, setLoading] = useState(false); 
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "name" && value.length > 50) return;     // Restrict name to 50 chars
+    if (name === "phone" && value.length > 10) return;    // Restrict phone to 10 digits
+    if (name === "message" && value.length > 500) return;
+    setFormData({ ...formData, [name]: value });
   };
+  const validateForm = () => {
+    // Check required fields and formats using our central helper
+    const nameError = validateField("name", formData.name);
+    if (nameError) return nameError;
 
+    const emailError = validateField("email", formData.email);
+    if (emailError) return emailError;
+
+    // Phone validation (Optional field validation check if user typed anything)
+    if (formData.phone) {
+      const phoneError = validateField("phone", formData.phone);
+      if (phoneError) return phoneError;
+    }
+
+    // Message validation check with custom length criteria
+    const messageError = validateField("message", formData.message, {
+      maxLength: 500,
+      label: "Message"
+    });
+    if (messageError) return messageError;
+
+    return null; // Passes all checks
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ success: "", error: "" });
 
+    const validationError = validateForm();
+    if (validationError) {
+      setStatus({ error: validationError, success: "" });
+      return; // Stop form submission right here
+    }
+setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/contact-admin/send`, {
         method: "POST",
@@ -43,8 +79,20 @@ console.log(data);
     } catch (err) {
       console.log(err);
       setStatus({ error: "Something went wrong!", success: "" });
-    }
+    } finally {
+    setLoading(false); 
+  }
   };
+  useEffect(() => {
+      if (status.success && alertRef.current) {
+        alertRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, [status]);
+    useEffect(() => {
+      if (status.error && alertRef.current) {
+        alertRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, [status]);
 
   return (
     <div className="contact-page">
@@ -56,11 +104,11 @@ console.log(data);
           <Col lg={6} md={8}>
             
             <h2>Contact Us</h2>
-
+<div ref={alertRef}>
         {status.success && <Alert variant="success">{status.success}</Alert>}
         {status.error && <Alert variant="danger">{status.error}</Alert>}
-
-        <Form onSubmit={handleSubmit}>
+</div>
+        <Form ref={formRef} onSubmit={handleSubmit}>
 
           <Form.Group className="mb-3">
             <Form.Label>Name</Form.Label>
@@ -106,8 +154,8 @@ console.log(data);
             />
           </Form.Group>
 
-          <Button variant="primary" type="submit">
-            Send Message
+          <Button variant="primary" type="submit" disabled={loading}>
+            {loading ? "Sending..." : "Send Message"}
           </Button>
 
         </Form>

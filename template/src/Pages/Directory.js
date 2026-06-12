@@ -107,6 +107,9 @@ const routePet =
   const [topHomeAds, setTopHomeAds] = useState([]);
     const [bottomHomeAds, setBottomHomeAds] = useState([]);
     const [middleHomeAds, setMiddleHomeAds] = useState([]);
+    const [topCityAds, setTopCityAds] = useState([]);
+const [middleCityAds, setMiddleCityAds] = useState([]);
+const [bottomCityAds, setBottomCityAds] = useState([]);
   const [adSettings, setAdSettings] = useState({ slideInterval: 5, maxImages: 5 });
   // const [selectedPet, setSelectedPet] = useState("");
   const [selectedPets, setSelectedPets] = useState([]);
@@ -420,6 +423,45 @@ const fetchMiddleHomeAds = async () => {
     console.error("Error fetching home ads:", err);
   }
 };
+const fetchCityAds = async () => {
+
+  if(!params.city || params.city === "all") return;
+
+  try {
+
+    const citySlug = encodeURIComponent(params.city);
+
+    const res = await fetch(
+      `${API_BASE}/api/ads/directory/cityads/show/${citySlug}`
+    );
+
+    const data = await res.json();
+
+    if(data.success){
+
+      const ads = data.ads || [];
+
+      setTopCityAds(
+        ads.filter(a => a.position === "top")
+      );
+
+      setMiddleCityAds(
+        ads.filter(a => a.position === "middle")
+      );
+
+      setBottomCityAds(
+        ads.filter(a => a.position === "bottom")
+      );
+    }
+
+  } catch(err){
+    console.log("City ads error:", err);
+  }
+
+};
+useEffect(()=>{
+ fetchCityAds();
+},[params.city]);
     const fetchTopHomeAds = async () => {
   try {
     const res = await fetch(`${API_BASE}/api/ads/top/${pgname}`);
@@ -873,13 +915,55 @@ const getFallbackImage = (listing) => {
     )}
 
     
-    {topHomeAds.length > 0 && (
+    {/* {topHomeAds.length > 0 && (
       <AdSlider ads={topHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
     )}
     {middleHomeAds.length > 0 && (
       <AdSlider ads={middleHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} float={true}
       side="right" />
-    )}
+    )} */}
+    {routeCity ? (
+  
+  topCityAds.length > 0 &&
+  <AdSlider
+    ads={topCityAds}
+    maxImages={adSettings.maxImages}
+    interval={adSettings.slideInterval}
+  />
+
+) : (
+
+ topHomeAds.length > 0 &&
+ <AdSlider
+   ads={topHomeAds}
+   maxImages={adSettings.maxImages}
+   interval={adSettings.slideInterval}
+ />
+
+)}
+{routeCity ? (
+
+middleCityAds.length > 0 &&
+<AdSlider
+ ads={middleCityAds}
+ maxImages={adSettings.maxImages}
+ interval={adSettings.slideInterval}
+ float={true}
+ side="right"
+/>
+
+):(
+
+middleHomeAds.length > 0 &&
+<AdSlider
+ ads={middleHomeAds}
+ maxImages={adSettings.maxImages}
+ interval={adSettings.slideInterval}
+ float={true}
+ side="right"
+/>
+
+)}
 
     {banner?.content && (
       <section className="city-banner-content py-4">
@@ -1461,13 +1545,32 @@ const getFallbackImage = (listing) => {
       )} */}
       </Container>
     </section>
-    {bottomHomeAds.length > 0 && (
+    {/* {bottomHomeAds.length > 0 && (
         <div className='footer-ads'>
           <Container>
             <AdSlider ads={bottomHomeAds} maxImages={adSettings.maxImages} interval={adSettings.slideInterval} />
           </Container>
         </div>
-      )}
+      )} */}
+      {routeCity ? (
+
+bottomCityAds.length > 0 &&
+<AdSlider
+ ads={bottomCityAds}
+ maxImages={adSettings.maxImages}
+ interval={adSettings.slideInterval}
+/>
+
+):(
+
+bottomHomeAds.length > 0 &&
+<AdSlider
+ ads={bottomHomeAds}
+ maxImages={adSettings.maxImages}
+ interval={adSettings.slideInterval}
+/>
+
+)}
       </>
   );
 };

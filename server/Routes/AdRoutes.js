@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const Ad = require("../Models/Ad");
 const AdSetting = require("../Models/AdSetting");
+const City = require("../Models/City");
 
 // Upload setup
 const uploadDir = "uploads/ads";
@@ -67,7 +68,134 @@ router.post("/settings", async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to update settings" });
   }
 });
+// Get current ad count
+// router.get("/count", async (req,res)=>{
+//   try {
 
+//     const count = await Ad.countDocuments();
+
+//     const setting =
+//       await AdSetting.findOne() ||
+//       { maxImages: 5 };
+
+//     res.json({
+//       success:true,
+//       count,
+//       maxImages: setting.maxImages
+//     });
+
+
+//   } catch(err){
+
+//     res.status(500).json({
+//       success:false,
+//       message:err.message
+//     });
+
+//   }
+// });
+// router.get("/count", async (req,res)=>{
+//   try {
+
+//     const { page, city } = req.query;
+
+
+//     const setting =
+//       await AdSetting.findOne() ||
+//       { maxImages:5 };
+
+
+//     let filter = {
+//       page: page
+//     };
+
+
+//     // only city page needs city filter
+//     if(page === "city" && city){
+//       filter.city = city;
+//     }
+
+
+//     const count =
+//       await Ad.countDocuments(filter);
+
+
+
+//     res.json({
+//       success:true,
+//       count,
+//       maxImages: setting.maxImages
+//     });
+
+
+
+//   } catch(err){
+
+//     res.status(500).json({
+//       success:false,
+//       message:err.message
+//     });
+
+//   }
+// });
+
+router.get("/count", async (req,res)=>{
+  try {
+
+    const { page, city, position } = req.query;
+
+
+    const setting =
+      await AdSetting.findOne() ||
+      { maxImages:5 };
+
+
+    let filter = {
+      page: page,
+      position: position
+    };
+
+
+    // city page only
+    if(page === "city" && city){
+
+      filter.city = city;
+
+    }
+
+
+
+    const count =
+      await Ad.countDocuments(filter);
+
+
+
+    res.json({
+
+      success:true,
+
+      count,
+
+      maxImages: setting.maxImages
+
+    });
+
+
+
+  } catch(err){
+
+
+    res.status(500).json({
+
+      success:false,
+
+      message:err.message
+
+    });
+
+
+  }
+});
 
 // 🖼️ Ad CRUD
 router.get("/", async (req, res) => {
@@ -97,35 +225,330 @@ router.get("/:id", async (req, res) => {
 });
 
 
+// router.post("/", uploadSingleWithError("image"), async (req, res) => {
+//   try {
+//     console.log("📩 Incoming ad data:", req.body);
+//     console.log("📷 Uploaded file:", req.file);
+//     const setting =
+//  await AdSetting.findOne() ||
+//  { maxImages:5 };
+
+
+// const totalAds = await Ad.countDocuments();
+
+
+// if(totalAds >= setting.maxImages){
+
+//  return res.status(400).json({
+//    success:false,
+//    message:`Maximum ${setting.maxImages} ads allowed`
+//  });
+
+// }
+
+//     const { category, city, position, url, page, fromDate, toDate } = req.body;
+
+//     // 🔍 Validation checks
+//     if (!position) {
+//       return res.status(400).json({ success: false, message: "Position is required" });
+//     }
+//     if (!req.file) {
+//       return res.status(400).json({ success: false, message: "Image is required" });
+//     }
+
+//     const image = `uploads/ads/${req.file.filename}`;
+//     const ad = new Ad({ category, city, position, url, image , page, fromDate: fromDate || null, toDate: toDate || null });
+
+//     await ad.save();
+
+//     console.log("✅ Ad saved successfully:", ad);
+//     res.json({ success: true, ad });
+//   } catch (err) {
+//     console.error("❌ Error saving ad:", err.message);
+//     console.error(err.stack);
+//     res.status(500).json({ success: false, message: err.message || "Server error" });
+//   }
+// });
 router.post("/", uploadSingleWithError("image"), async (req, res) => {
   try {
-    console.log("📩 Incoming ad data:", req.body);
-    console.log("📷 Uploaded file:", req.file);
 
-    const { category, city, position, url, page, fromDate, toDate } = req.body;
+    // console.log("📩 Incoming ad data:", req.body);
+    // console.log("📷 Uploaded file:", req.file);
 
-    // 🔍 Validation checks
+
+    // get form values first
+    const { 
+      category, 
+      city, 
+      position, 
+      url, 
+      page, 
+      fromDate, 
+      toDate 
+    } = req.body;
+
+
+
+    // ==========================
+    // LIMIT CHECK PER PAGE
+    // ==========================
+
+    let filter = {
+      page: page,
+      position: position
+    };
+
+
+    // only city page checks city separately
+    if(page === "city" && city){
+
+      filter.city = city;
+
+    }
+
+
+
+    const totalAds =
+      await Ad.countDocuments(filter);
+
+
+
+    const setting =
+      await AdSetting.findOne() ||
+      { maxImages:5 };
+
+
+
+    if(totalAds >= setting.maxImages){
+
+      return res.status(400).json({
+
+        success:false,
+
+        message:
+        `Maximum ${setting.maxImages} ads allowed for this page`
+
+      });
+
+    }
+
+
+
+
+    // ==========================
+    // VALIDATION
+    // ==========================
+
     if (!position) {
-      return res.status(400).json({ success: false, message: "Position is required" });
+      return res.status(400).json({
+        success:false,
+        message:"Position is required"
+      });
     }
+
+
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "Image is required" });
+      return res.status(400).json({
+        success:false,
+        message:"Image is required"
+      });
     }
+
+
 
     const image = `uploads/ads/${req.file.filename}`;
-    const ad = new Ad({ category, city, position, url, image , page, fromDate: fromDate || null, toDate: toDate || null });
+
+
+
+    const ad = new Ad({
+
+      category,
+      city,
+      position,
+      url,
+      image,
+      page,
+
+      fromDate: fromDate || null,
+
+      toDate: toDate || null
+
+    });
+
+
 
     await ad.save();
 
-    console.log("✅ Ad saved successfully:", ad);
-    res.json({ success: true, ad });
+
+
+    // console.log("✅ Ad saved successfully:", ad);
+
+
+    res.json({
+      success:true,
+      ad
+    });
+
+
+
   } catch (err) {
+
+
     console.error("❌ Error saving ad:", err.message);
-    console.error(err.stack);
-    res.status(500).json({ success: false, message: err.message || "Server error" });
+
+
+    res.status(500).json({
+      success:false,
+      message:err.message || "Server error"
+    });
+
+
   }
 });
+router.get("/directory/cityads/show/:city", async(req,res)=>{
 
+try{
+
+ const { city } = req.params;
+
+
+ const slugify = (text="") =>
+   text
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9\s]/g, "") // remove (), / , etc
+    .trim()
+    .replace(/\s+/g, "-");
+
+
+ console.log("URL CITY:", city);
+
+
+
+ const allCities = await City.find();
+
+
+
+ const cityData = allCities.find(c =>
+    slugify(c.city) === city
+ );
+
+
+
+ console.log("MATCHED CITY:", cityData);
+
+
+
+ if(!cityData){
+
+   return res.json({
+     success:true,
+     ads:[]
+   });
+
+ }
+
+
+
+ const ads = await Ad.find({
+    page:"city",
+    city:cityData._id
+ })
+ .populate("city")
+ .populate("category");
+
+
+
+ res.json({
+   success:true,
+   ads
+ });
+
+
+
+}catch(err){
+
+ console.error(err);
+
+ res.status(500).json({
+   success:false,
+   message:err.message
+ });
+
+}
+
+});
+// router.get("/directory/cityads/show/:city", async(req,res)=>{
+
+// try{
+
+//  const {city}=req.params;
+
+
+//  let filter={
+//    city
+//  };
+
+
+//  if(city){
+
+
+//    const cityRegex = city
+//      .replace(/-/g," ")
+//      .replace(/ncr/g,"ncr")
+//      .trim();
+// console.log("city:" , cityRegex);
+
+//    const cityData =
+//     await City.findOne({
+//       $or:[
+//         { slug: city },
+//         { city: new RegExp(cityRegex,"i") }
+//       ]
+//     });
+
+
+//    console.log("CITY SEARCH:", city);
+//    console.log("CITY FOUND:", cityData);
+
+
+//    if(cityData){
+
+//      filter.city = cityData._id;
+
+//    }else{
+
+//      return res.json({
+//        success:true,
+//        ads:[]
+//      });
+
+//    }
+
+//  }
+
+
+//  const ads =
+//  await Ad.find(filter)
+//  .populate("city");
+
+
+//  res.json({
+//    success:true,
+//    ads
+//  });
+
+
+// }catch(err){
+
+//  res.status(500).json({
+//   success:false,
+//   message:err.message
+//  });
+
+// }
+
+// });
 
 router.patch("/:id", uploadSingleWithError("image"), async (req, res) => {
   try {

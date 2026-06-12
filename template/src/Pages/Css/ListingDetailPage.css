@@ -10,7 +10,7 @@
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 12px;
-  background: rgb(249 115 22 );
+  background: #ff4e00;
   color: #fff;
   padding: 10px;
 } */
@@ -18,7 +18,7 @@
   text-align: justify;
 }
 .listing-type {
-  background: rgb(249 115 22 );
+  background: #ff4e00;
   color: #fff;
   border-radius: 8px;
   padding: 4px 14px;

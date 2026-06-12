@@ -462,10 +462,614 @@
 // };
 
 // export default ClaimListing;
-import React, { useState, useEffect } from "react";
+
+// import React, { useState, useEffect, useRef } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import { Container, Form, Button, Alert } from "react-bootstrap";
+// import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+// const API_BASE =
+//   process.env.NODE_ENV === "production"
+//     ? process.env.REACT_APP_API_URL
+//     : "http://localhost:5000";
+
+// const ClaimListing = () => {
+//   const { listingId } = useParams();
+//   const navigate = useNavigate();
+
+//   const [loading, setLoading] = useState(false);
+//   const [listing, setListing] = useState(null);
+
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+//   const [confirmPassword, setConfirmPassword] = useState("");
+//   const [claimRole, setClaimRole] = useState("");
+//   const [verificationMethod, setVerificationMethod] = useState("");
+//   const [documents, setDocuments] = useState([]);
+//   const [agreeTerms, setAgreeTerms] = useState(false);
+
+//   const [user, setUser] = useState({
+//     name: "",
+//     username: "",
+//     email: "",
+//     phone: "",
+//     password: "",
+//   });
+
+//   const [errors, setErrors] = useState({});
+  
+//   // Ref hook to look at scroll targets
+//   const alertRef = useRef(null);
+
+//   useEffect(() => {
+//     loadListing();
+//   }, []);
+
+//   // Safe scrolling helper function
+//   const scrollToErrorAlert = () => {
+//     setTimeout(() => {
+//       if (alertRef.current) {
+//         alertRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+//       }
+//     }, 50);
+//   };
+
+//   const loadListing = async () => {
+//     const res = await fetch(`${API_BASE}/api/listing/${listingId}`);
+//     const data = await res.json();
+
+//     if (data.success) {
+//       if (!data.listing.isClaimed) {
+//         setListing(data.listing);
+//         setUser((prev) => ({
+//           ...prev,
+//           email: data.listing.email || "",
+//           phone: data.listing.phone || "",
+//         }));
+//       } else {
+//         navigate("/directory");
+//       }
+//     }
+//   };
+
+//   const handleUserChange = (e) => {
+//     const { name, value } = e.target;
+//     let newValue = value;
+
+//     if (name === "username") {
+//       newValue = value.replace(/\s/g, "");
+//     }
+
+//     setUser((prev) => ({
+//       ...prev,
+//       [name]: newValue,
+//     }));
+
+//     setErrors((prev) => ({
+//       ...prev,
+//       [name]: "",
+//     }));
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+
+//     const newErrors = {};
+//     const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
+//     if (!user.name.trim()) {
+//       newErrors.name = "Name is required";
+//     }
+
+//     if (!user.username.trim()) {
+//       newErrors.username = "Username is required";
+//     } else if (!usernameRegex.test(user.username)) {
+//       newErrors.username =
+//         "Username can contain only letters, numbers, and underscore";
+//     }
+
+//     if (!user.password) {
+//       newErrors.password = "Password is required";
+//     }
+
+//     if (!confirmPassword) {
+//       newErrors.confirmPassword = "Confirm Password is required";
+//     } else if (user.password !== confirmPassword) {
+//       newErrors.confirmPassword = "Passwords do not match";
+//     }
+
+//     if (!claimRole) {
+//       newErrors.role = "Please select a role";
+//     }
+
+//     if (!verificationMethod) {
+//       newErrors.verificationMethod =
+//         "Please select a verification method";
+//     }
+//     if (!agreeTerms) {
+//       newErrors.terms = "You must accept Terms & Conditions";
+//     }
+
+//     if (Object.keys(newErrors).length > 0) {
+//       setErrors(newErrors);
+//       setLoading(false);
+//       scrollToErrorAlert(); 
+//       return;
+//     }
+
+//     try {
+//       // Register user
+//       const userRes = await fetch(`${API_BASE}/api/auth/user/register`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(user),
+//       });
+
+//       const userData = await userRes.json();
+
+//       if (!userData.success) {
+//         setErrors({ api: userData.message });
+//         setLoading(false);
+//         scrollToErrorAlert();
+//         return;
+//       }
+
+//       const { token, id: userId } = userData;
+
+//       // Claim listing
+//       const formData = new FormData();
+//       formData.append("claimRole", claimRole);
+//       formData.append("verificationMethod", verificationMethod);
+
+//       documents?.forEach((file) => {
+//         formData.append("documents", file);
+//       });
+
+//       const claimRes = await fetch(
+//         `${API_BASE}/api/listing/claim/${listingId}`,
+//         {
+//           method: "PUT",
+//           headers: { Authorization: `Bearer ${token}` },
+//           body: formData,
+//         }
+//       );
+
+//       const claimData = await claimRes.json();
+
+//       if (!claimData.success) {
+//         setErrors({ api: claimData.message || "Failed to claim listing" });
+//         setLoading(false);
+//         scrollToErrorAlert();
+//         return;
+//       }
+//       const successMsg = verificationMethod === "email" 
+//         ? "Claim initiated successfully! Redirecting to OTP verification..." 
+//         : "Claim documents submitted successfully! Redirecting to directory...";
+
+//       setErrors({ success: successMsg });
+//       scrollToErrorAlert();
+//       setTimeout(() => {
+//         if (verificationMethod === "email") {
+//           navigate("/verify-otp", {
+//             state: {
+//               userId,
+//               token,
+//               email: user.email,
+//             },
+//           });
+//         } else {
+//           navigate("/directory");
+//         }
+//       }, 2500);
+
+      
+//     } catch (err) {
+//       setErrors({ api: "Something went wrong. Please try again." });
+//       setLoading(false);
+//       scrollToErrorAlert();
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // const handleSubmit = async (e) => {
+//   //   e.preventDefault();
+//   //   setLoading(true);
+
+//   //   const newErrors = {};
+//   //   const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
+//   //   if (!user.name.trim()) {
+//   //     newErrors.name = "Name is required";
+//   //   }
+
+//   //   if (!user.username.trim()) {
+//   //     newErrors.username = "Username is required";
+//   //   } else if (!usernameRegex.test(user.username)) {
+//   //     newErrors.username = "Username can contain only letters, numbers, and underscore";
+//   //   }
+
+//   //   if (!user.password) {
+//   //     newErrors.password = "Password is required";
+//   //   }
+
+//   //   if (!confirmPassword) {
+//   //     newErrors.confirmPassword = "Confirm Password is required";
+//   //   } else if (user.password !== confirmPassword) {
+//   //     newErrors.confirmPassword = "Passwords do not match";
+//   //   }
+
+//   //   if (!claimRole) {
+//   //     newErrors.role = "Please select a role";
+//   //   }
+
+//   //   if (!verificationMethod) {
+//   //     newErrors.verificationMethod = "Please select a verification method";
+//   //   }
+    
+//   //   if (!agreeTerms) {
+//   //     newErrors.terms = "You must accept Terms & Conditions";
+//   //   }
+
+//   //   if (Object.keys(newErrors).length > 0) {
+//   //     setErrors(newErrors);
+//   //     setLoading(false);
+//   //     scrollToErrorAlert(); 
+//   //     return;
+//   //   }
+
+//   //   try {
+//   //     const formData = new FormData();
+//   //     formData.append("name", user.name);
+//   //     formData.append("username", user.username);
+//   //     formData.append("email", user.email);
+//   //     formData.append("phone", user.phone);
+//   //     formData.append("password", user.password);
+//   //     formData.append("claimRole", claimRole);
+//   //     formData.append("verificationMethod", verificationMethod);
+
+//   //     documents?.forEach((file) => {
+//   //       formData.append("documents", file);
+//   //     });
+
+//   //     const res = await fetch(`${API_BASE}/api/listing/claim/${listingId}`, {
+//   //       method: "PUT",
+//   //       body: formData,
+//   //     });
+
+//   //     const data = await res.json();
+
+//   //     if (!data.success) {
+//   //       setErrors({ api: data.message || "Failed to submit claim" });
+//   //       setLoading(false);
+//   //       scrollToErrorAlert();
+//   //       return;
+//   //     }
+
+//   //     // Capture the explicit target email address BEFORE state clear-out triggers
+//   //     const targetEmail = user.email || data.email || (listing ? listing.email : "");
+
+//   //     const successMsg = verificationMethod === "email" 
+//   //       ? "Claim initiated successfully! Redirecting to OTP verification..." 
+//   //       : "Claim documents submitted successfully! Redirecting to directory...";
+
+//   //     setErrors({ success: successMsg });
+//   //     scrollToErrorAlert();
+
+//   //     // Delay state wiping & navigation so the animation and alerts render clearly
+//   //     setTimeout(() => {
+//   //       setConfirmPassword("");
+//   //       setClaimRole("");
+//   //       setVerificationMethod("");
+//   //       setDocuments([]);
+//   //       setAgreeTerms(false);
+//   //       setUser({ name: "", username: "", email: "", phone: "", password: "" });
+//   //       setLoading(false);
+
+//   //       if (verificationMethod === "email") {
+//   //         navigate("/verify-otp", {
+//   //           state: {
+//   //             userId: data.userId,
+//   //             token: data.token,
+//   //             email: targetEmail, // ✅ Guaranteed to stay valid now
+//   //           },
+//   //         });
+//   //       } else {
+//   //         navigate("/directory");
+//   //       }
+//   //     }, 2500);
+
+//   //   } catch (err) {
+//   //     setErrors({ api: "Something went wrong. Please try again." });
+//   //     setLoading(false);
+//   //     scrollToErrorAlert();
+//   //   }
+//   // };
+
+//   if (!listing) return <p>Loading...</p>;
+
+//   return (
+//     <div className="register mt-5 mb-5">
+//       <Container className="mt-4">
+//         <h3>Claim Your Listing</h3>
+
+//         <div ref={alertRef}>
+//           {errors.api && (
+//             <Alert variant="danger" dismissible onClose={() => setErrors((prev) => ({ ...prev, api: "" }))}>
+//               {errors.api}
+//             </Alert>
+//           )}
+//           {errors.success && (
+//             <Alert variant="success">
+//               {errors.success}
+//             </Alert>
+//           )}
+//         </div>
+
+//         <Form onSubmit={handleSubmit}>
+//           <h2>Listing Information</h2>
+
+//           <Form.Group className="mb-3">
+//             <Form.Label>Shop Name</Form.Label>
+//             <Form.Control value={listing.shopName || ""} disabled />
+//           </Form.Group>
+
+//           <Form.Group className="mb-3">
+//             <Form.Label>City</Form.Label>
+//             <Form.Control value={listing.city?.city || ""} disabled />
+//           </Form.Group>
+
+//           <h2>Your Details</h2>
+
+//           {/* Name */}
+//           <Form.Group className="mb-3">
+//             <Form.Label>Name *</Form.Label>
+//             <Form.Control
+//               name="name"
+//               value={user.name}
+//               onChange={handleUserChange}
+//               isInvalid={!!errors.name}
+//             />
+//             <Form.Control.Feedback type="invalid">
+//               {errors.name}
+//             </Form.Control.Feedback>
+//           </Form.Group>
+
+//           {/* Username */}
+//           <Form.Group className="mb-3">
+//             <Form.Label>Username *</Form.Label>
+//             <Form.Control
+//               name="username"
+//               value={user.username}
+//               onChange={handleUserChange}
+//               isInvalid={!!errors.username}
+//             />
+//             <Form.Control.Feedback type="invalid">
+//               {errors.username}
+//             </Form.Control.Feedback>
+//           </Form.Group>
+
+//           {/* Email */}
+//           <Form.Group className="mb-3">
+//             <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+//             {listing.email ? (
+//               <Form.Control
+//                 type="email"
+//                 name="email"
+//                 value={listing.email}
+//                 disabled
+//               />
+//             ) : (
+//               <Form.Control
+//                 type="email"
+//                 name="email"
+//                 value={user.email}
+//                 onChange={handleUserChange}
+//                 isInvalid={!!errors.email}
+//               />
+//             )}
+//             <Form.Control.Feedback type="invalid">
+//               {errors.email}
+//             </Form.Control.Feedback>
+//           </Form.Group>
+
+//           {/* Phone */}
+//           <Form.Group className="mb-3">
+//             <Form.Label>Phone <span className="text-danger">*</span></Form.Label>
+//             <Form.Control
+//               name="phone"
+//               value={listing.phone || ""}
+//               disabled
+//             />
+//           </Form.Group>
+
+//           {/* Role */}
+//           <Form.Group className="mb-3">
+//             <Form.Label>Role *</Form.Label>
+//             <Form.Select
+//               value={claimRole}
+//               onChange={(e) => {
+//                 setClaimRole(e.target.value);
+//                 setErrors((prev) => ({ ...prev, role: "" }));
+//               }}
+//               isInvalid={!!errors.role}
+//             >
+//               <option value="">Select role</option>
+//               <option value="owner">Owner</option>
+//               <option value="manager">Manager</option>
+//               <option value="staff">Staff</option>
+//             </Form.Select>
+//             <Form.Control.Feedback type="invalid">
+//               {errors.role}
+//             </Form.Control.Feedback>
+//           </Form.Group>
+
+//           {/* Verification */}
+//           <Form.Group className="mb-3">
+//             <Form.Label>Verification Method *</Form.Label>
+
+//             <Form.Check
+//               type="radio"
+//               id="verify-email"
+//               label="Business Email Verification"
+//               value="email"
+//               checked={verificationMethod === "email"}
+//               onChange={(e) => {
+//                 setVerificationMethod(e.target.value);
+//                 setErrors((prev) => ({ ...prev, verificationMethod: "" }));
+//               }}
+//             />
+
+//             <Form.Check
+//               type="radio"
+//               id="verify-document"
+//               label="Document Upload"
+//               value="document"
+//               checked={verificationMethod === "document"}
+//               onChange={(e) => {
+//                 setVerificationMethod(e.target.value);
+//                 setErrors((prev) => ({ ...prev, verificationMethod: "" }));
+//               }}
+//             />
+
+//             {errors.verificationMethod && (
+//               <div className="text-danger small mt-1">
+//                 {errors.verificationMethod}
+//               </div>
+//             )}
+//           </Form.Group>
+
+//           {/* Document Upload */}
+//           {verificationMethod === "document" && (
+//             <Form.Group className="mb-4">
+//               <Form.Label>Upload Verification Documents</Form.Label>
+//               <Form.Control
+//                 type="file"
+//                 multiple
+//                 accept="image/*,.pdf"
+//                 onChange={(e) => {
+//                   setDocuments(Array.from(e.target.files));
+//                 }}
+//               />
+//               <Form.Text className="text-muted">
+//                 Upload business license, ID proof, utility bill, etc.
+//               </Form.Text>
+//             </Form.Group>
+//           )}
+
+//           {/* Password */}
+//           <Form.Group className="mb-3">
+//             <Form.Label>Password *</Form.Label>
+//             <div className="position-relative">
+//               <Form.Control
+//                 type={showPassword ? "text" : "password"}
+//                 name="password"
+//                 value={user.password}
+//                 onChange={handleUserChange}
+//                 isInvalid={!!errors.password}
+//                 style={{ paddingRight: "45px" }}
+//               />
+//               <span
+//                 onClick={() => setShowPassword(!showPassword)}
+//                 style={{
+//                   position: "absolute",
+//                   right: errors.password ? "35px" : "15px",
+//                   top: "50%",
+//                   transform: "translateY(-50%)",
+//                   cursor: "pointer",
+//                   zIndex: 5
+//                 }}
+//               >
+//                 {showPassword ? <FaEyeSlash /> : <FaEye />}
+//               </span>
+//               <Form.Control.Feedback type="invalid">
+//                 {errors.password}
+//               </Form.Control.Feedback>
+//             </div>
+//           </Form.Group>
+
+//           {/* Confirm Password */}
+//           <Form.Group className="mb-4">
+//             <Form.Label>Confirm Password *</Form.Label>
+//             <div className="position-relative">
+//               <Form.Control
+//                 type={showConfirmPassword ? "text" : "password"}
+//                 value={confirmPassword}
+//                 onChange={(e) => {
+//                   setConfirmPassword(e.target.value);
+//                   setErrors((prev) => ({ ...prev, confirmPassword: "" }));
+//                 }}
+//                 isInvalid={!!errors.confirmPassword}
+//                 style={{ paddingRight: "45px" }}
+//               />
+//               <span
+//                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+//                 style={{
+//                   position: "absolute",
+//                   right: errors.confirmPassword ? "35px" : "15px",
+//                   top: "50%",
+//                   transform: "translateY(-50%)",
+//                   cursor: "pointer",
+//                   zIndex: 5
+//                 }}
+//               >
+//                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+//               </span>
+//               <Form.Control.Feedback type="invalid">
+//                 {errors.confirmPassword}
+//               </Form.Control.Feedback>
+//             </div>
+//           </Form.Group>
+
+//           {/* Terms & Conditions */}
+//           <Form.Group className="mb-3">
+//             <Form.Check
+//               type="checkbox"
+//               id="terms-checkbox"
+//               label={
+//                 <>
+//                   I agree to the{" "}
+//                   <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">
+//                     Terms & Conditions
+//                   </a>
+//                 </>
+//               }
+//               checked={agreeTerms}
+//               onChange={(e) => {
+//                 setAgreeTerms(e.target.checked);
+//                 setErrors((prev) => ({ ...prev, terms: "" }));
+//               }}
+//               isInvalid={!!errors.terms}
+//             />
+//             {errors.terms && (
+//               <div className="text-danger small mt-1">{errors.terms}</div>
+//             )}
+//           </Form.Group>
+
+//           <div className="text-center">
+//             <Button type="submit" variant="primary" disabled={loading}>
+//               {loading ? "Claiming..." : "Claim Listing"}
+//             </Button>
+//           </div>
+//         </Form>
+//       </Container>
+//     </div>
+//   );
+// };
+
+// export default ClaimListing;
+
+
+
+
+// ---Previou
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Container, Form, Button } from "react-bootstrap";
+import { Container, Form, Button, Alert } from "react-bootstrap";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { validateField } from "../utils/formValidation";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -487,6 +1091,8 @@ const ClaimListing = () => {
   const [verificationMethod, setVerificationMethod] = useState("");
   const [documents, setDocuments] = useState([]);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const errorRef = useRef(null);
+  const successRef = useRef(null);
 
   const [user, setUser] = useState({
     name: "",
@@ -498,6 +1104,7 @@ const ClaimListing = () => {
 
   // ✅ All errors in one place
   const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     loadListing();
@@ -561,6 +1168,41 @@ const ClaimListing = () => {
   setLoading(true);
 
   const newErrors = {};
+  const nameErr = validateField("name", user.name);
+  if (nameErr) newErrors.name = nameErr;
+
+  const usernameErr = validateField("username", user.username);
+  if (usernameErr) newErrors.username = usernameErr;
+  if (!listing?.email) {
+      const emailErr = validateField("email", user.email);
+      if (emailErr) newErrors.email = emailErr;
+    }
+
+    const passwordErr = validateField("password", user.password);
+    if (passwordErr) newErrors.password = passwordErr;
+
+    // Confirm password uses the additionalData payload mismatch match layer
+    const confirmPasswordErr = validateField("confirmPassword", confirmPassword, {
+      passwordMatch: user.password
+    });
+    if (confirmPasswordErr) newErrors.confirmPassword = confirmPasswordErr;
+
+    // 2. Form state specific contextual validations
+    if (!claimRole) {
+      newErrors.role = "Please select a role.";
+    }
+
+    if (!verificationMethod) {
+      newErrors.verificationMethod = "Please select a verification method.";
+    }
+
+    if (verificationMethod === "document" && documents.length === 0) {
+      newErrors.documents = "Please upload at least one verification document.";
+    }
+
+    if (!agreeTerms) {
+      newErrors.terms = "You must accept the Terms & Conditions.";
+    }
   const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
   // 🔹 Validation
@@ -599,7 +1241,9 @@ const ClaimListing = () => {
 
   if (Object.keys(newErrors).length > 0) {
     setErrors(newErrors);
+    setSuccess("");
     setLoading(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
     return;
   }
 
@@ -637,21 +1281,43 @@ const ClaimListing = () => {
     if (!data.success) {
       setErrors({ api: data.message || "Failed to submit claim" });
       setLoading(false);
+      setTimeout(() => {
+        errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        errorRef.current?.focus();
+      }, 50);
       return;
     }
 
     // 🔥 If email verification → go to OTP page
     if (verificationMethod === "email") {
-      navigate("/verify-otp", {
-        state: {
-          userId: data.userId,
-          token: data.token,
-          email: user.email,
-        },
-      });
+      setSuccess("Claim initiated successfully! Redirecting to OTP verification...");
+      setTimeout(() => {
+        successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        successRef.current?.focus();
+      }, 50);
+      setTimeout(() => {
+    navigate("/verify-otp", {
+      state: {
+        userId: data.userId,
+        token: data.token,
+        email: user.email,
+      },
+    });
+  }, 2000);
+      // navigate("/verify-otp", {
+      //   state: {
+      //     userId: data.userId,
+      //     token: data.token,
+      //     email: user.email,
+      //   },
+      // });
     } else {
       // Document verification
-      navigate("/directory");
+      setSuccess("Claim documents submitted successfully! Redirecting to directory...");
+      // navigate("/directory");
+      setTimeout(() => {
+        navigate("/directory");
+      }, 2000)
     }
 
   } catch (err) {
@@ -774,9 +1440,40 @@ const ClaimListing = () => {
       <Container className="mt-4">
         <h3>Claim Your Listing</h3>
 
-        {errors.api && (
+        {/* {errors.api && (
           <div className="text-danger mb-3">{errors.api}</div>
         )}
+        {success && (
+          <div className="text-success mb-3">{success}</div>
+        )} */}
+        
+        {errors.api && (
+  <div ref={errorRef} tabIndex={-1} className="text-danger mb-3OutlineNone">
+    {errors.api}
+  </div>
+)}
+{success && (
+  <div ref={successRef} tabIndex={-1} className="text-success mb-3OutlineNone">
+    {success}
+  </div>
+)}
+{Object.keys(errors).length > 0 && !errors.api && !errors.success && (
+  <div ref={errorRef} tabIndex={-1} className="text-danger mb-3OutlineNone">
+    
+    <Alert variant="danger">
+      <h6 className="fw-bold">Please correct the following errors:</h6>
+      <ul className="mb-0 ps-3">
+        {Object.entries(errors).map(([key, message]) => {
+          // If the message exists, render it in the list
+          if (message) {
+            return <li key={key}>{message}</li>;
+          }
+          return null;
+        })}
+      </ul>
+    </Alert>
+    </div>
+  )}
 
         <Form onSubmit={handleSubmit}>
           <h2>Listing Information</h2>
@@ -879,6 +1576,7 @@ const ClaimListing = () => {
 
             <Form.Check
               type="radio"
+              id="verify-email"
               label="Business Email Verification"
               value="email"
               checked={verificationMethod === "email"}
@@ -893,6 +1591,7 @@ const ClaimListing = () => {
 
             <Form.Check
               type="radio"
+              id="verify-document"
               label="Document Upload"
               value="document"
               checked={verificationMethod === "document"}
@@ -944,8 +1643,8 @@ const ClaimListing = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: "absolute",
-                  right: "12px",
-                  top: "50%",
+                  right: "40px",
+                  top: "17px",
                   transform: "translateY(-50%)",
                   cursor: "pointer",
                 }}
@@ -980,8 +1679,8 @@ const ClaimListing = () => {
                 }
                 style={{
                   position: "absolute",
-                  right: "12px",
-                  top: "50%",
+                  right: "40px",
+                  top: "17px",
                   transform: "translateY(-50%)",
                   cursor: "pointer",
                 }}
@@ -1000,10 +1699,11 @@ const ClaimListing = () => {
           <Form.Group className="mb-3">
   <Form.Check
     type="checkbox"
+    id="check-agree"
     label={
       <>
         I agree to the{" "}
-        <a href="/terms-and-conditions" target="_blank">
+        <a href="/termsandconditions" target="_blank">
           Terms & Conditions
         </a>
       </>

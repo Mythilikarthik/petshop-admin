@@ -5,7 +5,7 @@
   text-align: center;
 }
 .city-category-listings-section .highlight {
-  color: #ff9800;
+  color: #ff4e00;
 }
 .city-category-search {
   padding: 8px 14px;
@@ -16,7 +16,7 @@
   min-width: 220px;
 }
 .city-category-search:focus {
-  border: 1.5px solid #ff9800;
+  border: 1.5px solid #ff4e00;
 }
 .city-category-listings {
   display: flex;
@@ -42,7 +42,7 @@
   color: #222;
 }
 .listing-type {
-  background: #ff9800;
+  background: #ff4e00;
   color: #fff;
   border-radius: 8px;
   padding: 2px 10px;
@@ -71,8 +71,8 @@
 }
 .pagination-btn {
   background: #fff;
-  color: #ff9800;
-  border: 1.5px solid #ff9800;
+  color: #ff4e00;
+  border: 1.5px solid #ff4e00;
   border-radius: 8px;
   padding: 6px 16px;
   font-size: 1rem;
@@ -82,7 +82,7 @@
 }
 .pagination-btn.active,
 .pagination-btn:hover {
-  background: #ff9800;
+  background: #ff4e00;
   color: #fff;
 }
 .no-results {
@@ -130,7 +130,7 @@
 
 .city-category-select:focus {
   outline: none;
-  border-color: #ff9800;
+  border-color: #ff4e00;
   box-shadow: 0 8px 24px rgba(108,140,255,0.12);
 }
 

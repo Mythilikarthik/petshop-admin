@@ -1,11 +1,65 @@
 const express = require('express');
 const router = express.Router();
 const Category = require('../Models/Category');
+const Blog = require('../Models/Blog');
 const mongoose = require("mongoose");
 
 const PetCategory = require('../Models/PetCategory');
 
+router.get('/blog/show', async (req, res) => {
+  try {
+    const categoriesWithCounts = await Category.aggregate([
+      // 1. Only get active categories meant to be visible
+      {
+        $match: { show: true }
+      },
+      // 2. Correlate and search the blogs collection
+      {
+        $lookup: {
+          from: 'blogs', // Ensure this perfectly matches your MongoDB collection name
+          localField: '_id',
+          foreignField: 'category',
+          as: 'matchedBlogs'
+        }
+      },
+      // 3. Map out a new field calculating the size of only PUBLISHED blogs
+      {
+        $addFields: {
+          blogCount: {
+            $size: {
+              $filter: {
+                input: '$matchedBlogs',
+                as: 'b',
+                cond: { $eq: ['$$b.status', 'published'] }
+              }
+            }
+          }
+        }
+      },
+      // 4. Drop the heavy array data payload so network responses stay fast
+      {
+        $project: {
+          matchedBlogs: 0
+        }
+      },
+      // 5. Keep your chronological ordering
+      {
+        $sort: { created_at: -1 }
+      }
+    ]);
 
+    // 6. Populate petCategories relationship
+    const populatedCategories = await Category.populate(categoriesWithCounts, {
+      path: 'petCategories',
+      select: 'categoryName'
+    });
+
+    res.json({ success: true, categories: populatedCategories });
+  } catch (error) {
+    console.error('Blog category count aggregation error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 router.post('/add', async (req, res) => {
   try {
     const { categoryName, description, metaTitle, metaKeyword, metaDescription, petCategories } = req.body;

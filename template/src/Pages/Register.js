@@ -430,6 +430,7 @@ import Select from "react-select";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import { validateField, USERNAME_REGEX } from "../utils/formValidation";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -446,8 +447,8 @@ const navigate= useNavigate();
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[6-9]\d{9}$/;
-const formRef = useRef();
-const fileRef = useRef();
+const alertRef = useRef(null);
+  const formRef = useRef(null);
   /* ---------------- USER ---------------- */
   const [form, setForm] = useState({
     name: "",
@@ -486,6 +487,11 @@ const fileRef = useRef();
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+  useEffect(() => {
+    if (alert.show && alertRef.current) {
+      alertRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [alert]);
   useEffect(() => {
   if (!listing.categories.length) {
     setServices([]);
@@ -577,7 +583,7 @@ console.log("services", services);
     // ✅ allow only letters, numbers, underscore
     if (value && !USERNAME_REGEX.test(value)) return;
   }
-
+if (name === "username" && value.length > 20) return;
   setForm({ ...form, [name]: value });
 };
 
@@ -609,6 +615,18 @@ console.log("services", services);
   // };
 
   const validateForm = () => {
+  const fieldsToValidate = ["name", "username", "email", "phone", "password"];
+  
+  for (let field of fieldsToValidate) {
+    const errorMsg = validateField(field, form[field]);
+    if (errorMsg) return errorMsg;
+  }
+
+  // Validate confirmation password matching rule
+  const confirmError = validateField("confirmPassword", form.confirmPassword, {
+    passwordMatch: form.password
+  });
+  if (confirmError) return confirmError;
   if (!form.name) return "Name required";
 
   if (!form.username) return "Username required";
@@ -709,6 +727,16 @@ if (!PHONE_REGEX.test(form.phone))
           type: "success",
           message: "Registered successfully!",
         });
+        setForm({ name: "", username: "", email: "", phone: "", password: "", confirmPassword: "" });
+        setListing({ shopName: "", city: "", petCategories: [], categories: [] });
+        setRole("");
+        setVerificationMethod("");
+        setDocuments([]);
+        setSelectedServices([]);
+        setCategories([]);
+        setServices([]);
+        
+        if (formRef.current) formRef.current.reset();
       }
 
     } catch (err) {
@@ -750,13 +778,13 @@ if (!PHONE_REGEX.test(form.phone))
                </h3>
                <small className="d-block text-center mb-4 text-muted">Already have an account? <a href={LOGIN_URI}><b>Login</b></a></small>
 
-
+          <div ref={alertRef}>
             {alert.show && (
               <Alert variant={alert.type}>
                 {alert.message}
               </Alert>
             )}
-
+          </div>
             <Form ref={formRef} onSubmit={handleSubmit}>
 
               {/* USER */}
@@ -827,6 +855,7 @@ if (!PHONE_REGEX.test(form.phone))
 
               {/* VERIFICATION */}
               <Form.Check
+                id="verify-email" 
                 type="radio"
                 label="Email Verification"
                 value="email"
@@ -834,6 +863,7 @@ if (!PHONE_REGEX.test(form.phone))
                 onChange={(e) => setVerificationMethod(e.target.value)}
               />
               <Form.Check
+                id="verify-document" 
                 type="radio"
                 label="Document Upload"
                 value="document"
@@ -921,6 +951,10 @@ if (!PHONE_REGEX.test(form.phone))
                   value: c._id,
                   label: c.categoryName,
                 }))}
+                value={categories
+                  .filter(c => listing.categories.includes(c._id))
+                  .map(c => ({ value: c._id, label: c.categoryName }))
+                }
                 onChange={(selected) =>
                 {
                   setListing(prev => ({
@@ -940,6 +974,10 @@ if (!PHONE_REGEX.test(form.phone))
     value: s._id,
     label: s.serviceName,
   }))}
+  value={services
+    .filter(s => selectedServices.includes(s._id))
+    .map(s => ({ value: s._id, label: s.serviceName }))
+  }
   onChange={(selected) =>
     setSelectedServices(selected.map((s) => s.value))
   }

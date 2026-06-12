@@ -22,6 +22,10 @@ const AdManagement = () => {
   const navigate = useNavigate();
   const id = state?.id || null;
   console.log(id);
+  const [adLimit,setAdLimit] = useState({
+ count:0,
+ maxImages:5
+});
 
   const [formData, setFormData] = useState({
     category: "",
@@ -39,22 +43,81 @@ const AdManagement = () => {
   const [cityList, setCityList] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(()=>{
+
+ if(!formData.page || !formData.position) return;
+
+
+const loadLimit = async()=>{
+
+
+let url =
+`${API_BASE}/api/ads/count?page=${formData.page}&position=${formData.position}`;
+
+
+
+if(formData.page==="city" && formData.city){
+
+ url += `&city=${formData.city}`;
+
+}
+
+
+
+const res = await fetch(url);
+
+const data = await res.json();
+
+
+
+if(data.success){
+
+ setAdLimit({
+
+  count:data.count,
+
+  maxImages:data.maxImages
+
+ });
+
+}
+
+
+};
+
+
+loadLimit();
+
+
+},[
+ formData.page,
+ formData.city,
+ formData.position
+]);
   // 🔹 Fetch categories & cities
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [catRes, cityRes] = await Promise.all([
+        const [catRes, cityRes, limitRes] = await Promise.all([
           fetch(`${API_BASE}/api/pet-category/show`),
           fetch(`${API_BASE}/api/city/show`),
+          fetch(`${API_BASE}/api/ads/count`),
         ]);
 
         const catData = await catRes.json();
         const cityData = await cityRes.json();
+        const limitData = await limitRes.json();
 console.log(catData);
         if (catData.success && cityData.success) {
           setCategoryList(catData.petCategories || []);
           setCityList(cityData.cities || []);
         }
+        if(limitData.success){
+ setAdLimit({
+   count: limitData.count,
+   maxImages: limitData.maxImages
+ });
+}
       } catch (err) {
         console.error("Failed to fetch data:", err);
       } finally {
@@ -419,8 +482,34 @@ console.log(catData);
                 </div>
               )}
             </Form.Group>
+            <div className="mb-3">
 
-            <Button type="submit" variant="primary">
+<strong>
+Ads:
+</strong>
+
+{" "}
+{adLimit.count} / {adLimit.maxImages}
+
+{adLimit.count >= adLimit.maxImages && (
+    <div 
+      className="mt-2"
+      style={{
+        color: "#dc3545",
+        fontWeight: "600"
+      }}
+    >
+      Ad limit reached. Please remove an existing ad or increase the limit.
+    </div>
+  )}
+
+</div>
+
+            <Button
+ type="submit"
+ variant="primary"
+ disabled={!id && adLimit.count >= adLimit.maxImages}
+>
               {id ? "Update Ad" : "Save Ad"}
             </Button>
           </Form>

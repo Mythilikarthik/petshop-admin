@@ -543,6 +543,7 @@ const UserManagement = () => {
           <thead>
             <tr>
               <th>S.No</th>
+              <th>Created Date</th>
               <th>Name</th>
               <th>Email</th>
               <th>Type</th>
@@ -561,6 +562,7 @@ const UserManagement = () => {
               displayedListings.map((listing, index) => (
                 <tr key={listing._id}>
                   <td>{currentPage * itemsPerPage + index + 1}</td>
+                  <td>  {new Date(listing.created_at).toLocaleDateString("en-GB")}</td>
                   <td>{listing.name}</td>
                   <td>{listing.email}</td>
 

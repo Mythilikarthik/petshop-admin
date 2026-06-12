@@ -7,6 +7,7 @@ import { Provider } from 'react-redux';
 import Store from './Store';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { HelmetProvider } from "react-helmet-async";
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 
 
@@ -15,7 +16,17 @@ root.render(
   <React.StrictMode>
     <Provider store={Store}>
       <HelmetProvider>
-        <App />
+        {/* <App /> */}
+        <GoogleReCaptchaProvider 
+          reCaptchaKey="6Lcr3ecsAAAAAIhs3c165tW5uChK-Wz2gbHkijip"
+          scriptProps={{
+            async: true,
+            defer: true,
+            appendTo: 'head',
+          }}
+        >
+          <App />
+        </GoogleReCaptchaProvider>
       </HelmetProvider>
     </Provider>
   </React.StrictMode>

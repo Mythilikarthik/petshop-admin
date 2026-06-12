@@ -836,6 +836,7 @@ const EditListing = () => {
 const [bannerPreview, setBannerPreview] = useState(null);
 const [existingBanner, setExistingBanner] = useState(null);
   const [noListing, setNoListing] = useState(false);
+  const [newPhotoAlts,setNewPhotoAlts] = useState([]);
 
 const daysOfWeek = [
   "Monday",
@@ -869,6 +870,7 @@ const [businessHours, setBusinessHours] = useState(
       specializedServices: [],   // ⭐ ADD THIS
     photos: [],
     existingPhotos: [],
+    photoAlts: {},
     metaTitle: '',
     metaKeyword: '',
     metaDescription: '',
@@ -1132,11 +1134,66 @@ useEffect(() => {
     }));
   };
 
+  // const handlePhotoChange = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   setFormData(prev => ({ ...prev, photos: files }));
+  //   setPreviewUrls(files.map(file => URL.createObjectURL(file)));
+  // };
+  const handleExistingPhotoAltChange = (index,value)=>{
+
+  setFormData(prev=>{
+
+    const updatedPhotos = [...prev.existingPhotos];
+
+    updatedPhotos[index] = {
+      ...updatedPhotos[index],
+      alt:value
+    };
+
+    console.log("UPDATED PHOTO ALT:", updatedPhotos[index]);
+
+    return {
+      ...prev,
+      existingPhotos:updatedPhotos
+    };
+
+  });
+
+};
+  const handleDeleteExistingPhoto = (index) => {
+
+  setFormData(prev => {
+
+    const updatedPhotos = prev.existingPhotos.filter(
+      (_, i) => i !== index
+    );
+
+    console.log("AFTER DELETE EXISTING PHOTOS:", updatedPhotos);
+
+    return {
+      ...prev,
+      existingPhotos: updatedPhotos
+    };
+
+  });
+
+};
   const handlePhotoChange = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData(prev => ({ ...prev, photos: files }));
-    setPreviewUrls(files.map(file => URL.createObjectURL(file)));
-  };
+  const files = Array.from(e.target.files);
+
+  setFormData(prev => ({
+    ...prev,
+    photos: files,
+    photoAlts: files.reduce((acc, file, index) => {
+      acc[index] = "";
+      return acc;
+    }, {})
+  }));
+
+  setPreviewUrls(
+    files.map(file => URL.createObjectURL(file))
+  );
+};
 
   const handleStatusToggle = () => {
     setFormData(prev => ({ ...prev, status: !prev.status }));
@@ -1203,18 +1260,67 @@ if (!emailRegex.test(formData.email)) {
 formDataToSend.append("businessHours", JSON.stringify(businessHours));
       formData.categories.forEach(cat => formDataToSend.append('categories[]', cat));
       formData.petCategories.forEach(cat => formDataToSend.append('petCategories[]', cat));
-      formData.photos.forEach(photo => formDataToSend.append('photos', photo));
+      // formData.photos.forEach(photo => formDataToSend.append('photos', photo));
+      formData.photos.forEach((photo,index)=>{
+
+ formDataToSend.append(
+   "photos",
+   photo
+ );
+formDataToSend.append(
+   "newPhotoAlts[]",
+   newPhotoAlts[index] || ""
+ );
+ formDataToSend.append(
+   "photoAlts[]",
+   formData.photoAlts[index] || ""
+ );
+
+});
       formData.specializedServices.forEach(service =>
   formDataToSend.append("specializedServices[]", service)
 );
-      formData.existingPhotos.forEach(photo => formDataToSend.append('existingPhotos[]', photo));
+      // formData.existingPhotos.forEach(photo => formDataToSend.append('existingPhotos[]', photo));
+      formData.existingPhotos.forEach(photo=>{
+
+ formDataToSend.append(
+   "existingPhotos[]",
+   JSON.stringify({
+     url: photo.url,
+     alt: photo.alt || ""
+   })
+ );
+
+});
       if (banner) {
   formDataToSend.append("bannerImage", banner);  
 }
 if (formData.isClaimed) {
   formDataToSend.append("claimStatus", formData.claimStatus);
 }
-console.log("Submitting claimStatus:", formData.claimStatus);
+// console.log("Submitting claimStatus:", formDataToSend);
+console.log("=== NEW PHOTOS ===");
+
+for (let pair of formDataToSend.entries()) {
+  if (pair[0] === "photos") {
+    console.log("Photo file:", pair[1]);
+  }
+
+  if (pair[0] === "newPhotoAlts[]") {
+    console.log("Photo Alt:", pair[1]);
+  }
+}
+
+console.log("=== EXISTING PHOTOS ===");
+
+for (let pair of formDataToSend.entries()) {
+  if (pair[0] === "existingPhotos[]") {
+    console.log(
+      "Existing Photo:",
+      JSON.parse(pair[1])
+    );
+  }
+}
       const res = await fetch(`${API_BASE}/api/listing/user/${id}`, {
         method: 'PUT',
         headers: {
@@ -1620,40 +1726,164 @@ formData.petCategories.length === petCategoryList.length
 
             {/* Photos */}
             <Form.Group className="mb-4">
-              <Form.Label>Upload New Photos</Form.Label>
-              <Form.Control type="file" name="photos" multiple accept="image/*" onChange={handlePhotoChange} />
-              <Form.Text className="text-muted">
-                              Note : You can upload multiple images (JPG, PNG, WEBP) up to 2MB each.
-                            </Form.Text>
-            </Form.Group>
-
-            {/* Existing Photo Previews */}
+                          <Form.Label>Upload New Photos</Form.Label>
+                          <Form.Control type="file" name="photos" multiple accept="image/*" onChange={handlePhotoChange} />
+                          <Form.Text className="text-muted">
+                                          Note : You can upload multiple images (JPG, PNG, WEBP) up to 2MB each.
+                                        </Form.Text>
+                        </Form.Group>
+            
+                        {/* Existing Photo Previews */}
+                        {/* {formData.existingPhotos.length > 0 && (
+            <Row className="mb-3">
+            
+            {formData.existingPhotos.map((photo, idx)=>{
+            
+            const imageUrl =
+            photo.url?.startsWith("http")
+            ? photo.url
+            : `${API_BASE}/${photo.url.replace(/^\/+/,"")}`;
+            
+            
+            return (
+            
+            <Col key={idx} xs={6} md={4} lg={3} className="mb-3">
+            
+            <Image 
+            src={imageUrl}
+            thumbnail
+            fluid
+            />
+            
+            
+            <Form.Control
+            className="mt-2"
+            type="text"
+            placeholder="Image Alt Text"
+            value={photo.alt || ""}
+            onChange={(e)=>
+             handleExistingPhotoAltChange(
+             idx,
+             e.target.value
+             )
+            }
+            />
+            
+            
+            </Col>
+            
+            )
+            
+            })}
+            
+            </Row>
+            )} */}
             {formData.existingPhotos.length > 0 && (
-              <Row className="mb-3">
-                {formData.existingPhotos.map((url, idx) => {
-                  const imageUrl = url.startsWith("http")
-                    ? url
-                    : `${url}`;
-                  return (
-                    <Col key={idx} xs={6} md={4} lg={3} className="mb-2">
-                      <Image src={`${API_BASE}/${imageUrl}`} thumbnail fluid />
-                    </Col>
-                  );
-                })}
-              </Row>
+            <Row className="mb-3">
+            
+            {formData.existingPhotos.map((photo, idx)=>{
+            
+            const imageUrl =
+            photo.url?.startsWith("http")
+            ? photo.url
+            : `${API_BASE}/${photo.url.replace(/^\/+/,"")}`;
+            
+            
+            return (
+            
+            <Col 
+            key={idx} 
+            xs={6} 
+            md={4} 
+            lg={3} 
+            className="mb-3 position-relative"
+            >
+            
+            
+            {/* DELETE BUTTON */}
+            <Button
+              variant="danger"
+              size="sm"
+              className="position-absolute"
+              style={{
+                right:"15px",
+                top:"5px",
+                borderRadius:"50%",
+                width:"30px",
+                height:"30px",
+                zIndex:10
+              }}
+              onClick={() => handleDeleteExistingPhoto(idx)}
+            >
+              ✕
+            </Button>
+            
+            
+            <Image 
+            src={imageUrl}
+            thumbnail
+            fluid
+            />
+            
+            
+            <Form.Control
+            className="mt-2"
+            type="text"
+            placeholder="Image Alt Text"
+            value={photo.alt || ""}
+            onChange={(e)=>
+             handleExistingPhotoAltChange(
+             idx,
+             e.target.value
+             )
+            }
+            />
+            
+            
+            </Col>
+            
+            )
+            
+            })}
+            
+            </Row>
             )}
-
-            {/* New Photo Previews */}
-            {previewUrls.length > 0 && (
-              <Row className="mb-3">
-                {previewUrls.map((url, idx) => (
-                  <Col key={idx} xs={6} md={4} lg={3} className="mb-2">
-                    <Image src={url} thumbnail fluid />
-                  </Col>
-                ))}
-              </Row>
-            )}
-
+            
+                        {/* New Photo Previews */}
+                        {/* {previewUrls.length > 0 && (
+                          <Row className="mb-3">
+                            {previewUrls.map((url, idx) => (
+                              <Col key={idx} xs={6} md={4} lg={3} className="mb-2">
+                                <Image src={url} thumbnail fluid />
+                              </Col>
+                            ))}
+                          </Row>
+                        )} */}
+                        {previewUrls.map((url,idx)=>(
+            
+            <Col key={idx} xs={6} md={4}>
+            
+            <Image src={url} thumbnail fluid />
+            
+            
+            <Form.Control
+             className="mt-2"
+             placeholder="Image Alt Text"
+             value={newPhotoAlts[idx] || ""}
+             onChange={(e)=>{
+            
+               const copy=[...newPhotoAlts];
+            
+               copy[idx]=e.target.value;
+            
+               setNewPhotoAlts(copy);
+            
+             }}
+            />
+            
+            </Col>
+            
+            ))}
             {/* Meta Fields */}
             <Form.Group className="mb-3">
               <Form.Label>Meta Title</Form.Label>

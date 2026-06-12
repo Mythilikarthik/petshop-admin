@@ -53,7 +53,7 @@ const FAQSection = ({faqs, showViewAll = true }) => {
             <button className="faq-question" onClick={() => toggleFAQ(idx)}>
               {faq.question}
               <span className={`faq-icon${openIndex === idx ? ' open' : ''}`}>
-                <FiChevronDown size={22} color="#ff9800" />
+                <FiChevronDown size={22} color="#ff4e00" />
               </span>
             </button>
             {openIndex === idx && (

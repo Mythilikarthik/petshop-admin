@@ -185,7 +185,7 @@ const Blog = () => {
   /* ---------------- CATEGORIES ---------------- */
   const categoriesList = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/category/show`);
+      const res = await fetch(`${API_BASE}/api/category/blog/show`);
       const data = await res.json();
       if (data.success) {
         setCategories(data.categories);
@@ -337,7 +337,9 @@ const Blog = () => {
                     onClick={() => setSelectedCategory(cat._id)}
                     style={{"cursor" : "pointer"}}
                   >
-                    {cat.categoryName}
+                    {/* {cat.categoryName} */}
+                    <span>{cat.categoryName}</span>
+                    <span className="text-muted small">({cat.blogCount || 0})</span>
                   </div>
                 ))}
               </Row>
