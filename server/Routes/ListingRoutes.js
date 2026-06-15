@@ -430,7 +430,7 @@ console.log(user._id);
     listing.claimStatus =
       verificationMethod === "email" ? "otp_pending" : "pending";
 
-    listing.isClaimed = true;
+    listing.isClaimed = false;
     listing.status = "pending";
 
     if (req.files?.length) {

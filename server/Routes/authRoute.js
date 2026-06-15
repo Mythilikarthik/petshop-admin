@@ -968,6 +968,7 @@ console.log("verified",userId);
     if (listing) {
       listing.claimStatus = "verified";
       listing.status = "pending";
+      listing.isClaimed = true;
       await listing.save();
     }
 
