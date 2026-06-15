@@ -1168,10 +1168,10 @@ const ClaimListing = () => {
   setLoading(true);
 
   const newErrors = {};
-  const nameErr = validateField("name", user.name);
+  const nameErr = validateField("name", user.name, { maxLength: 50 });
   if (nameErr) newErrors.name = nameErr;
 
-  const usernameErr = validateField("username", user.username);
+  const usernameErr = validateField("username", user.username, { maxLength: 50 });
   if (usernameErr) newErrors.username = usernameErr;
   if (!listing?.email) {
       const emailErr = validateField("email", user.email);
