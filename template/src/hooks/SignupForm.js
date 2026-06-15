@@ -123,6 +123,7 @@ import React, { useState } from "react";
 import { Form, Button, Alert, Spinner, InputGroup } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { BsEye, BsEyeSlash } from "react-icons/bs";
+import { validateField } from "../utils/validators";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -143,16 +144,45 @@ const SignupForm = ({ onSuccess }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
+  const [errors, setErrors] = useState({}); // Stores per-field validation messages
+  const [apiError, setApiError] = useState(""); // Handles backend/network errors
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: "" });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setApiError("");
+    setErrors({});
+    const newErrors = {};
+
+    // Run inputs through the validator engine
+    const nameErr = validateField("name", form.name, { maxLength: 50 });
+    if (nameErr) newErrors.name = nameErr;
+
+    const emailErr = validateField("email", form.email);
+    if (emailErr) newErrors.email = emailErr;
+
+    const passwordErr = validateField("password", form.password);
+    if (passwordErr) newErrors.password = passwordErr;
+
+    const confirmPasswordErr = validateField("confirmPassword", form.confirmPassword, {
+      passwordMatch: form.password,
+    });
+    if (confirmPasswordErr) newErrors.confirmPassword = confirmPasswordErr;
+
+    // Check if any errors were captured
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setLoading(false);
+      return;
+    }
 
     // ✅ VALIDATION
     if (form.password !== form.confirmPassword) {
@@ -186,8 +216,8 @@ const SignupForm = ({ onSuccess }) => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      {error && <Alert variant="danger">{error}</Alert>}
-
+      {/* {error && <Alert variant="danger">{error}</Alert>} */}
+{apiError && <Alert variant="danger">{apiError}</Alert>}
       {/* NAME */}
       <Form.Group className="mb-3">
         <Form.Label>Name</Form.Label>
@@ -195,8 +225,12 @@ const SignupForm = ({ onSuccess }) => {
           name="name"
           value={form.name}
           onChange={handleChange}
+          isInvalid={!!errors.name}
           required
         />
+        <Form.Control.Feedback type="invalid">
+          {errors.name}
+        </Form.Control.Feedback>
       </Form.Group>
 
       {/* EMAIL */}
@@ -207,8 +241,12 @@ const SignupForm = ({ onSuccess }) => {
           type="email"
           value={form.email}
           onChange={handleChange}
+          isInvalid={!!errors.email}
           required
         />
+        <Form.Control.Feedback type="invalid">
+          {errors.email}
+        </Form.Control.Feedback>
       </Form.Group>
 
       {/* PASSWORD */}
@@ -220,6 +258,7 @@ const SignupForm = ({ onSuccess }) => {
             type={showPassword ? "text" : "password"}
             value={form.password}
             onChange={handleChange}
+            isInvalid={!!errors.password}
             required
           />
           <Button
@@ -228,6 +267,9 @@ const SignupForm = ({ onSuccess }) => {
           >
             {showPassword ? <BsEyeSlash /> : <BsEye />}
           </Button>
+          <Form.Control.Feedback type="invalid">
+            {errors.password}
+          </Form.Control.Feedback>
         </InputGroup>
       </Form.Group>
 
@@ -240,6 +282,7 @@ const SignupForm = ({ onSuccess }) => {
             type={showConfirmPassword ? "text" : "password"}
             value={form.confirmPassword}
             onChange={handleChange}
+            isInvalid={!!errors.confirmPassword}  
             required
           />
           <Button
@@ -250,6 +293,9 @@ const SignupForm = ({ onSuccess }) => {
           >
             {showConfirmPassword ? <BsEyeSlash /> : <BsEye />}
           </Button>
+          <Form.Control.Feedback type="invalid">
+            {errors.confirmPassword}
+          </Form.Control.Feedback>
         </InputGroup>
       </Form.Group>
 
