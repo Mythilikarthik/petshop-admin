@@ -100,7 +100,39 @@ body {
   background-color: #20ba5a;
   color: #fff;
 }
+/* Removes default underline from the link wrapper */
+.sidebar-whatsapp-link {
+  text-decoration: none !important;
+  display: block;
+  margin-bottom: 20px;
+}
 
+.sidebar-whatsapp {
+  background-color: #25D366; /* Official WhatsApp Green */
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px; /* Space between icon and text */
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: 0 4px 6px rgba(37, 211, 102, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Hover effects to make it feel interactive */
+.sidebar-whatsapp:hover {
+  background-color: #1ebd56; /* Slightly darker green on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 211, 102, 0.3);
+}
+
+/* Make the icon slightly larger */
+.sidebar-whatsapp .whatsapp-icon {
+  font-size: 22px;
+}
 /* Optional: Smooth fade-in animation */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }

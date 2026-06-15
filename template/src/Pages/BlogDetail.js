@@ -184,6 +184,17 @@ const BlogDetail = () => {
             
           </Col>
           <Col md={4}>
+          <a 
+          href="https://wa.me/918870223852" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="sidebar-whatsapp-link"
+        >
+          <div className="sidebar-whatsapp">
+            <FaWhatsapp className="whatsapp-icon" /> 
+            <span>Chat with us on WhatsApp</span>
+          </div>
+        </a>
           {/* ---------------- DISQUS COMMENT BOX ---------------- */}
             <div className=" bg-grey p-5">
               <DiscussionEmbed shortname={disqusShortname} config={disqusConfig} />
