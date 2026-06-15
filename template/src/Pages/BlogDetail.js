@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Container, Row, Col, Spinner, Alert, Modal } from "react-bootstrap";
 import { DiscussionEmbed } from "disqus-react";   // <-- ADD THIS
 import { Helmet } from "react-helmet-async";
+import { FaWhatsapp } from "react-icons/fa";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
