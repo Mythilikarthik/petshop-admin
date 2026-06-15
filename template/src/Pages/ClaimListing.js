@@ -1290,6 +1290,7 @@ const ClaimListing = () => {
 
     // 🔥 If email verification → go to OTP page
     if (verificationMethod === "email") {
+      setErrors({});
       setSuccess("Claim initiated successfully! Redirecting to OTP verification...");
       setTimeout(() => {
         successRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
