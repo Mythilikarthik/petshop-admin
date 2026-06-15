@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Form, Button, Alert, Spinner } from "react-bootstrap";
+import { Form, Button, Alert, Spinner, InputGroup } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import { BsEnvelope, BsLock, BsEye, BsEyeSlash } from "react-icons/bs"; // 🔹 Added icons
-import { validateField } from "../utils/validators";
+import { validateField } from "../utils/formValidation";
 
 
 const API_BASE =
@@ -86,7 +86,7 @@ const handleSubmit = async (e) => {
       onSuccess?.();
       console.log(data);
     } catch (err) {
-      setError(err.message);
+      setApiError(err.message);
     } finally {
       setLoading(false);
     }

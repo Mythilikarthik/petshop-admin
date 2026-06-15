@@ -123,7 +123,7 @@ import React, { useState } from "react";
 import { Form, Button, Alert, Spinner, InputGroup } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { BsEye, BsEyeSlash } from "react-icons/bs";
-import { validateField } from "../utils/validators";
+import { validateField } from "../utils/formValidation";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -177,6 +177,12 @@ const SignupForm = ({ onSuccess }) => {
     });
     if (confirmPasswordErr) newErrors.confirmPassword = confirmPasswordErr;
 
+    if (form.password !== form.confirmPassword) {
+      newErrors.passwordMismatch = "Passwords do not match";
+      // setError("Passwords do not match");
+      // setLoading(false);
+      // return;
+    }
     // Check if any errors were captured
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -185,11 +191,7 @@ const SignupForm = ({ onSuccess }) => {
     }
 
     // ✅ VALIDATION
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
+    
 
     try {
       const res = await fetch(`${API_BASE}/api/auth/site/register`, {
@@ -208,7 +210,7 @@ const SignupForm = ({ onSuccess }) => {
       login(data.user, data.token);
       onSuccess?.();
     } catch (err) {
-      setError(err.message);
+      setApiError(err.message);
     } finally {
       setLoading(false);
     }
