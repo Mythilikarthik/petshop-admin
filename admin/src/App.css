@@ -58,3 +58,6 @@ input[type="number"] {
 input[type="number"] {
   appearance: textfield;
 }
+
+td, th { word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; width: 50px; min-width: 250px; }
+td .btn { margin-bottom: 5px; }

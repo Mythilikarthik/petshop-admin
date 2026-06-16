@@ -313,7 +313,7 @@ useEffect(() => {
     return;
   }
   if (!user) {
-      const nameError = validateField("name", userName);
+      const nameError = validateField("name", userName, {maxLength: 50});
       if (nameError) {
         setAlert({ show: true, type: "danger", message: nameError });
         return;

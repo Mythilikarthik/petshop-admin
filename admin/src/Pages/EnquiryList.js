@@ -660,7 +660,7 @@ const handleSort = (field) => {
             <th>Name</th>
             <th>Email</th>
             <th>Action</th>
-            <th onClick={() => handleSort("count")} style={{ cursor: "pointer", display: "flex", justifyContent: "space-between" }}>
+            <th onClick={() => handleSort("count")} style={{ cursor: "pointer" }}>
   Total Clicks{" "}
   <span className="ms-1">
     {sortField === "count" ? (

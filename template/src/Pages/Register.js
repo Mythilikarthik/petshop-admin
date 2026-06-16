@@ -618,7 +618,7 @@ if (name === "username" && value.length > 20) return;
   const fieldsToValidate = ["name", "username", "email", "phone", "password"];
   
   for (let field of fieldsToValidate) {
-    const errorMsg = validateField(field, form[field]);
+    const errorMsg = validateField(field, form[field], {maxLength: 50});
     if (errorMsg) return errorMsg;
   }
 
