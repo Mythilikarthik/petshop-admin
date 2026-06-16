@@ -400,7 +400,7 @@ if (user) {
 
     await user.save({ session });
   } else {
-    throw new Error("User already exists");
+    throw new Error("Username or Email already exists");
   }
 } else {
   // New user
@@ -1573,6 +1573,24 @@ router.get("/pending", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id)
+    .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("city", "city")
+      .populate("user_id", "name");
+    if (!listing) return res.status(404).json({ success: false, message: "Not found" });
+    const response = {
+      ...listing.toObject(),
+      user_id: listing.created_by_type === "user" ? listing.user_id : null
+    };
+    res.json({ success: true, listing: response });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+router.get("/claim/slug/:slug", async (req, res) => {
+  try {
+    const listing = await Listing.findOne({slug: req.params.slug})
     .populate("categories", "categoryName")
       .populate("petCategories", "categoryName")
       .populate("city", "city")

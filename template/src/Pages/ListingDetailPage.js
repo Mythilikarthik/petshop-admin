@@ -818,7 +818,8 @@ const shortAddress = (address) => {
           <Button
             variant="primary"
             className="w-100"
-            onClick={() => navigate(`/claim/${listing._id}`)}
+            // onClick={() => navigate(`/claim/${listing._id}`)}
+            onClick={() => navigate(`/claim/${listing.slug}`)}
           >
             Claim this business
           </Button>

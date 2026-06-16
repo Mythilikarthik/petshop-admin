@@ -1077,7 +1077,8 @@ const API_BASE =
     : "http://localhost:5000";
 
 const ClaimListing = () => {
-  const { listingId } = useParams();
+  // const { listingId } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -1111,7 +1112,7 @@ const ClaimListing = () => {
   }, []);
 
   const loadListing = async () => {
-    const res = await fetch(`${API_BASE}/api/listing/${listingId}`);
+    const res = await fetch(`${API_BASE}/api/listing/claim/slug/${slug}`);
     const data = await res.json();
 
     if (data.success) {
@@ -1269,7 +1270,8 @@ const ClaimListing = () => {
 
     // 🔥 Single API call
     const res = await fetch(
-      `${API_BASE}/api/listing/claim/${listingId}`,
+      // `${API_BASE}/api/listing/claim/${listingId}`,
+      `${API_BASE}/api/listing/claim/${listing._id}`,
       {
         method: "PUT",
         body: formData,
@@ -1448,11 +1450,11 @@ const ClaimListing = () => {
           <div className="text-success mb-3">{success}</div>
         )} */}
         
-        {errors.api && (
+        {/* {errors.api && (
   <div ref={errorRef} tabIndex={-1} className="text-danger mb-3OutlineNone">
     {errors.api}
   </div>
-)}
+)} */}
 {success && (
   <div ref={successRef} tabIndex={-1} className="text-success mb-3OutlineNone">
     {success}
