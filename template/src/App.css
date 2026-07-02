@@ -133,6 +133,11 @@ body {
 .sidebar-whatsapp .whatsapp-icon {
   font-size: 22px;
 }
+
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+}
 /* Optional: Smooth fade-in animation */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }

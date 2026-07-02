@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Css/Directory.css';
-import { Row, Col, Card, Button, Container, Image, Badge, Modal } from "react-bootstrap";
+import { Row, Col, Card, Button, Container, Image, Badge, Modal, Carousel } from "react-bootstrap";
 import { BsClock, BsClockFill, BsClockHistory, BsCloudCheckFill, BsGeoAltFill, BsStarFill } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 // import dummyImage from '../dummy.jpg';
@@ -905,14 +905,84 @@ const getFallbackImage = (listing) => {
   show={showAuthGate}
   onClose={() => setShowAuthGate(false)}
 />
-    {banner?.banner && (
+{/* {banner?.images?.length > 0 && (
+  <Carousel
+    interval={4000}
+    fade
+    indicators={banner.images.length > 1}
+    controls={banner.images.length > 1}
+    pause="hover"
+  >
+    {banner.images.map((img, index) => (
+      <Carousel.Item key={img._id || index}>
+        <Image
+          className="d-block w-100"
+          src={`${API_BASE}/${img.image}`}
+          alt={img.alt || `Banner ${index + 1}`}
+          style={{
+            height: "400px",
+            objectFit: "cover",
+          }}
+        />
+      </Carousel.Item>
+    ))}
+  </Carousel>
+)} */}
+{banner && (
+  <>
+    {banner.images?.length > 0 ? (
+      <Carousel
+        fade
+        interval={4000}
+        controls={banner.images.length > 1}
+        indicators={banner.images.length > 1}
+      >
+        {banner.images.map((img, index) => (
+          <Carousel.Item key={img._id || index}>
+            <Image
+              className="d-block w-100"
+              src={`${API_BASE}/${img.image}`}
+              alt={img.alt || "Banner"}
+              style={{
+                height: "400px",
+                objectFit: "cover",
+              }}
+            />
+          </Carousel.Item>
+        ))}
+      </Carousel>
+    ) : banner.banners?.length > 0 ? (
+      <Carousel
+        fade
+        interval={4000}
+        controls={banner.banners.length > 1}
+        indicators={banner.banners.length > 1}
+      >
+        {banner.banners.map((img, index) => (
+          <Carousel.Item key={img._id || index}>
+            <Image
+              className="d-block w-100"
+              src={`${API_BASE}/${img.image}`}
+              alt={img.alt || "Banner"}
+              style={{
+                height: "400px",
+                objectFit: "cover",
+              }}
+            />
+          </Carousel.Item>
+        ))}
+      </Carousel>
+    ) : null}
+  </>
+)}
+    {/* {banner?.banner && (
       <Image
         className='img-responsive'
         src={`${API_BASE}/${banner.banner}`}
         alt="Banner"
         style={{ width: "100%", height: "auto", objectFit: "cover" }}
       />
-    )}
+    )} */}
 
     
     {/* {topHomeAds.length > 0 && (
@@ -965,16 +1035,7 @@ middleHomeAds.length > 0 &&
 
 )}
 
-    {banner?.content && (
-      <section className="city-banner-content py-4">
-        <Container>
-          <div
-            className="city-content-box"
-            dangerouslySetInnerHTML={{ __html: banner.content }}
-          />
-        </Container>
-      </section>
-    )}
+    
     <section className="directory-inner-section">
       
       <Container>
@@ -1552,6 +1613,16 @@ middleHomeAds.length > 0 &&
           </Container>
         </div>
       )} */}
+      {banner?.content && (
+        <section className="city-banner-content py-4">
+          <Container>
+            <div
+              className="city-content-box"
+              dangerouslySetInnerHTML={{ __html: banner.content }}
+            />
+          </Container>
+        </section>
+      )}
       {routeCity ? (
 
 bottomCityAds.length > 0 &&

@@ -103,7 +103,7 @@ const BlogDetail = () => {
         
 
         <Row className="">
-          <Col md={8}>
+          <Col md={12}>
             {/* {new Date(blog.date).toLocaleDateString()} */}
             {/* Author + Date */}
 {/* <div className="listing-type">
@@ -117,7 +117,22 @@ const BlogDetail = () => {
           </div> */}
            
             {/* Title */}
+            <div className="title-section" style={{display: "flex", alignItems: "center", justifyContent: "space-between", }}>
             <h1 className="mb-2">{blog.title}</h1>
+            <div className="whatsapp-sec" style={{width: "300px"}}>
+              <a 
+              href="https://wa.me/918870223852" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="sidebar-whatsapp-link"
+            >
+          <div className="sidebar-whatsapp">
+            <FaWhatsapp className="whatsapp-icon" /> 
+            <span>Chat with us on WhatsApp</span>
+          </div>
+        </a>
+            </div>
+            </div>
 
             
 
@@ -135,7 +150,7 @@ const BlogDetail = () => {
 
             {/* Main Content */}
             <div
-              className="mt-4"
+              className="mt-4 blog-content"
               dangerouslySetInnerHTML={{ __html: blog.content }}
             ></div>
             
@@ -184,7 +199,7 @@ const BlogDetail = () => {
 
             
           </Col>
-          <Col md={4}>
+          {/* <Col md={4}>
           <a 
           href="https://wa.me/918870223852" 
           target="_blank" 
@@ -196,12 +211,12 @@ const BlogDetail = () => {
             <span>Chat with us on WhatsApp</span>
           </div>
         </a>
-          {/* ---------------- DISQUS COMMENT BOX ---------------- */}
+           ---------------- DISQUS COMMENT BOX ---------------- 
             <div className=" bg-grey p-5">
               <DiscussionEmbed shortname={disqusShortname} config={disqusConfig} />
             </div>
-            {/* ----------------------------------------------------- */}
-          </Col>
+             ----------------------------------------------------- 
+          </Col> */}
         </Row>
       </Container>
     </div>

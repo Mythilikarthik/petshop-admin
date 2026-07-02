@@ -152,7 +152,7 @@ const BlogEditPage = () => {
           ) : (
             <Form onSubmit={handleSave}>
               <Form.Group className="mb-4">
-                <Form.Label>Title</Form.Label>
+                <Form.Label>Title <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   required
                   value={blog.title}
@@ -187,7 +187,7 @@ const BlogEditPage = () => {
               </Form.Group>
 
               <Form.Group className="mb-4">
-                <Form.Label>Date</Form.Label>
+                <Form.Label>Date <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   type="date"
                   value={blog.date?.slice(0, 10) || ''}
@@ -207,7 +207,7 @@ const BlogEditPage = () => {
               </Form.Group>
 
               <Form.Group className="mb-4">
-                <Form.Label>Excerpt</Form.Label>
+                <Form.Label>Excerpt <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={2}
@@ -217,7 +217,7 @@ const BlogEditPage = () => {
               </Form.Group>
 
               <Form.Group className="mb-4">
-                <Form.Label>Content</Form.Label>
+                <Form.Label>Content <span className="text-danger">*</span></Form.Label>
                 <ParaEditor
                   value={blog.content}
                   onChange={(value) => setBlog({ ...blog, content: value })}

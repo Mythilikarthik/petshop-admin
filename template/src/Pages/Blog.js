@@ -135,7 +135,7 @@
 
 import React, { useState, useEffect } from "react";
 import AdSlider from "../Components/AdSlider";
-import { Card, Col, Image, Row, Container } from "react-bootstrap";
+import { Card, Col, Image, Row, Container, Carousel } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { BsLightningFill } from "react-icons/bs";
 import backgroundImage from "../Components/Image/bg-image.svg";
@@ -265,13 +265,35 @@ const Blog = () => {
         />
     </Helmet>
       {/* Banner */}
-      {banner?.banner && (
+      {/* {banner?.banner && (
         <Image
           src={`${API_BASE}/${banner.banner}`}
           alt="Banner"
           style={{ width: "100%", height: "auto", objectFit: "cover" }}
         />
-      )}
+      )} */}
+      {banner?.banners?.length > 0 && (
+  <Carousel
+    fade
+    interval={4000}
+    controls={banner?.banners?.length > 1}
+    indicators={banner?.banners?.length > 1}
+  >
+    {banner.banners.map((img, index) => (
+      <Carousel.Item key={img._id || index}>
+        <Image
+          className="d-block w-100"
+          src={`${API_BASE}/${img.image}`}
+          alt={img.alt || `Banner ${index + 1}`}
+          style={{
+            height: "400px",
+            objectFit: "cover",
+          }}
+        />
+      </Carousel.Item>
+    ))}
+  </Carousel>
+)}
 
       {/* Top Ads */}
       {topHomeAds.length > 0 && (

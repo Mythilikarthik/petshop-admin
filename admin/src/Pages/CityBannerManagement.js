@@ -152,7 +152,7 @@ const CityBannerListings = () => {
             <tr>
               <th>S.No</th>
               <th>City</th>
-              <th>Banner</th>
+              <th>Images</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -168,7 +168,7 @@ const CityBannerListings = () => {
                 <tr key={listing._id}>
                   <td>{currentPage * itemsPerPage + index + 1}</td>
                   <td>{listing.city?.city || "-"}</td>
-                  <td>
+                  {/* <td>
                     {listing.banner && (
                       <img
                         src={`${API_BASE}/${listing.banner}`}
@@ -180,7 +180,61 @@ const CityBannerListings = () => {
                         }}
                       />
                     )}
-                  </td>
+                  </td> */}
+                  {/* <td>
+  {listing.images?.length > 0 ? (
+    <div className="d-flex align-items-center">
+
+      <img
+        src={`${API_BASE}/${listing.images[0].image}`}
+        alt={listing.images[0].alt}
+        style={{
+          width: 120,
+          height: 40,
+          objectFit: "cover",
+          borderRadius: 4,
+        }}
+      />
+
+      <span className="badge bg-success"
+        style={{
+          marginLeft: 10,
+          fontWeight: 600,
+        }}
+      >
+        {listing.images.length} Image
+        {listing.images.length > 1 ? "s" : ""}
+      </span>
+
+    </div>
+  ) : (
+    "-"
+  )}
+</td> */}
+<td>
+  <div
+    style={{
+      display: "flex",
+      gap: 5,
+      flexWrap: "wrap",
+    }}
+  >
+    {listing.images?.map((img) => (
+      <img
+        key={img._id}
+        src={`${API_BASE}/${img.image}`}
+        alt={img.alt}
+        style={{
+          width: 55,
+          height: 40,
+          objectFit: "cover",
+          borderRadius: 4,
+          border: "1px solid #ddd",
+        }}
+      />
+    ))}
+  </div>
+</td>
                   <td>
                     <Button
                       size="sm"

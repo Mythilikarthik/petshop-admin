@@ -17,8 +17,11 @@ console.log(cityId);
   const fileInputRef = useRef(null);
 
   const [cityList, setCityList] = useState([]);
-  const [banner, setBanner] = useState(null);
-  const [bannerPreview, setBannerPreview] = useState(null);
+  // const [banner, setBanner] = useState(null);
+  // const [bannerPreview, setBannerPreview] = useState(null);
+  const [existingImages, setExistingImages] = useState([]);
+const [newImages, setNewImages] = useState([]);
+const [deletedImages, setDeletedImages] = useState([]);
 
   // const [formData, setFormData] = useState({
   //   city: "",
@@ -56,17 +59,38 @@ console.log(cityId);
         const res = await fetch(`${API_BASE}/api/city-banner/${cityId}`);
         const data = await res.json();
 
+        // if (data.banner) {
+        //   // setFormData({ city: data.banner.city });
+        //   setFormData({
+        //     city: data.banner.city?._id || data.banner.city,
+        //     content: data.banner.content || "",
+        //     metaTitle: data.banner.metaTitle || "",
+        //     metaDescription: data.banner.metaDescription || "",
+        //     metaKeywords: data.banner.metaKeywords || "",
+        //   });
+        //   //setBannerPreview(data.banner.banner);
+        // }
         if (data.banner) {
-          // setFormData({ city: data.banner.city });
-          setFormData({
-            city: data.banner.city?._id || data.banner.city,
-            content: data.banner.content || "",
-            metaTitle: data.banner.metaTitle || "",
-            metaDescription: data.banner.metaDescription || "",
-            metaKeywords: data.banner.metaKeywords || "",
-          });
-          setBannerPreview(data.banner.banner);
-        }
+
+    setFormData({
+        city: data.banner.city?._id || data.banner.city,
+        content: data.banner.content || "",
+        metaTitle: data.banner.metaTitle || "",
+        metaDescription: data.banner.metaDescription || "",
+        metaKeywords: data.banner.metaKeywords || "",
+    });
+
+    const imgs = (data.banner.images || []).map(img => ({
+
+        _id: img._id,
+        image: img.image,
+        alt: img.alt || ""
+
+    }));
+
+    setExistingImages(imgs);
+
+}
       } catch (err) {
         console.error("Failed to load banner");
       }
@@ -76,23 +100,95 @@ console.log(cityId);
   }, [cityId]);
 
   /* -------------------- Image validation -------------------- */
-  const handleBannerChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // const handleBannerChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
+  //   const img = new Image();
+  //   img.src = URL.createObjectURL(file);
+
+  //   img.onload = () => {
+  //     if (img.width === 1200 && img.height === 300) {
+  //       setBanner(file);
+  //       setBannerPreview(img.src);
+  //     } else {
+  //       alert("Image must be exactly 1200 × 300");
+  //       fileInputRef.current.value = "";
+  //     }
+  //   };
+  // };
+  /* -------------------- Upload Multiple Images -------------------- */
+const handleBannerChange = (e) => {
+  const files = Array.from(e.target.files);
+
+  files.forEach((file) => {
     const img = new Image();
+
     img.src = URL.createObjectURL(file);
 
     img.onload = () => {
-      if (img.width === 1200 && img.height === 300) {
-        setBanner(file);
-        setBannerPreview(img.src);
-      } else {
-        alert("Image must be exactly 1200 × 300");
-        fileInputRef.current.value = "";
+      if (img.width !== 1200 || img.height !== 300) {
+        alert(`${file.name} must be exactly 1200 × 300`);
+        return;
       }
+
+      setNewImages((prev) => [
+        ...prev,
+        {
+          file,
+          preview: img.src,
+          alt: "",
+        },
+      ]);
     };
-  };
+  });
+
+  fileInputRef.current.value = "";
+};
+
+/* -------------------- Delete Existing Image -------------------- */
+
+const removeExistingImage = (index) => {
+  const img = existingImages[index];
+
+  setDeletedImages((prev) => [...prev, img._id]);
+
+  setExistingImages((prev) =>
+    prev.filter((_, i) => i !== index)
+  );
+};
+
+/* -------------------- Delete New Image -------------------- */
+
+const removeNewImage = (index) => {
+  setNewImages((prev) =>
+    prev.filter((_, i) => i !== index)
+  );
+};
+
+/* -------------------- Existing Image ALT -------------------- */
+
+const updateExistingAlt = (index, value) => {
+  setExistingImages((prev) =>
+    prev.map((img, i) =>
+      i === index
+        ? { ...img, alt: value }
+        : img
+    )
+  );
+};
+
+/* -------------------- New Image ALT -------------------- */
+
+const updateNewAlt = (index, value) => {
+  setNewImages((prev) =>
+    prev.map((img, i) =>
+      i === index
+        ? { ...img, alt: value }
+        : img
+    )
+  );
+};
 
   /* -------------------- Submit -------------------- */
 //   const handleSubmit = async (e) => {
@@ -122,24 +218,101 @@ console.log(cityId);
 //       alert(err.message || "Something went wrong");
 //     }
 //   };
+// const handleSubmit = async (e) => {
+//   e.preventDefault();
+
+//   if (!formData.city) return alert("Please select a city");
+//   if (!banner && !bannerPreview) return alert("Please upload banner");
+
+//   try {
+//     const fd = new FormData();
+//     fd.append("city", formData.city);
+//     fd.append("content", formData.content);
+//     fd.append("metaTitle", formData.metaTitle);
+//     fd.append("metaDescription", formData.metaDescription);
+//     fd.append("metaKeywords", formData.metaKeywords);
+//     if (banner) fd.append("banner", banner);
+
+//     const url = cityId
+//       ? `${API_BASE}/api/city-banner/${cityId}` // EDIT
+//       : `${API_BASE}/api/city-banner`;          // ADD
+
+//     const method = cityId ? "PUT" : "POST";
+
+//     const res = await fetch(url, {
+//       method,
+//       body: fd,
+//     });
+
+//     const data = await res.json();
+
+//     if (!res.ok) {
+//       // 🔴 SHOW PROPER ALERT
+//       if (res.status === 409) {
+//         alert("Banner already added for this city");
+//       } else {
+//         alert(data.message || "Something went wrong");
+//       }
+//       return;
+//     }
+
+//     markAsSaved();
+//     alert(data.message);
+//     navigate("/city-banner-management");
+//   } catch (err) {
+//     alert("Server error");
+//   }
+// };
 const handleSubmit = async (e) => {
   e.preventDefault();
 
-  if (!formData.city) return alert("Please select a city");
-  if (!banner && !bannerPreview) return alert("Please upload banner");
+  if (!formData.city) {
+    alert("Please select a city");
+    return;
+  }
+
+  if (
+    existingImages.length === 0 &&
+    newImages.length === 0
+  ) {
+    alert("Please upload at least one image");
+    return;
+  }
 
   try {
     const fd = new FormData();
+
     fd.append("city", formData.city);
     fd.append("content", formData.content);
     fd.append("metaTitle", formData.metaTitle);
     fd.append("metaDescription", formData.metaDescription);
     fd.append("metaKeywords", formData.metaKeywords);
-    if (banner) fd.append("banner", banner);
+
+    /* Existing Images */
+    fd.append(
+      "existingImages",
+      JSON.stringify(existingImages)
+    );
+
+    /* Deleted Images */
+    fd.append(
+      "deletedImages",
+      JSON.stringify(deletedImages)
+    );
+
+    /* New Images */
+
+    newImages.forEach((img) => {
+
+      fd.append("images", img.file);
+
+      fd.append("alt", img.alt);
+
+    });
 
     const url = cityId
-      ? `${API_BASE}/api/city-banner/${cityId}` // EDIT
-      : `${API_BASE}/api/city-banner`;          // ADD
+      ? `${API_BASE}/api/city-banner/${cityId}`
+      : `${API_BASE}/api/city-banner`;
 
     const method = cityId ? "PUT" : "POST";
 
@@ -151,23 +324,30 @@ const handleSubmit = async (e) => {
     const data = await res.json();
 
     if (!res.ok) {
-      // 🔴 SHOW PROPER ALERT
+
       if (res.status === 409) {
-        alert("Banner already added for this city");
+        alert("Banner already exists");
       } else {
         alert(data.message || "Something went wrong");
       }
+
       return;
     }
 
     markAsSaved();
+
     alert(data.message);
+
     navigate("/city-banner-management");
+
   } catch (err) {
-    alert("Server error");
+
+    console.error(err);
+
+    alert("Server Error");
+
   }
 };
-
 
   /* -------------------- Back -------------------- */
   const handleGoBack = () => {
@@ -226,13 +406,109 @@ const handleSubmit = async (e) => {
               <Form.Label>Banner Image (1200 × 300)</Form.Label>
               <Form.Control
                 type="file"
+                multiple
                 accept="image/jpeg,image/png,image/webp"
                 onChange={handleBannerChange}
                 ref={fileInputRef}
               />
             </Form.Group>
+{/* Existing Images */}
 
-            {bannerPreview && (
+{existingImages.length > 0 && (
+  <>
+    <h5 className="mb-3">Existing Images</h5>
+
+    <Row className="mb-4">
+      {existingImages.map((img, index) => (
+        <Col md={4} lg={3} key={img._id || index} className="mb-4">
+
+          <div className="border rounded p-2">
+
+            <img
+              src={`${API_BASE}/${img.image}`}
+              alt={img.alt}
+              style={{
+                width: "100%",
+                height: "180px",
+                objectFit: "cover",
+                borderRadius: "5px",
+              }}
+            />
+
+            <Form.Control
+              className="mt-2"
+              placeholder="Alt text"
+              value={img.alt}
+              onChange={(e) =>
+                updateExistingAlt(index, e.target.value)
+              }
+            />
+
+            <Button
+              variant="danger"
+              size="sm"
+              className="mt-2 w-100"
+              onClick={() => removeExistingImage(index)}
+            >
+              Delete
+            </Button>
+
+          </div>
+
+        </Col>
+      ))}
+    </Row>
+  </>
+)}
+{/* New Images */}
+
+{newImages.length > 0 && (
+  <>
+    <h5 className="mb-3">New Images</h5>
+
+    <Row className="mb-4">
+      {newImages.map((img, index) => (
+        <Col md={4} lg={3} key={index} className="mb-4">
+
+          <div className="border rounded p-2">
+
+            <img
+              src={img.preview}
+              alt=""
+              style={{
+                width: "100%",
+                height: "180px",
+                objectFit: "cover",
+                borderRadius: "5px",
+              }}
+            />
+
+            <Form.Control
+              className="mt-2"
+              placeholder="Alt text"
+              value={img.alt}
+              onChange={(e) =>
+                updateNewAlt(index, e.target.value)
+              }
+            />
+
+            <Button
+              variant="danger"
+              size="sm"
+              className="mt-2 w-100"
+              onClick={() => removeNewImage(index)}
+            >
+              Delete
+            </Button>
+
+          </div>
+
+        </Col>
+      ))}
+    </Row>
+  </>
+)}
+            {/* {bannerPreview && (
               <img
                 src={bannerPreview}
                 alt="Preview"
@@ -245,7 +521,8 @@ const handleSubmit = async (e) => {
                   marginBottom: "15px",
                 }}
               />
-            )}
+            )} */}
+
             <Form.Group className="mb-4">
               <Form.Label>Content</Form.Label>
 

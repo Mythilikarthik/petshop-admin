@@ -24,7 +24,9 @@ const BlogBannerRoutes = require("./Routes/BlogBanner");
 const CityBannerRoutes = require("./Routes/CityBannerRoutes");
 const AdminNotification = require("./Routes/AdminNotification");
 const SpecializedServiceRoutes = require("./Routes/SpecializedServiceRoutes");
+const UploadRoutes = require("./Routes/UploadRoutes");
 const path = require("path");
+const sitemapRoutes = require("./Routes/sitemapRoutes");
 
 
 
@@ -40,6 +42,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(express.json()); // for parsing JSON
+app.use("/", sitemapRoutes);
 app.use("/uploads", express.static("uploads")); 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -77,6 +80,7 @@ app.use("/api/city-banner", CityBannerRoutes);
 app.use("/api/enquiry", ListingEnquiry);
 app.use("/api/admin/notifications", AdminNotification);
 app.use("/api/specialized-service", SpecializedServiceRoutes);
+app.use("/api/upload/editor-images", UploadRoutes);
 
 
 

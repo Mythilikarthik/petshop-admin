@@ -2,6 +2,11 @@
 import React from "react";
 import { Editor } from "@tinymce/tinymce-react";
 
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? process.env.REACT_APP_API_URL
+    : "http://localhost:5000";
+
 const ParaEditor = ({ value, onChange }) => {
   const handleEditorChange = (content, editor) => {
     const words = content
@@ -20,11 +25,31 @@ const ParaEditor = ({ value, onChange }) => {
         height: 300,
         menubar: false,
 
-        plugins:
-          "advlist autolink lists link charmap preview anchor " +
-          "searchreplace visualblocks code fullscreen " +
-          "insertdatetime media table paste help wordcount" +
-          "image link media code",
+        // plugins:
+        //   "advlist autolink lists link charmap preview anchor " +
+        //   "searchreplace visualblocks code fullscreen " +
+        //   "insertdatetime media table paste help wordcount" +
+        //   "image link media code",
+        plugins: [
+  "advlist",
+  "autolink",
+  "lists",
+  "link",
+  "image",
+  "charmap",
+  "preview",
+  "anchor",
+  "searchreplace",
+  "visualblocks",
+  "code",
+  "fullscreen",
+  "insertdatetime",
+  "media",
+  "table",
+  "paste",
+  "help",
+  "wordcount"
+],
 
         toolbar:
           "undo redo | formatselect | bold italic underline | " +
@@ -32,7 +57,13 @@ const ParaEditor = ({ value, onChange }) => {
           "bullist numlist outdent indent | " +
           "link | removeformat | help |" +
           "image | code",
-          images_upload_url: "http://localhost:5000/api/upload",
+          images_upload_url: `${API_BASE}/api/upload/editor-images`,
+          
+          content_style: `
+          img {
+            max-width: 100%;
+            height: auto;
+          }`
       }}
       onEditorChange={handleEditorChange}
     />
