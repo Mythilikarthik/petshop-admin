@@ -185,6 +185,68 @@ router.get("/name/:city", async (req, res) => {
 //     res.status(500).json({ message: "Server error" });
 //   }
 // });
+// router.post("/", upload.array("newImages", 20), async (req, res) => {
+//   try {
+//     const {
+//       city,
+//       content,
+//       metaTitle,
+//       metaDescription,
+//       metaKeywords,
+//     } = req.body;
+
+//     if (!city) {
+//       return res.status(400).json({
+//         message: "City is required",
+//       });
+//     }
+//     if (!req.files || req.files.length === 0) {
+//       return res.status(400).json({
+//         message: "Please upload at least one image",
+//       });
+//     }
+
+//     const existing = await CityBanner.findOne({ city });
+
+//     if (existing) {
+//       return res.status(409).json({
+//         message: "Banner already exists for this city",
+//       });
+//     }
+
+//     const images = [];
+
+//     if (req.files?.length) {
+//       req.files.forEach((file, index) => {
+//         images.push({
+//           image: `${uploadDir}/${file.filename}`,
+//           alt: req.body.altTexts?.[index] || "",
+//         });
+//       });
+//     }
+
+//     const banner = new CityBanner({
+//       city,
+//       images,
+//       content,
+//       metaTitle,
+//       metaDescription,
+//       metaKeywords,
+//     });
+
+//     await banner.save();
+
+//     res.json({
+//       success: true,
+//       message: "City banner added successfully",
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({
+//       message: "Server error",
+//     });
+//   }
+// });
 router.post("/", upload.array("newImages", 20), async (req, res) => {
   try {
     const {
@@ -196,38 +258,41 @@ router.post("/", upload.array("newImages", 20), async (req, res) => {
     } = req.body;
 
     if (!city) {
-      return res.status(400).json({
-        message: "City is required",
-      });
+      return res.status(400).json({ message: "City is required" });
     }
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({
-        message: "Please upload at least one image",
-      });
+      return res.status(400).json({ message: "Please upload at least one image" });
     }
 
     const existing = await CityBanner.findOne({ city });
-
     if (existing) {
-      return res.status(409).json({
-        message: "Banner already exists for this city",
-      });
+      return res.status(409).json({ message: "Banner already exists for this city" });
     }
 
     const images = [];
 
-    if (req.files?.length) {
+    if (req.files && req.files.length > 0) {
       req.files.forEach((file, index) => {
+        let altValue = "";
+
+        // Normalize altTexts: can be an Array, a Single String, or undefined
+        if (Array.isArray(req.body.altTexts)) {
+          altValue = req.body.altTexts[index] || "";
+        } else if (typeof req.body.altTexts === "string") {
+          // If only 1 image was uploaded, req.body.altTexts is just a flat string
+          altValue = index === 0 ? req.body.altTexts : "";
+        }
+
         images.push({
           image: `${uploadDir}/${file.filename}`,
-          alt: req.body.altTexts?.[index] || "",
+          alt: altValue,
         });
       });
     }
 
     const banner = new CityBanner({
       city,
-      images,
+      images, // Saved straight into your array of subdocuments
       content,
       metaTitle,
       metaDescription,
@@ -238,13 +303,11 @@ router.post("/", upload.array("newImages", 20), async (req, res) => {
 
     res.json({
       success: true,
-      message: "City banner added successfully",
+      message: "City banner added successfully with alt tags!",
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      message: "Server error",
-    });
+    res.status(500).json({ message: "Server error" });
   }
 });
 // router.put("/:cityId", upload.single("banner"), async (req, res) => {
@@ -305,10 +368,128 @@ router.post("/", upload.array("newImages", 20), async (req, res) => {
 //     res.status(500).json({ message: "Server error" });
 //   }
 // });
+// router.put("/:cityId", upload.array("images", 20), async (req, res) => {
+//   try {
+//     const { cityId } = req.params;
+
+//     const {
+//       content,
+//       metaTitle,
+//       metaDescription,
+//       metaKeywords,
+//     } = req.body;
+
+//     const banner = await CityBanner.findOne({ city: cityId });
+
+//     if (!banner) {
+//       return res.status(404).json({
+//         message: "Banner not found",
+//       });
+//     }
+
+//     // -----------------------------
+//     // Existing Images
+//     // -----------------------------
+
+//     let existingImages = [];
+
+//     if (req.body.existingImages) {
+//       existingImages = JSON.parse(req.body.existingImages);
+//     }
+
+//     // -----------------------------
+//     // Deleted Images
+//     // -----------------------------
+
+//     let deletedImages = [];
+
+//     if (req.body.deletedImages) {
+//       deletedImages = JSON.parse(req.body.deletedImages);
+//     }
+
+//     // -----------------------------
+//     // Delete removed files
+//     // -----------------------------
+
+//     if (deletedImages.length > 0) {
+
+//       deletedImages.forEach((id) => {
+
+//         const oldImage = banner.images.find(
+//           (img) => img._id.toString() === id
+//         );
+
+//         if (oldImage) {
+
+//           if (fs.existsSync(oldImage.image)) {
+//             fs.unlinkSync(oldImage.image);
+//           }
+
+//         }
+
+//       });
+
+//     }
+
+//     // -----------------------------
+//     // Keep remaining images
+//     // -----------------------------
+
+//     banner.images = existingImages;
+
+//     // -----------------------------
+//     // Add newly uploaded images
+//     // -----------------------------
+
+//     if (req.files && req.files.length > 0) {
+
+//       req.files.forEach((file, index) => {
+
+//         let alt = "";
+
+//         if (Array.isArray(req.body.alt)) {
+//           alt = req.body.alt[index] || "";
+//         } else {
+//           alt = req.body.alt || "";
+//         }
+
+//         banner.images.push({
+//           image: `${uploadDir}/${file.filename}`,
+//           alt,
+//         });
+
+//       });
+
+//     }
+
+//     // -----------------------------
+
+//     banner.content = content;
+//     banner.metaTitle = metaTitle;
+//     banner.metaDescription = metaDescription;
+//     banner.metaKeywords = metaKeywords;
+
+//     await banner.save();
+
+//     res.json({
+//       success: true,
+//       message: "City banner updated successfully",
+//     });
+
+//   } catch (err) {
+
+//     console.error(err);
+
+//     res.status(500).json({
+//       message: "Server error",
+//     });
+
+//   }
+// });
+/* -------------------- Updated Backend PUT Route -------------------- */
 router.put("/:cityId", upload.array("images", 20), async (req, res) => {
   try {
     const { cityId } = req.params;
-
     const {
       content,
       metaTitle,
@@ -319,88 +500,59 @@ router.put("/:cityId", upload.array("images", 20), async (req, res) => {
     const banner = await CityBanner.findOne({ city: cityId });
 
     if (!banner) {
-      return res.status(404).json({
-        message: "Banner not found",
-      });
+      return res.status(404).json({ message: "Banner not found" });
     }
 
-    // -----------------------------
-    // Existing Images
-    // -----------------------------
-
+    // 1. Existing Images Configuration
     let existingImages = [];
-
     if (req.body.existingImages) {
       existingImages = JSON.parse(req.body.existingImages);
     }
 
-    // -----------------------------
-    // Deleted Images
-    // -----------------------------
-
+    // 2. Deleted Images Management
     let deletedImages = [];
-
     if (req.body.deletedImages) {
       deletedImages = JSON.parse(req.body.deletedImages);
     }
 
-    // -----------------------------
-    // Delete removed files
-    // -----------------------------
-
+    // Remove deleted files from disk storage
     if (deletedImages.length > 0) {
-
       deletedImages.forEach((id) => {
-
         const oldImage = banner.images.find(
           (img) => img._id.toString() === id
         );
-
-        if (oldImage) {
-
+        if (oldImage && oldImage.image) {
           if (fs.existsSync(oldImage.image)) {
             fs.unlinkSync(oldImage.image);
           }
-
         }
-
       });
-
     }
 
-    // -----------------------------
-    // Keep remaining images
-    // -----------------------------
-
+    // Sync baseline collection items
     banner.images = existingImages;
 
-    // -----------------------------
-    // Add newly uploaded images
-    // -----------------------------
-
+    // 3. Process Newly Appended Uploads
     if (req.files && req.files.length > 0) {
-
       req.files.forEach((file, index) => {
+        let altValue = "";
 
-        let alt = "";
-
-        if (Array.isArray(req.body.alt)) {
-          alt = req.body.alt[index] || "";
-        } else {
-          alt = req.body.alt || "";
+        // ✅ FIXED: Now reads 'altTexts' securely to match frontend key definition
+        if (Array.isArray(req.body.altTexts)) {
+          altValue = req.body.altTexts[index] || "";
+        } else if (typeof req.body.altTexts === "string") {
+          // Fallback if exactly 1 image gets appended during edit mode setup
+          altValue = index === 0 ? req.body.altTexts : "";
         }
 
         banner.images.push({
           image: `${uploadDir}/${file.filename}`,
-          alt,
+          alt: altValue,
         });
-
       });
-
     }
 
-    // -----------------------------
-
+    // 4. Update metadata tracking properties
     banner.content = content;
     banner.metaTitle = metaTitle;
     banner.metaDescription = metaDescription;
@@ -414,13 +566,8 @@ router.put("/:cityId", upload.array("images", 20), async (req, res) => {
     });
 
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      message: "Server error",
-    });
-
+    res.status(500).json({ message: "Server error" });
   }
 });
 router.delete("/image/:bannerId/:index", async (req, res) => {

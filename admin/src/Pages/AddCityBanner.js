@@ -263,6 +263,92 @@ const updateNewAlt = (index, value) => {
 //     alert("Server error");
 //   }
 // };
+// const handleSubmit = async (e) => {
+//   e.preventDefault();
+
+//   if (!formData.city) {
+//     alert("Please select a city");
+//     return;
+//   }
+
+//   if (
+//     existingImages.length === 0 &&
+//     newImages.length === 0
+//   ) {
+//     alert("Please upload at least one image");
+//     return;
+//   }
+
+//   try {
+//     const fd = new FormData();
+
+//     fd.append("city", formData.city);
+//     fd.append("content", formData.content);
+//     fd.append("metaTitle", formData.metaTitle);
+//     fd.append("metaDescription", formData.metaDescription);
+//     fd.append("metaKeywords", formData.metaKeywords);
+
+//     /* Existing Images */
+//     fd.append(
+//       "existingImages",
+//       JSON.stringify(existingImages)
+//     );
+
+//     /* Deleted Images */
+//     fd.append(
+//       "deletedImages",
+//       JSON.stringify(deletedImages)
+//     );
+
+//     /* New Images */
+
+//     newImages.forEach((img) => {
+
+//       fd.append("images", img.file);
+
+//       fd.append("alt", img.alt);
+
+//     });
+
+//     const url = cityId
+//       ? `${API_BASE}/api/city-banner/${cityId}`
+//       : `${API_BASE}/api/city-banner`;
+
+//     const method = cityId ? "PUT" : "POST";
+
+//     const res = await fetch(url, {
+//       method,
+//       body: fd,
+//     });
+
+//     const data = await res.json();
+
+//     if (!res.ok) {
+
+//       if (res.status === 409) {
+//         alert("Banner already exists");
+//       } else {
+//         alert(data.message || "Something went wrong");
+//       }
+
+//       return;
+//     }
+
+//     markAsSaved();
+
+//     alert(data.message);
+
+//     navigate("/city-banner-management");
+
+//   } catch (err) {
+
+//     console.error(err);
+
+//     alert("Server Error");
+
+//   }
+// };
+/* -------------------- Updated Frontend Submit -------------------- */
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -271,10 +357,7 @@ const handleSubmit = async (e) => {
     return;
   }
 
-  if (
-    existingImages.length === 0 &&
-    newImages.length === 0
-  ) {
+  if (existingImages.length === 0 && newImages.length === 0) {
     alert("Please upload at least one image");
     return;
   }
@@ -289,25 +372,23 @@ const handleSubmit = async (e) => {
     fd.append("metaKeywords", formData.metaKeywords);
 
     /* Existing Images */
-    fd.append(
-      "existingImages",
-      JSON.stringify(existingImages)
-    );
+    fd.append("existingImages", JSON.stringify(existingImages));
 
     /* Deleted Images */
-    fd.append(
-      "deletedImages",
-      JSON.stringify(deletedImages)
-    );
+    fd.append("deletedImages", JSON.stringify(deletedImages));
 
     /* New Images */
-
     newImages.forEach((img) => {
+      // ✅ FIX 1: Must match upload.array("newImages") on POST route
+      // ✅ FIX 2: Must match upload.array("images") on PUT route
+      if (cityId) {
+        fd.append("images", img.file);
+      } else {
+        fd.append("newImages", img.file); 
+      }
 
-      fd.append("images", img.file);
-
-      fd.append("alt", img.alt);
-
+      // ✅ FIX 3: Append to 'altTexts' so backend array index parsing works perfectly
+      fd.append("altTexts", img.alt); 
     });
 
     const url = cityId
@@ -324,28 +405,20 @@ const handleSubmit = async (e) => {
     const data = await res.json();
 
     if (!res.ok) {
-
       if (res.status === 409) {
         alert("Banner already exists");
       } else {
         alert(data.message || "Something went wrong");
       }
-
       return;
     }
 
     markAsSaved();
-
     alert(data.message);
-
     navigate("/city-banner-management");
-
   } catch (err) {
-
     console.error(err);
-
     alert("Server Error");
-
   }
 };
 
