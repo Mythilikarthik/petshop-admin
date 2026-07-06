@@ -1086,6 +1086,16 @@ middleHomeAds.length > 0 &&
               value={search}
               onChange={handleSearchChange}
             />
+             {!routeCity && (
+              <select value={selectedCity} onChange={handleCityChange}>
+  <option value="">All Cities</option>
+  {filteredCities.map(c => (
+    <option value={c.city} key={c._id}>
+      {c.city}
+    </option>
+  ))}
+</select>
+            )}
             {/* <select value={selectedPet} onChange={e => {
               setSelectedPet(e.target.value);
               setPage(1);
@@ -1169,16 +1179,7 @@ middleHomeAds.length > 0 &&
     ))}
   </select>
 )}
-            {!routeCity && (
-              <select value={selectedCity} onChange={handleCityChange}>
-  <option value="">All Cities</option>
-  {filteredCities.map(c => (
-    <option value={c.city} key={c._id}>
-      {c.city}
-    </option>
-  ))}
-</select>
-            )}
+           
 
             {hasActiveFilters && (
             <div className="text-center mt-2">

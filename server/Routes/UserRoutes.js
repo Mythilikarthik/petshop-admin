@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../Models/User');
+const {verifyToken} = require("../middleware/authMiddleware");
 
 router.post('/register', async (req, res) => {
   const { username, email, phone, name, password } = req.body;
@@ -42,4 +43,13 @@ router.get("/", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 })
+router.get("/profile", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    res.json({ success: true, user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 module.exports = router;

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
+import ThankyouModel from "../Components/ThankyouModel";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -10,6 +11,7 @@ const API_BASE =
 const VerifyOtp = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const [showThankYou, setShowThankYou] = useState(false);
 
   const [otp, setOtp] = useState("");
   const [alert, setAlert] = useState({ show: false, type: "", message: "" });
@@ -48,13 +50,15 @@ const VerifyOtp = () => {
         return;
       }
 
-      setAlert({
-        show: true,
-        type: "success",
-        message: "OTP verified successfully!",
-      });
+      // setAlert({
+      //   show: true,
+      //   type: "success",
+      //   message: "OTP verified successfully!",
+      // });
 
-      setTimeout(() => navigate("/directory"), 1500);
+      // setTimeout(() => navigate("/directory"), 1500);
+      setAlert({ show: false, type: "", message: "" });
+      setShowThankYou(true);
     } catch (err) {
       setAlert({
         show: true,
@@ -93,6 +97,11 @@ const VerifyOtp = () => {
           {loading ? "Verifying..." : "Verify OTP"}
         </Button>
       </Form>
+      {/* ✅ Mount the reusable component right at the bottom */}
+      <ThankyouModel 
+        showThankYou={showThankYou} 
+        setShowThankYou={setShowThankYou} 
+      />
     </Container>
   );
 };

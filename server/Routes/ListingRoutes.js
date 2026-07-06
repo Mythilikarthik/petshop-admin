@@ -32,6 +32,20 @@ const sendOtpEmail = async (templateData) => {
     }
   );
 };
+const ADMIN_URL =
+  process.env.NODE_ENV === "production"
+    ? process.env.REACT_APP_ADMIN_API_URL
+    : "http://localhost:3000";
+
+const USER_URL =
+  process.env.NODE_ENV === "production"
+    ? process.env.REACT_APP_USER_API_URL
+    : "http://localhost:3001";
+
+const SITE_URL =
+  process.env.NODE_ENV === "production"
+    ? process.env.REACT_APP_URL
+    : "http://localhost:3002";
 
 const router = express.Router();
 
@@ -446,6 +460,7 @@ console.log(user._id);
           email,
           name: username,
           otp: user.otp,
+          logo_url: `${SITE_URL}/images/logo.png`,
         });
       } catch (err) {
         throw new Error("Failed to send OTP email");

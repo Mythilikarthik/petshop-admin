@@ -360,7 +360,7 @@ const Blog = () => {
                     style={{"cursor" : "pointer"}}
                   >
                     {/* {cat.categoryName} */}
-                    <span>{cat.categoryName}</span>
+                    <span>{cat.categoryName}</span> {" "}
                     <span className="text-muted small">({cat.blogCount || 0})</span>
                   </div>
                 ))}

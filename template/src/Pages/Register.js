@@ -428,9 +428,12 @@ import React, { useEffect, useState } from "react";
 import { Form, Button, Container, Row, Col, Alert } from "react-bootstrap";
 import Select from "react-select";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import { validateField, USERNAME_REGEX } from "../utils/formValidation";
+import ThankyouModel from "../Components/ThankyouModel";
+
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -485,6 +488,9 @@ const alertRef = useRef(null);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+// ---------------- Thankyou Model Popup --------------------
+const [showThankYou, setShowThankYou] = useState(false);
 
   const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
   useEffect(() => {
@@ -722,6 +728,7 @@ if (!PHONE_REGEX.test(form.phone))
     },
   });
 } else {
+  setShowThankYou(true);
         setAlert({
           show: true,
           type: "success",
@@ -997,6 +1004,10 @@ if (!PHONE_REGEX.test(form.phone))
             </Form>
           </Col>
         </Row>
+      <ThankyouModel 
+  showThankYou={showThankYou} 
+  setShowThankYou={setShowThankYou} 
+/>
       </Container>
     </div>
   );

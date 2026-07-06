@@ -42,6 +42,17 @@ const sendEmail = async (templateData) => {
     }
   );
 };
+const sendWelcomeEmail = async (templateData) => {
+  return emailjs.send(
+    process.env.EMAILJS_SERVICE_ID_2, // Reusing your main service ID or custom one
+    process.env.EMAILJS_WELCOME_TEMPLATE_ID, // 👈 Add this to your .env file
+    templateData,
+    {
+      publicKey: process.env.EMAILJS_PUBLIC_KEY_2,
+      privateKey: process.env.EMAILJS_PRIVATE_KEY_2,
+    }
+  );
+};
 
 const ADMIN_URL =
   process.env.NODE_ENV === "production"
@@ -971,6 +982,14 @@ console.log("verified",userId);
       listing.isClaimed = true;
       await listing.save();
     }
+    sendWelcomeEmail({
+      name: user.name,
+      shop_name: listing ? listing.shopName : "Your Pet Business",
+      email: user.email,
+      logo_url: `${SITE_URL}/images/logo.png`,
+    }).catch((err) => 
+      console.error("EmailJS Welcome (otp) error:", err)
+    );
 
     res.json({
       success: true,
@@ -1389,6 +1408,7 @@ router.post(
             email,
             name: username,
             otp,
+            logo_url: `${SITE_URL}/images/logo.png`,
           });
         } catch (err) {
           console.log(err.message);
@@ -1397,6 +1417,16 @@ router.post(
             message: "Failed to send OTP email",
           });
         }
+      } else if (verificationMethod === "document") {
+        // ✅ Document route skips OTP. Send the welcome template immediately!
+        sendWelcomeEmail({
+          name: name,
+          shop_name: shopName,
+          email: email,
+          logo_url: `${SITE_URL}/images/logo.png`,
+        }).catch((err) => 
+          console.error("EmailJS Welcome (doc) error:", err)
+        );
       }
 
       /* ---------------- TOKEN ---------------- */
