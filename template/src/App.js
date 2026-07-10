@@ -28,6 +28,8 @@ import VerifyOtp from "./Pages/VerifyOtp";
 import ForgotPassword from './Pages/ForgotPassword';
 import ResetPassword from './Pages/ResetPassword';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import Offers from './Pages/Offers';
+import OfferSinglePage from './Pages/OfferSinglePage';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -168,6 +170,8 @@ function AppContent() {
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/offers" element={<Offers />} />
+        <Route path="/offer-single-page" element={<OfferSinglePage />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />
       <a 

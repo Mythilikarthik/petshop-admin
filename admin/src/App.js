@@ -62,6 +62,8 @@ import UserDetails from "./Pages/UserDetails";
 import EnquiryList from "./Pages/EnquiryList";
 import SpecializedServicesListings from './Pages/SpecializedServicesListings';
 import AddEditSpecializedService from './Pages/AddEditSpecializedService';
+import OfferListings from './Pages/OffersManagement';
+import AddEditOffers from './Pages/AddEditOffers';
 
 function App() {
   
@@ -147,6 +149,10 @@ function App() {
           <Route path='/specialized-services-listing' element={<SpecializedServicesListings />} />
           <Route path='/edit-specialized-service/:id' element={<AddEditSpecializedService />} />
           <Route path='/add-specialized-service' element={<AddEditSpecializedService />} />
+          <Route path='/offers-management' element={<OfferListings />} />
+          <Route path='/add-edit-offers' element={<AddEditOffers />} />
+          
+
         </Route>
         
 

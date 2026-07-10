@@ -141,3 +141,13 @@
 a {
   text-decoration: none !important;
 }
+
+
+@media screen and (max-width: 997px) {
+  .ad-slider, .footer-ad-slider {
+    height: auto !important;
+  }
+  .carousel-item img {
+    height: auto !important;
+  }
+}

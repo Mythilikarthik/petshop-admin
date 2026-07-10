@@ -131,6 +131,7 @@ import {
   MdPets,
   MdPeople,
   MdQueryStats,
+  MdLocalOffer,
 } from "react-icons/md";
 import {
   GiDogHouse,
@@ -176,6 +177,7 @@ const menuItems = [
   },
 
   { name: "User Management", path: "/user-management", icon: <MdPeople />, badgeKey: "users" },
+  { name: "Offers Management", path: "/offers-management", icon: <MdLocalOffer />, badgeKey: "offers" },
 
   {
     name: "Page Management",

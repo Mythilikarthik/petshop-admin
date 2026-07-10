@@ -873,6 +873,14 @@ router.get("/featured-services", async (req, res) => {
           foreignField: "_id",
           as: "petCategories"
         }
+      },
+      {
+        $lookup: {
+          from: "specializedservices",
+          localField: "specializedServices",
+          foreignField: "_id",
+          as: "specializedServices"
+        }
       }
     ]);
 
@@ -893,7 +901,7 @@ router.get("/featured-services", async (req, res) => {
     reviews.forEach(r => {
       ratingMap[r._id.toString()] = Number(r.averageRating.toFixed(1));
     });
-
+console.log(listings);
     // final output
     const result = listings.map(listing => ({
       id: listing._id,
@@ -901,6 +909,7 @@ router.get("/featured-services", async (req, res) => {
       phone: listing.phone,
       email: listing.email,
       category: listing.categories?.map(c => c.categoryName) || [],
+      specializedServices: listing.specializedServices?.map(c => c.serviceName) || [],
       description: listing.description,
       location: listing.city?.city || "Unknown",
       rating: ratingMap[listing._id.toString()] || 0,

@@ -286,7 +286,7 @@ const Blog = () => {
           src={`${API_BASE}/${img.image}`}
           alt={img.alt || `Banner ${index + 1}`}
           style={{
-            height: "400px",
+            height: "auto",
             objectFit: "cover",
           }}
         />

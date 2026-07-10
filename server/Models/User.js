@@ -20,7 +20,7 @@ authProvider: {
 },
 googleId: String,
 site: {type: String,  enum: ["0", "1"], default: "0"},
-
+wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Offer" }],
   created_at: { type: Date, default: Date.now },
   otp: String,
   otpExpiresAt: Date,

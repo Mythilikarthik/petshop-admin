@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import "./Css/ListingDetailPage.css";
 import dummyImage from "../dummy.jpg";
-import { FaStar, FaStarHalfAlt, FaRegStar  } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaRegStar, FaAngleLeft, FaAngleRight  } from "react-icons/fa";
 import { Form, Button, Container, Row, Col, Alert, Modal } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { incrementListingViews } from "../utils/engagementTracker";
@@ -10,6 +10,7 @@ import { useEngagementGate } from "../hooks/useEngagementGate";
 import AuthGateModal from "../hooks/AuthGateModel";
 import { Helmet } from "react-helmet-async";
 import { validateField } from "../utils/formValidation";
+import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 
 
 
@@ -33,6 +34,24 @@ const [showAuthGate, setShowAuthGate] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
 const [selectedImage, setSelectedImage] = useState(null);
+const [offers, setOffers] = useState([]);
+const [currentPage, setCurrentPage] = useState(1);
+const offersPerPage = 2; 
+const [carouselIndices, setCarouselIndices] = useState({});
+
+const moveCarousel = (offerId, direction, totalMedia) => {
+  setCarouselIndices((prev) => {
+    const currentIdx = prev[offerId] || 0;
+    let nextIdx = direction === 'next' ? currentIdx + 1 : currentIdx - 1;
+
+    if (nextIdx >= totalMedia) nextIdx = 0;
+    if (nextIdx < 0) nextIdx = totalMedia - 1;
+
+    return { ...prev, [offerId]: nextIdx };
+  });
+};
+// 3️⃣ FETCH OFFERS FOR THIS LISTING
+
   // const { listingId } = useParams(); // from URL
   // const id = listingId;
 //   const { slugId } = useParams();
@@ -82,6 +101,23 @@ const [urlIsTracking, setUrlIsTracking] = useState(false);
     }
     return stars;
   };
+  useEffect(() => {
+  if (!listing?._id) return;
+
+  const fetchListingOffers = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/offers/listing/${listing._id}`);
+      const data = await res.json();
+      if (data.success) {
+        setOffers(data.offers);
+      }
+    } catch (err) {
+      console.error("Error fetching listing offers:", err);
+    }
+  };
+
+  fetchListingOffers();
+}, [listing?._id]);
 useEffect(() => {
   if (!authLoading && !user && engagementGate) {
     setShowAuthGate(true);
@@ -960,7 +996,151 @@ const shortAddress = (address) => {
           </Col>
         </Row>
 
+       {/* ================= OFFERS SECTION ================= */}
+{offers.length > 0 && (() => {
+  // Calculate Pagination Slices
+  const indexOfLastOffer = currentPage * offersPerPage;
+  const indexOfFirstOffer = indexOfLastOffer - offersPerPage;
+  const currentOffers = offers.slice(indexOfFirstOffer, indexOfLastOffer);
+  const totalPages = Math.ceil(offers.length / offersPerPage);
+
+  return (
+    <div className="listing-offers-section mt-4 mb-4">
+      <h3 className="mb-3" style={{ }}>
+        Active Offers & Announcements
+      </h3>
+      <Row>
+        {currentOffers.map((offer) => {
+          const currentImgIdx = carouselIndices[offer._id] || 0;
+          const currentMedia = offer.media && offer.media[currentImgIdx];
+
+          const getMediaUrl = (url) => {
+            if (!url) return '';
+            return url.startsWith('http') ? url : `${API_BASE}/${url}`;
+          };
+
+          return (
+            <Col md={6} key={offer._id} className="mb-3">
+  {/* Link redirects to your main global offers view with a query filter */}
+  <Link to={`/offer-single-page?id=${offer._id}`} className="text-decoration-none" style={{ display: 'block', height: '100%' }}>
+    <div className="card h-100 shadow-sm border-0" style={{ borderRadius: "12px", overflow: "hidden" }}>
+      
+      {/* Carousel Box */}
+      <div 
+        className="position-relative bg-dark" 
+        style={{ aspectRatio: '16/9', overflow: "hidden", width: "100%" }}
+        onClick={(e) => {
+          if (offer.media?.length > 1) e.stopPropagation();
+        }}
+      >
+        {offer.media && offer.media.length > 0 && currentMedia ? (
+          <>
+            {currentMedia.type === 'image' ? (
+              <img 
+                src={getMediaUrl(currentMedia.url)} 
+                alt={offer.title} 
+                className="w-100 h-100"
+                style={{ objectFit: 'cover', position: 'absolute', top: 0, left: 0 }}
+              />
+            ) : (
+              <video
+                src={getMediaUrl(currentMedia.url)}
+                className="w-100 h-100"
+                style={{ objectFit: 'cover', position: 'absolute', top: 0, left: 0 }}
+                controls muted loop playsInline
+              />
+            )}
+
+            {/* Carousel Buttons */}
+            {offer.media.length > 1 && (
+              <>
+                <Button 
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevents link navigation
+                    e.stopPropagation();
+                    moveCarousel(offer._id, 'prev', offer.media.length);
+                  }}
+                  variant="light"
+                  className="position-absolute start-0 top-50 translate-middle-y m-2 rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 border-0"
+                  style={{ width: '32px', height: '32px', backgroundColor: 'rgba(250,250,250,0.85)', zIndex: 10 }}
+                >
+                  <BiChevronLeft size={22} style={{ color: '#000000' }} />
+                </Button>
+                <Button 
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevents link navigation
+                    e.stopPropagation();
+                    moveCarousel(offer._id, 'next', offer.media.length);
+                  }}
+                  variant="light"
+                  className="position-absolute end-0 top-50 translate-middle-y m-2 rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 border-0"
+                  style={{ width: '32px', height: '32px', backgroundColor: 'rgba(250,250,250,0.85)', zIndex: 10 }}
+                >
+                  <BiChevronRight size={22} style={{ color: '#000000' }} />
+                </Button>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="w-100 h-100 d-flex align-items-center justify-content-center text-muted small">No Media Available</div>
+        )}
+      </div>
+
+      {/* Card Body */}
+      <div className="card-body d-flex flex-column">
+        <span 
+          style={{ color: '#ff4e00', backgroundColor: '#ff4e0012', fontSize: '10px', letterSpacing: '0.05em' }}
+          className="text-uppercase fw-bold px-2 py-1 rounded align-self-start mb-2"
+        >
+          {offer.category}
+        </span>
+        <h5 className="card-title text-dark fw-bold">{offer.title}</h5>
+        <p className="card-text text-muted small flex-grow-1">{offer.description}</p>
         
+        <div className="mt-2 pt-2 border-top d-flex justify-content-between text-muted xsmall" style={{ fontSize: "11px" }}>
+          <span>Valid: {new Date(offer.startDate).toLocaleDateString()}</span>
+          <span>Until: {new Date(offer.endDate).toLocaleDateString()}</span>
+        </div>
+      </div>
+
+    </div>
+  </Link>
+</Col>
+          );
+        })}
+      </Row>
+
+      {/* Clean Bootstrap Pagination Bar */}
+      {totalPages > 1 && (
+        <nav className="d-flex justify-content-center mt-3">
+          <ul className="pagination pagination-sm shadow-sm" style={{ borderRadius: "8px", overflow: "hidden" }}>
+            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+              <button type="button" className="page-link" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}>
+                <FaAngleLeft />
+              </button>
+            </li>
+            {[...Array(totalPages)].map((_, index) => {
+              const pageNumber = index + 1;
+              return (
+                <li key={pageNumber} className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}>
+                  <button type="button" className="page-link" onClick={() => setCurrentPage(pageNumber)}>
+                    {pageNumber}
+                  </button>
+                </li>
+              );
+            })}
+            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+              <button type="button" className="page-link" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}>
+                 <FaAngleRight />
+              </button>
+            </li>
+          </ul>
+        </nav>
+      )}
+    </div>
+  );
+})()}
+{/* ================================================== */}
       </Container>
     </section>
     </>

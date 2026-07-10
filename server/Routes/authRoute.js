@@ -1119,7 +1119,8 @@ console.log(user);
         name: user.name,
         email: user.email,
         username: user.username,
-        hasPassword: !!user.password   
+        hasPassword: !!user.password,
+        wishlist: user.wishlist,   
       },
     });
 
@@ -1512,7 +1513,8 @@ router.post("/site/google", async (req, res) => {
         name: user.name,
         email: user.email,
         username: user.username, // ✅ return it
-        hasPassword: !!user.password   
+        hasPassword: !!user.password,
+        wishlist: user.wishlist,   
       },
     });
 

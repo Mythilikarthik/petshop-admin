@@ -1365,18 +1365,22 @@ middleHomeAds.length > 0 &&
 
       </div>
       {/* CATEGORY */}
+      <div className="service-tags mt-2">
 {listing.categories?.map((cat, index) => (
-  <span key={index} className="service-tag tag-orange">
+  <span key={index} className="badge badge-popular">
     {cat.categoryName}
   </span>
 ))}
-
+</div>
 {/* ✅ SPECIALIZED SERVICES (GLOBAL) */}
 {listing.specializedServices
   ?.filter(s => s.show !== false) // optional safety
   .map((s, i) => (
     <div key={i} className="text-muted small mt-1">
-      • {s.serviceName}
+      {/* • {s.serviceName} */}
+      <span className='service-tag  bg-warning text-black'>
+        {s.serviceName}
+      </span>
     </div>
 ))}
       {/* <div className="service-rating align-items-center d-flex gap-1">

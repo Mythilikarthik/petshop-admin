@@ -84,7 +84,7 @@ const handleSubmit = async (e) => {
 
       login(data.user, data.token);   // 🔥 important
       onSuccess?.();
-      console.log(data);
+      //console.log(data);
     } catch (err) {
       setApiError(err.message);
     } finally {

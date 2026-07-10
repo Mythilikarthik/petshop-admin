@@ -233,12 +233,20 @@ const getFallbackImage = (listing) => {
                                     {service.category.map((categoryItem, index) => (
                                         <span 
                                             key={service.id + "-cat-" + index}
-                                            className="service-tag tag-orange"
+                                            className="badge badge-popular"
                                         >
                                             {categoryItem}
                                         </span>
                                     ))}
                                 </div>
+                              
+{service.specializedServices?.filter(s => s.show !== false) .map((serviceName, i) => (
+    <div key={i} className="text-muted small mt-1">
+      <span className='service-tag bg-warning text-black'>
+        {serviceName} 
+      </span>
+    </div>
+))}
                                 {/* <div className="service-rating align-item-center d-flex gap-2">
                                     <span className='d-block' role="img" aria-label="star" style={{"verticalAlign" : "unset"}}> <BsStarFill /> </span> 
                                     <span className='d-block'>{service.rating}</span>

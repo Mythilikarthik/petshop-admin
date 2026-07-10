@@ -1,5 +1,5 @@
 .badge-top-rated {
-    background-color: orange;
+    background-color: #ff4e00;
     color: white;
     padding: 5px 10px;
     border-radius: 5px;
@@ -7,7 +7,7 @@
 }
 
 .badge-popular {
-    background-color: blue;
+    background-color: rgb(13,113,253);
     color: white;
     padding: 5px 10px;
     border-radius: 5px;

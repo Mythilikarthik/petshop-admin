@@ -7,10 +7,12 @@
   width: 100%;
 }
 .main-col.sidebar-open {
-  margin-left: 250px;
+  margin-left: 0;
+  padding-left: 250px !important;
 }
 .main-col.sidebar-close {
   margin-left: 0px;
+  padding-left: 0;
 }
 .sidebar-col {
   position: absolute;
@@ -28,6 +30,7 @@
 @media screen and (max-width: 992px) {
   .main-col.sidebar-open {
     margin-left: 0px;
+    padding-left: 0;
   }
   .sidebar-col.sidebar-open {
     left: 0px;

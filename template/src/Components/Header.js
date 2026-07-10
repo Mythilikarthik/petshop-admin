@@ -411,13 +411,13 @@ const getPageTitle = () => {
               </NavLink>
 
               <NavLink
-                to="/pet-health"
+                to="/offers"
                 className={({ isActive }) =>
                   isActive ? "nav-link active" : "nav-link"
                 }
                 onClick={() => setExpanded(false)}
               >
-                Pet Health
+                Offers
               </NavLink>
 
               <NavLink

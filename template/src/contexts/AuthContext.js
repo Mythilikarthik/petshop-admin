@@ -102,8 +102,17 @@ export const AuthProvider = ({ children }) => {
     }
     setAuthLoading(false); // ✅ auth hydrated
   }, []);
+
+  const updateUser = (newUserData) => {
+    setUser(newUserData);
+    if (newUserData) {
+      localStorage.setItem('user', JSON.stringify(newUserData));
+    } else {
+      localStorage.removeItem('user');
+    }
+  };
   return (
-    <AuthContext.Provider value={{ user, authLoading, login, logout, loginWithGoogle }}>
+    <AuthContext.Provider value={{ user, authLoading, login, logout, loginWithGoogle, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

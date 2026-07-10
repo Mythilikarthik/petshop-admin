@@ -27,6 +27,7 @@ const SpecializedServiceRoutes = require("./Routes/SpecializedServiceRoutes");
 const UploadRoutes = require("./Routes/UploadRoutes");
 const path = require("path");
 const sitemapRoutes = require("./Routes/sitemapRoutes");
+const OfferRoutes = require("./Routes/OfferRoute");
 
 
 
@@ -81,6 +82,7 @@ app.use("/api/enquiry", ListingEnquiry);
 app.use("/api/admin/notifications", AdminNotification);
 app.use("/api/specialized-service", SpecializedServiceRoutes);
 app.use("/api/upload/editor-images", UploadRoutes);
+app.use("/api/offers", OfferRoutes);
 
 
 

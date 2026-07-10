@@ -6,10 +6,10 @@ const StarRating = ({ rating = 0, reviewCount = 0, size = 14 }) => {
 
   for (let i = 1; i <= 5; i++) {
     if (rating >= i) {
-      stars.push(<FaStar key={i} size={size} color="#ffb400" />);
+      stars.push(<FaStar key={i} size={size} color="#ff4e00" />);
     } 
     else if (rating >= i - 0.5) {
-      stars.push(<FaStarHalfAlt key={i} size={size} color="#ffb400" />);
+      stars.push(<FaStarHalfAlt key={i} size={size} color="#ff4e00" />);
     } 
     else {
       stars.push(<FaRegStar key={i} size={size} color="#ddd" />);
