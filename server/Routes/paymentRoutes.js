@@ -223,8 +223,10 @@ const { verifyToken } = require("../middleware/authMiddleware");
 require("dotenv").config();
 
 // Dynamically use Live or Test keys depending on the environment
-const RAZORPAY_KEY_ID = process.env.NODE_ENV === "production" ? process.env.RAZORPAY_LIVE_KEY_ID : process.env.RAZORPAY_TEST_KEY_ID;
-const RAZORPAY_SECRET = process.env.NODE_ENV === "production" ? process.env.RAZORPAY_LIVE_SECRET : process.env.RAZORPAY_TEST_SECRET;
+// const RAZORPAY_KEY_ID = process.env.NODE_ENV === "production" ? process.env.RAZORPAY_LIVE_KEY_ID : process.env.RAZORPAY_TEST_KEY_ID;
+// const RAZORPAY_SECRET = process.env.NODE_ENV === "production" ? process.env.RAZORPAY_LIVE_SECRET : process.env.RAZORPAY_TEST_SECRET;
+const RAZORPAY_KEY_ID = process.env.NODE_ENV === "production" ? process.env.RAZORPAY_TEST_KEY_ID : process.env.RAZORPAY_TEST_KEY_ID;
+const RAZORPAY_SECRET = process.env.NODE_ENV === "production" ? process.env.RAZORPAY_TEST_SECRET : process.env.RAZORPAY_TEST_SECRET;
 
 console.log(`Razorpay running in [${process.env.NODE_ENV || 'development'}] mode.`);
 console.log("Razorpay Key ID being used:", RAZORPAY_KEY_ID);
