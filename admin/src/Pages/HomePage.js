@@ -195,7 +195,7 @@ const HomePage = () => {
   {bannerPreview.map((img, i) => (
     <img
       key={i}
-      src={img}
+      src={`${API_BASE}/${img}`}
       alt="Banner Preview"
       className="img-preview"
       style={{ width: "150px", height: "80px", objectFit: "cover" }}
@@ -391,7 +391,7 @@ const HomePage = () => {
                 </Form.Group>
                 {previewDark && (
                   <img
-                    src={previewDark}
+                    src={`${API_BASE}/${previewDark}`}
                     alt="Dark Logo"
                     className="img-preview"
                   />
@@ -410,7 +410,7 @@ const HomePage = () => {
                 </Form.Group>
                 {previewLight && (
                   <img
-                    src={previewLight}
+                    src={`${API_BASE}/${previewLight}`}
                     alt="Light Logo"
                     className="img-preview"
                   />

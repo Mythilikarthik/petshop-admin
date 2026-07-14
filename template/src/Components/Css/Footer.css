@@ -24,7 +24,7 @@
   color: #fff !important;
 }
 .footer .social-links a:hover {
-    background: #f97316;
+    background: #ff4e00;
     color: #fff !important;
     transition: all 0.3s ease;
 }
@@ -34,10 +34,10 @@
   line-height: 40px;
 }
 .footer a:hover {
-  color: #f97316 !important;
+  color: #ff4e00 !important;
 }
 .text-orange {
-    color: #f97316;
+    color: #ff4e00;
 }
 .footer .bottom-footer {
   border-top: 1px solid #374151;
