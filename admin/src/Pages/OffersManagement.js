@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Form, Row, Col, Breadcrumb, Spinner, Badge } from "react-bootstrap";
-import { FaVideo } from "react-icons/fa";
+import { Table, Button, Form, Row, Col, Breadcrumb, Spinner, Badge, ButtonGroup } from "react-bootstrap";
+import { FaVideo, FaFileCsv, FaFileExcel } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
+import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -22,6 +24,7 @@ const OfferListings = () => {
   const navigate = useNavigate();
 
   // 🔹 Fetch offers from backend matching updated schema endpoints
+  // 🔹 Fetch offers from backend matching updated schema endpoints
   useEffect(() => {
     const fetchOffers = async () => {
       try {
@@ -33,38 +36,35 @@ const OfferListings = () => {
       } catch (err) {
         console.error("Error fetching offers:", err);
       } finally {
-        setLoading(false);
+        // 🟢 FIX HERE: Change 'loading(false)' to 'setLoading(false)'
+        setLoading(false); 
       }
     };
     fetchOffers();
   }, []);
 
   // 🔹 Updated Filter logic to track structural nested object layers
-  // 🔹 Updated Filter logic to safely parse relational fields
-const filteredAds = ads.filter((ad) => {
-  // 1. Extract the name string out of the nested city reference model object
-  const cityName = (typeof ad.business?.city === 'object' ? ad.business?.city?.city : ad.business?.city) || "";
-  const categoryName = ad.category || "";
-  const titleText = ad.title || "";
-  const businessName = ad.business?.name || "";
+  const filteredAds = ads.filter((ad) => {
+    const cityName = (typeof ad.business?.city === 'object' ? ad.business?.city?.city : ad.business?.city) || "";
+    const categoryName = ad.category || "";
+    const titleText = ad.title || "";
+    const businessName = ad.business?.name || "";
 
-  // 2. Perform case-insensitive search parameter checks safely
-  const matchesSearch =
-    cityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    titleText.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    businessName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      cityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      titleText.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      businessName.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const matchesCategory =
-    selectedCategories.length === 0 ||
-    selectedCategories.includes(ad.category);
+    const matchesCategory =
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(ad.category);
 
-  // 3. Match selected dropdown value criteria matching strings or objects keys context
-  const currentCityValue = typeof ad.business?.city === 'object' ? ad.business?.city?.city : ad.business?.city;
-  const matchesCity = !selectedCity || currentCityValue === selectedCity;
+    const currentCityValue = typeof ad.business?.city === 'object' ? ad.business?.city?.city : ad.business?.city;
+    const matchesCity = !selectedCity || currentCityValue === selectedCity;
 
-  return matchesSearch && matchesCategory && matchesCity;
-});
+    return matchesSearch && matchesCategory && matchesCity;
+  });
 
   const pageCount = Math.ceil(filteredAds.length / itemsPerPage);
   const displayedAds = filteredAds.slice(
@@ -94,9 +94,59 @@ const filteredAds = ads.filter((ad) => {
     }
   };
 
+  // 🟩 NEW: Export Data Normalization Logic
+  const prepareExportData = () => {
+    return filteredAds.map((ad, idx) => ({
+      "S.No": idx + 1,
+      "Offer ID": ad._id || "",
+      "Business Name": ad.business?.name || "-",
+      "Category": ad.category || "",
+      "Title": ad.title || "",
+      "Description": ad.description || "",
+      "Neighborhood": ad.business?.neighborhood || "",
+      "City": (typeof ad.business?.city === 'object' ? ad.business?.city?.city : ad.business?.city) || "",
+      "Start Date": ad.startDate ? new Date(ad.startDate).toLocaleDateString() : "-",
+      "End Date": ad.endDate ? new Date(ad.endDate).toLocaleDateString() : "-",
+      "Status": ad.show === 1 ? "Shown" : "Hidden",
+      "Media URL": ad.media && ad.media[0] ? ad.media[0].url : "-",
+      "Media Type": ad.media && ad.media[0] ? ad.media[0].type : "-",
+      "Primary Actions": ad.primaryActions ? ad.primaryActions.join(", ") : "",
+      "Total Saves": ad.analytics?.saves || 0,
+      "Call Clicks": ad.analytics?.clicks?.call?.length || 0,
+      "WhatsApp Clicks": ad.analytics?.clicks?.whatsapp?.length || 0,
+      "Book Now Clicks": ad.analytics?.clicks?.book_now?.length || 0,
+      "Share Clicks": ad.analytics?.clicks?.share?.length || 0
+    }));
+  };
+
+  // 🟩 NEW: Export to CSV
+  const exportToCSV = () => {
+    const data = prepareExportData();
+    const csv = Papa.unparse(data);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `offers_export_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // 🟩 NEW: Export to Excel
+  const exportToExcel = () => {
+    const data = prepareExportData();
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Offers");
+    XLSX.writeFile(workbook, `offers_export_${Date.now()}.xlsx`);
+  };
+
   // 🔹 Build dynamic filtering option arrays directly from live schema models
   const categoryOptions = Array.from(new Set(ads.map((ad) => ad.category).filter(Boolean)));
-  const cityOptions = Array.from(new Set(ads.map((ad) => ad.business?.city).filter(Boolean)));
+  const cityOptions = Array.from(new Set(ads.map((ad) => {
+    return typeof ad.business?.city === 'object' ? ad.business?.city?.city : ad.business?.city;
+  }).filter(Boolean)));
 
   return (
     <div className="container mt-4">
@@ -140,7 +190,7 @@ const filteredAds = ads.filter((ad) => {
             />
           </Col>
 
-          <Col md={3}>
+          <Col md={2}>
             <Form.Select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
@@ -154,7 +204,16 @@ const filteredAds = ads.filter((ad) => {
             </Form.Select>
           </Col>
           
-          <Col md={3} className="d-flex justify-content-md-end justify-content-start">
+          {/* 🟩 UPDATED: Added Export Button Layout Groups alongside Create Button */}
+          <Col md={4} className="d-flex justify-content-md-end justify-content-start gap-2">
+            <ButtonGroup>
+              {/* <Button variant="outline-success" onClick={exportToCSV} title="Export CSV">
+                <FaFileCsv size={16} className="me-1" /> CSV
+              </Button> */}
+              <Button variant="outline-success" onClick={exportToExcel} title="Export Excel">
+                <FaFileExcel size={16} className="me-1" /> Export [ As Excel ]
+              </Button>
+            </ButtonGroup>
             <Button variant="primary" onClick={() => navigate('/add-edit-offers')}>+ Add New</Button>
           </Col>
         </Row>
@@ -162,8 +221,8 @@ const filteredAds = ads.filter((ad) => {
         {/* Data Presentation Table Matrix */}
         {loading ? (
           <div className="text-center py-5">
-            <Spinner animation="border" />
-            <p className="mt-2">Loading System Feeds...</p>
+            {/* <Spinner animation="border" /> */}
+            <p className="mt-2">Loading...</p>
           </div>
         ) : (
           <Table bordered hover responsive className="align-middle">
@@ -176,9 +235,7 @@ const filteredAds = ads.filter((ad) => {
                 <th>Title</th>
                 <th>City / Area</th>
                 <th>Validity Range</th>
-                {/* <th>Buttons</th> */}
-                <th>Status</th> {/* 👈 Add this column */}
-                {/* <th>Views / Saves</th> */}
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -189,11 +246,6 @@ const filteredAds = ads.filter((ad) => {
                     <td>{currentPage * itemsPerPage + index + 1}</td>
                     <td>
                       <div className="d-flex align-items-center gap-2">
-                        {/* <img 
-                          src={ad.business?.logo?.startsWith('http') ? ad.business.logo : `${API_BASE}/${ad.business?.logo}`} 
-                          alt="Logo" 
-                          style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover' }}
-                        /> */}
                         <span className="">{ad.business?.name || "-"}</span>
                       </div>
                     </td>
@@ -214,30 +266,20 @@ const filteredAds = ads.filter((ad) => {
                     </td>
                     <td><Badge bg="secondary">{ad.category}</Badge></td>
                     <td style={{ maxWidth: '200px' }} className="text-truncate">{ad.title}</td>
-                    <td>{ad.business?.neighborhood}, {ad.business?.city}</td>
+                    <td>{ad.business?.neighborhood}, {typeof ad.business?.city === 'object' ? ad.business?.city?.city : ad.business?.city}</td>
                     <td style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
                       {ad.startDate ? new Date(ad.startDate).toLocaleDateString() : "-"} to <br/>
                       {ad.endDate ? new Date(ad.endDate).toLocaleDateString() : "-"}
                     </td>
-                    {/* <td>
-                      <div className="d-flex gap-1 flex-wrap">
-                        {ad.primaryActions?.map(act => (
-                          <Badge key={act} bg="info" className="text-dark">{act}</Badge>
-                        ))}
-                      </div>
-                    </td> */}
                     <td>
-  {ad.show === 1 ? (
-    <Badge bg="success">Shown</Badge>
-  ) : (
-    <Badge bg="danger">Hidden</Badge>
-  )}
-</td>
-                    {/* <td style={{ fontSize: '13px' }}>
-                       {ad.analytics?.views || 0} Views <br/> {ad.analytics?.saves || 0} Saves
-                    </td> */}
+                      {ad.show === 1 ? (
+                        <Badge bg="success">Shown</Badge>
+                      ) : (
+                        <Badge bg="danger">Hidden</Badge>
+                      )}
+                    </td>
                     <td> 
-                      <div className="d-flex gap-2">                     
+                      <div className="gap-2">     
                         <Button
                           variant="primary"
                           size="sm"
@@ -258,7 +300,7 @@ const filteredAds = ads.filter((ad) => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="10" className="text-center py-4 text-muted">
+                  <td colSpan="9" className="text-center py-4 text-muted">
                     No active feeds found matching the specified parameters.
                   </td>
                 </tr>

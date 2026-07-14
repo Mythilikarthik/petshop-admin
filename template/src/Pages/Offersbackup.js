@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, ButtonGroup, Badge, Pagination, Spinner, Alert } from 'react-bootstrap';
-import { useLocation, useNavigate } from 'react-router-dom'; // Imported hooks for reading/managing the query state
+import { Container, Row, Col, Card, Button, ButtonGroup, Badge, Pagination, Spinner } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { 
   BiTag, BiCalendar, BiSolidMegaphone, BiNews, 
   BiMap, BiTimeFive, BiShow, BiSolidHeart,
@@ -22,7 +22,7 @@ const CATEGORIES = [
   { id: 'Announcements', label: 'Announcements', icon: BiSolidMegaphone }, 
 ];
 
-const OfferSinglePage = () => {
+const Offers = () => {
   const [posts, setPosts] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -30,21 +30,19 @@ const OfferSinglePage = () => {
   const [carouselIndices, setCarouselIndices] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   
-  // React Router location hooks to target the query matching strings
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  // Parsing lookups for tracking incoming parameters safely
-  const queryParams = new URLSearchParams(location.search);
-  const targetOfferId = queryParams.get('id');
-
+  // Extract user and whatever update method your auth provider exposes (e.g., updateUser, login, or setUser)
   const { user, updateUser } = useAuth(); 
-
+console.log("Current User Auth Data Object:", user);
   // Sync frontend heart lights with the database user's wishlist array safely
+  // Sync frontend heart lights with the database user's wishlist array safely
+// Sync frontend heart lights with the database user's wishlist array safely
+
   useEffect(() => {
+    
     if (user && user.wishlist) {
       const databaseSavesMap = {};
       user.wishlist.forEach(item => {
+        // Ensure we retrieve the string ID cleanly whether it's populated or raw
         const id = typeof item === 'object' ? item._id : item; 
         if (id) {
           databaseSavesMap[id.toString()] = true;
@@ -52,9 +50,9 @@ const OfferSinglePage = () => {
       });
       setSavedPosts(databaseSavesMap);
     } else {
-      setSavedPosts({}); 
+      setSavedPosts({}); // Reset if logged out
     }
-  }, [user, user?.wishlist]);
+  }, [user, user?.wishlist]); // Added 'user' to catch state transitions perfectly
 
   const itemsPerPage = 4;
 
@@ -71,6 +69,7 @@ const OfferSinglePage = () => {
     });
   };
 
+  // FIX 1: Pass execution data downstream dynamically so login workflows don't hit stale closures
   const toggleSaveProtected = (postId) => {
     executeProtectedAction(() => {
       toggleSave(postId);
@@ -115,55 +114,69 @@ const OfferSinglePage = () => {
     fetchLiveFeeds();
   }, []);
 
-  // Compute your filter logic dynamically
-  const filteredPosts = (() => {
-    // Priority 1: Filter exactly by the targeted offer ID if passed via query parameter
-    if (targetOfferId) {
-      return posts.filter(post => post._id === targetOfferId);
-    }
-    // Priority 2: Use your standard category logic
-    return activeCategory === 'all' 
-      ? posts 
-      : posts.filter(post => post.category === activeCategory);
-  })();
+  const filteredPosts = activeCategory === 'all' 
+    ? posts 
+    : posts.filter(post => post.category === activeCategory);
 
-  // Reset category filters gracefully if a deep-link ID payload exists
   useEffect(() => {
-    if (targetOfferId) {
-      setActiveCategory('all');
-    }
     setCurrentPage(1);
-  }, [activeCategory, targetOfferId]);
+  }, [activeCategory]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredPosts.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
 
+  // const handleActionClick = async (postId, actionType) => {
+  //   try {
+  //     await fetch(`${API_BASE}/api/offers/${postId}/track-click`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ action: actionType })
+  //     });
+  //   } catch (err) {
+  //     console.error(`Click tracking failed for ${actionType}:`, err);
+  //   }
+  // };
   const handleActionClick = async (postId, actionType) => {
-    try {
-      const token = localStorage.getItem('token'); 
-      await fetch(`${API_BASE}/api/offers/${postId}/track-click`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        },
-        body: JSON.stringify({ action: actionType })
-      });
-    } catch (err) {
-      console.error(`Click tracking failed for ${actionType}:`, err);
-    }
-  };
-
-  const toggleSave = async (postId) => {
+  try {
+    // 1. Grab the token from wherever you store it (usually localStorage or cookies)
     const token = localStorage.getItem('token'); 
-    if (!token) return;
+
+    await fetch(`${API_BASE}/api/offers/${postId}/track-click`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        // 2. Add the Authorization header so verifyToken can find it
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify({ action: actionType })
+    });
+    
+    console.log(`Successfully logged click event: ${actionType}`);
+  } catch (err) {
+    console.error(`Click tracking failed for ${actionType}:`, err);
+  }
+};
+
+  // 🔹 Fixed Save Toggle Integration
+  // 🔹 Fixed Save Toggle Integration
+  const toggleSave = async (postId) => {
+    console.log("userid", postId);
+    
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    const token = localStorage.getItem('token'); 
+    if (!token) {
+      console.warn("Save aborted: No authenticated user token sequence found.");
+      return;
+    }
 
     const currentUserId = user?._id; 
     const isCurrentlySaved = !!savedPosts[postId];
     const nextSavedState = !isCurrentlySaved;
 
+    // 1. Optimistically update local UI map instantly
     setSavedPosts(prev => ({ ...prev, [postId]: nextSavedState }));
 
     try {
@@ -182,17 +195,19 @@ const OfferSinglePage = () => {
       const data = await res.json();
 
       if (data.success && data.updatedAnalytics) {
+        // 2. Merging analytics smoothly so view records aren't wiped out
         setPosts(prevPosts => 
           prevPosts.map(p => p._id === postId ? { 
             ...p, 
             analytics: {
-              ...p.analytics, 
-              ...data.updatedAnalytics, 
+              ...p.analytics,                 // Keep existing view properties intact
+              ...data.updatedAnalytics,       // Apply updated fields from database
               saves: data.updatedAnalytics.saves
             }
           } : p)
         );
 
+        // 3. Update global user auth provider state
         if (updateUser && user) {
           const rawWishlist = user.wishlist || [];
           const updatedWishlist = nextSavedState 
@@ -206,6 +221,7 @@ const OfferSinglePage = () => {
       }
     } catch (err) {
       console.error("Save tracking failed, reverting UI:", err.message);
+      // Revert map state explicitly back to what it was if server execution failed
       setSavedPosts(prev => ({ ...prev, [postId]: isCurrentlySaved }));
     }
   };
@@ -216,11 +232,6 @@ const OfferSinglePage = () => {
     if (newIndex >= mediaLength) newIndex = 0;
     if (newIndex < 0) newIndex = mediaLength - 1;
     setCarouselIndices(prev => ({ ...prev, [postId]: newIndex }));
-  };
-
-  // Helper method to completely strip tracking filters off the URL path cleanly
-  const handleClearUrlFilter = () => {
-    navigate('/offers', { replace: true });
   };
 
   let paginationItems = [];
@@ -262,35 +273,15 @@ const OfferSinglePage = () => {
           </h1>
         </div>
 
-        {/* Dynamic Context Header Banner for Filtered Redirects */}
-        {targetOfferId && !loading && (
-          <Alert variant="info" className="d-flex align-items-center justify-content-between mb-4 border-0 shadow-sm" style={{ borderRadius: '12px', backgroundColor: '#e0f2fe', color: '#0369a1' }}>
-            <div className="d-flex align-items-center gap-2">
-              <span>Showing targeted specific record requested from post directory lookup.</span>
-            </div>
-            <Button 
-              variant="link" 
-              onClick={handleClearUrlFilter}
-              className="p-0 text-decoration-none fw-bold small"
-              style={{ color: '#0284c7' }}
-            >
-              Show All &rarr;
-            </Button>
-          </Alert>
-        )}
-
-        {/* <div className="bg-light-blur py-3 mb-4 border-bottom" style={{ zIndex: 1020, backdropFilter: 'blur(8px)', backgroundColor: 'rgba(248, 250, 252, 0.8)' }}>
+        <div className="bg-light-blur py-3 mb-4 border-bottom" style={{ zIndex: 1020, backdropFilter: 'blur(8px)', backgroundColor: 'rgba(248, 250, 252, 0.8)' }}>
           <div className="d-flex gap-2 overflow-auto pb-1" style={{ scrollbarWidth: 'none' }}>
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
-              const isActive = activeCategory === cat.id && !targetOfferId;
+              const isActive = activeCategory === cat.id;
               return (
                 <Button
                   key={cat.id}
-                  onClick={() => {
-                    if (targetOfferId) handleClearUrlFilter();
-                    setActiveCategory(cat.id);
-                  }}
+                  onClick={() => setActiveCategory(cat.id)}
                   style={{
                     backgroundColor: isActive ? '#ff4e00' : '#ffffff',
                     color: isActive ? '#ffffff' : '#475569',
@@ -311,7 +302,7 @@ const OfferSinglePage = () => {
               );
             })}
           </div>
-        </div> */}
+        </div>
 
         {loading ? (
           <div className="text-center py-5">
@@ -319,7 +310,7 @@ const OfferSinglePage = () => {
             <p className="mt-2 text-muted">Fetching Offers / Events / Announcements...</p>
           </div>
         ) : (
-          <Row className="g-4 align-items-center justify-content-center">
+          <Row className="g-4">
             {currentItems.length > 0 ? (
               currentItems.map((post) => {
                 const currentImgIdx = carouselIndices[post._id] || 0;
@@ -374,7 +365,10 @@ const OfferSinglePage = () => {
                                 src={getMediaUrl(currentMedia.url)}
                                 className="w-100 h-100"
                                 style={{ objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 1 }}
-                                controls muted loop playsInline
+                                controls
+                                muted
+                                loop
+                                playsInline
                               />
                             )}
 
@@ -403,6 +397,7 @@ const OfferSinglePage = () => {
                           <div className="w-100 h-100 d-flex align-items-center justify-content-center text-muted" style={{ zIndex: 1 }}>No Media Available</div>
                         )}
 
+                        {/* Floating Action Button Layer Container */}
                         <div className="position-absolute top-0 end-0 p-3 d-flex gap-2" style={{ zIndex: 10 }}>
                           <Button 
                             onClick={() => toggleSaveProtected(post._id)}
@@ -442,18 +437,36 @@ const OfferSinglePage = () => {
                           >
                             {post.description}
                           </Card.Text>
+
+                          {/* <Button 
+                            as={Link} 
+                            to={`/offers/${post._id}`} 
+                            variant="link"
+                            className="p-0 text-start d-inline-block mb-3 text-decoration-none"
+                            style={{ color: '#ff4e00', fontSize: '13px', fontWeight: 700, boxShadow: 'none' }}
+                          >
+                            Read More →
+                          </Button> */}
                         </div>
 
+                        {/* <div className="d-flex gap-3 px-3 py-2 rounded mb-3 border bg-light" style={{ fontSize: '12px', fontWeight: 500, color: '#64748b' }}>
+                          <span className="d-flex align-items-center gap-1"><BiShow size={14} /> {post.analytics?.views || 0} Views</span>
+                          <span className="d-flex align-items-center gap-1">
+                            <BiSolidHeart size={14} style={{ color: isSaved ? '#dc3545' : '#94a3b8' }} /> {post.analytics?.saves || 0} Saves
+                          </span>
+                        </div> */}
                         <div className="d-flex gap-3 px-3 py-2 rounded mb-3 border bg-light" style={{ fontSize: '12px', fontWeight: 500, color: '#64748b' }}>
-                          <span className="d-flex align-items-center gap-1">
-                            <BiShow size={14} /> 
-                            {post.analytics?.viewedByIPs ? post.analytics.viewedByIPs.length : (post.analytics?.views || 0)} View(s)
-                          </span>
-                          <span className="d-flex align-items-center gap-1">
-                            <BiSolidHeart size={14} style={{ color: isSaved ? '#dc3545' : '#94a3b8' }} /> 
-                            {post.analytics?.savedByUsers ? post.analytics.savedByUsers.length : (post.analytics?.saves || 0)} Save(s)
-                          </span>
-                        </div>
+  {/* <span className="d-flex align-items-center gap-1"><BiShow size={14} /> {post.analytics?.views || 0} Views</span> */}
+  <span className="d-flex align-items-center gap-1">
+    <BiShow size={14} /> 
+    {post.analytics?.viewedByIPs ? post.analytics.viewedByIPs.length : (post.analytics?.views || 0)} View(s)
+  </span>
+  <span className="d-flex align-items-center gap-1">
+    <BiSolidHeart size={14} style={{ color: isSaved ? '#dc3545' : '#94a3b8' }} /> 
+    {/* Use the exact length array if available, otherwise fallback to the saves number */}
+    {post.analytics?.savedByUsers ? post.analytics.savedByUsers.length : (post.analytics?.saves || 0)} Save(s)
+  </span>
+</div>
 
                         <ButtonGroup className="w-100 gap-2">
                           {post.primaryActions?.includes('call') && (
@@ -496,7 +509,7 @@ const OfferSinglePage = () => {
               })
             ) : (
               <Col xs={12} className="text-center py-5 text-muted">
-                No active records discovered matching this feed criteria.
+                No active offers / feeds / announcements.
               </Col>
             )}
           </Row>
@@ -536,4 +549,4 @@ const OfferSinglePage = () => {
   );
 };
 
-export default OfferSinglePage;
+export default Offers;

@@ -4,6 +4,7 @@ const Category = require('../Models/Category');
 const Listing = require('../Models/Listing');
 const Review = require("../Models/Review");
 const User = require("../Models/User");
+const Offer = require("../Models/Offers");
 const { Types } = require("mongoose");
 
 // router.get('/categories', async (req, res) => {
@@ -221,6 +222,63 @@ router.get("/new-shop-owners", async (req, res) => {
   res.json({ success: true, count: count.length });
 });
 
+router.get('/offers', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const now = new Date();
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(now.getDate() + 7);
+
+    // 1. Build an optional date range match object for creation date filtering
+    let dateFilter = {};
+    if (startDate || endDate) {
+      dateFilter.createdAt = {};
+      if (startDate) dateFilter.createdAt.$gte = new Date(startDate);
+      if (endDate) dateFilter.createdAt.$lte = new Date(endDate);
+    }
+
+    // 2. Execute Aggregation Pipeline
+    const stats = await Offer.aggregate([
+      { $match: dateFilter },
+      {
+        $group: {
+          _id: null,
+          // Sum total views across filtered items based on the length of array
+          totalViews: { $sum: { $size: { $ifNull: ["$analytics.viewedByIPs", []] } } },
+          // Sum total explicit saves from analytics schema field
+          totalSaves: { $sum: { $ifNull: ["$analytics.saves", 0] } },
+          // Count metrics where endDate is approaching but not past
+          expiringSoon: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gt: ["$endDate", now] },
+                    { $lte: ["$endDate", sevenDaysFromNow] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    // Handle empty database states cleanly
+    const result = stats[0] || { totalViews: 0, totalSaves: 0, expiringSoon: 0 };
+
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+
+  } catch (err) {
+    console.error("Error computing Offer stats:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 
 

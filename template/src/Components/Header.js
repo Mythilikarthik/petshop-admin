@@ -410,7 +410,7 @@ const getPageTitle = () => {
                 Directory
               </NavLink>
 
-              <NavLink
+              {/* <NavLink
                 to="/offers"
                 className={({ isActive }) =>
                   isActive ? "nav-link active" : "nav-link"
@@ -418,7 +418,7 @@ const getPageTitle = () => {
                 onClick={() => setExpanded(false)}
               >
                 Offers
-              </NavLink>
+              </NavLink> */}
 
               <NavLink
                 to="/blog"

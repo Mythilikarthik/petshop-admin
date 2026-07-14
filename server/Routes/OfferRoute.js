@@ -227,6 +227,7 @@ const ffprobePath = require('@ffprobe-installer/ffprobe').path;
 const jwt = require("jsonwebtoken");
 const { verifyToken } = require('../middleware/authMiddleware');
 const User = require("../Models/User");
+const mongoose = require('mongoose');
 
 // Automatically injects the correct paths across Windows, Mac, or Linux systems
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -236,7 +237,7 @@ ffmpeg.setFfprobePath(ffprobePath);
 router.get('/business/lookup', async (req, res) => {
   try {
     const listings = await Listing.find({ status: 'approved' })
-      .select('shopName bannerImage address city')
+      .select('shopName bannerImage address city phone')
       .populate('city', 'city'); 
       
     res.status(200).json({ success: true, listings });
@@ -353,40 +354,107 @@ router.put('/:id/track-view', async (req, res) => {
 
 // 2. 🖱️ TRACK BUTTON CLICK: Increments specific action click types
 // 🖱️ TRACK BUTTON CLICK: Records specific user details on action clicks
-router.post('/:id/track-click', verifyToken, async (req, res) => {
-  const { action } = req.body; // Expects 'call', 'whatsapp', 'book_now', or 'share'
-  const userId = req.userId;
+// router.post('/:id/track-click', verifyToken, async (req, res) => {
+//   const { action } = req.body; // Expects 'call', 'whatsapp', 'book_now', or 'share'
+//   const userId = req.userId;
 
-  if (!userId) {
-    return res.status(401).json({ success: false, message: "Authentication required to track action" });
-  }
+//   if (!userId) {
+//     return res.status(401).json({ success: false, message: "Authentication required to track action" });
+//   }
   
-  const allowedActions = ['call', 'whatsapp', 'book_now', 'share'];
-  if (!allowedActions.includes(action)) {
-    return res.status(400).json({ success: false, message: 'Invalid action type' });
-  }
+//   const allowedActions = ['call', 'whatsapp', 'book_now', 'share'];
+//   if (!allowedActions.includes(action)) {
+//     return res.status(400).json({ success: false, message: 'Invalid action type' });
+//   }
 
+//   try {
+//     // Path inside the document array to push the new log object
+//     const updateField = `analytics.clicks.${action}`;
+
+//     const updatedOffer = await Offer.findByIdAndUpdate(
+//       req.params.id,
+//       { 
+//         $push: { 
+//           [updateField]: { userId: userId, clickedAt: new Date() } 
+//         } 
+//       },
+//       { new: true }
+//     );
+
+//     res.status(200).json({ 
+//       success: true, 
+//       message: `${action} click tracked successfully for this user.`
+//     });
+//   } catch (err) {
+//     console.error('Click tracking error:', err);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+router.post('/:id/track-click', verifyToken, async (req, res) => {
   try {
-    // Path inside the document array to push the new log object
-    const updateField = `analytics.clicks.${action}`;
+    const { action } = req.body;
+    const offerId = req.params.id;
+    
+    // 1. Force check exactly what req.user contains
+    console.log("--- DEBUG START ---");
+    console.log("Full req.user object:", req.user);
+    
+    const userId = req.userId ? req.userId : null; 
+    console.log("Extracted userId:", userId);
+    console.log("Action received:", action);
+    console.log("--- DEBUG END ---");
 
-    const updatedOffer = await Offer.findByIdAndUpdate(
-      req.params.id,
-      { 
-        $push: { 
-          [updateField]: { userId: userId, clickedAt: new Date() } 
-        } 
-      },
-      { new: true }
-    );
+    if (!['call', 'whatsapp', 'book_now', 'share'].includes(action)) {
+      return res.status(400).json({ success: false, message: "Invalid tracking action context." });
+    }
+
+    // Update Offer document
+    const updateData = {
+      $push: {
+        [`analytics.clicks.${action}`]: {
+          userId: userId, 
+          clickedAt: new Date()
+        }
+      }
+    };
+
+    const updatedOffer = await Offer.findByIdAndUpdate(offerId, updateData, { new: true });
+    
+    if (!updatedOffer) {
+      return res.status(404).json({ success: false, message: "Offer record not located." });
+    }
+
+    // 2. Fixed User Update with logging feedback
+    if (action === 'share' && userId) {
+      console.log("ATTEMPTING USER UPDATE FOR:", userId);
+      
+      // We convert userId explicitly into a Mongoose ObjectId here just in case it's a raw string mismatch
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+
+      const userUpdateResult = await User.findByIdAndUpdate(
+        userObjectId, 
+        {
+          $push: { 
+            sharedOffers: { 
+              offerId: offerId, 
+              sharedAt: new Date() 
+            } 
+          }
+        },
+        { new: true } // Returns the document to verify it changed
+      );
+
+      console.log("User update result in DB:", userUpdateResult);
+    }
 
     res.status(200).json({ 
       success: true, 
-      message: `${action} click tracked successfully for this user.`
+      message: `${action} click registered successfully.`, 
+      updatedAnalytics: updatedOffer.analytics 
     });
   } catch (err) {
-    console.error('Click tracking error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    console.error("Error in tracking route:", err);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 // Admin Route Example to View Analytics

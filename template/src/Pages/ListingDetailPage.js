@@ -997,12 +997,13 @@ const shortAddress = (address) => {
         </Row>
 
        {/* ================= OFFERS SECTION ================= */}
-{offers.length > 0 && (() => {
+{/* {offers.length > 0 && (() => {
   // Calculate Pagination Slices
   const indexOfLastOffer = currentPage * offersPerPage;
   const indexOfFirstOffer = indexOfLastOffer - offersPerPage;
   const currentOffers = offers.slice(indexOfFirstOffer, indexOfLastOffer);
   const totalPages = Math.ceil(offers.length / offersPerPage);
+  
 
   return (
     <div className="listing-offers-section mt-4 mb-4">
@@ -1013,6 +1014,7 @@ const shortAddress = (address) => {
         {currentOffers.map((offer) => {
           const currentImgIdx = carouselIndices[offer._id] || 0;
           const currentMedia = offer.media && offer.media[currentImgIdx];
+          const encodedId = btoa(offer._id);
 
           const getMediaUrl = (url) => {
             if (!url) return '';
@@ -1021,11 +1023,12 @@ const shortAddress = (address) => {
 
           return (
             <Col md={6} key={offer._id} className="mb-3">
-  {/* Link redirects to your main global offers view with a query filter */}
-  <Link to={`/offer-single-page?id=${offer._id}`} className="text-decoration-none" style={{ display: 'block', height: '100%' }}>
+  
+  
+  <Link to={`/offers?ref=${encodedId}`} className="text-decoration-none" style={{ display: 'block', height: '100%' }}>
     <div className="card h-100 shadow-sm border-0" style={{ borderRadius: "12px", overflow: "hidden" }}>
       
-      {/* Carousel Box */}
+      
       <div 
         className="position-relative bg-dark" 
         style={{ aspectRatio: '16/9', overflow: "hidden", width: "100%" }}
@@ -1051,7 +1054,7 @@ const shortAddress = (address) => {
               />
             )}
 
-            {/* Carousel Buttons */}
+            
             {offer.media.length > 1 && (
               <>
                 <Button 
@@ -1086,7 +1089,7 @@ const shortAddress = (address) => {
         )}
       </div>
 
-      {/* Card Body */}
+      
       <div className="card-body d-flex flex-column">
         <span 
           style={{ color: '#ff4e00', backgroundColor: '#ff4e0012', fontSize: '10px', letterSpacing: '0.05em' }}
@@ -1110,7 +1113,7 @@ const shortAddress = (address) => {
         })}
       </Row>
 
-      {/* Clean Bootstrap Pagination Bar */}
+      
       {totalPages > 1 && (
         <nav className="d-flex justify-content-center mt-3">
           <ul className="pagination pagination-sm shadow-sm" style={{ borderRadius: "8px", overflow: "hidden" }}>
@@ -1139,7 +1142,7 @@ const shortAddress = (address) => {
       )}
     </div>
   );
-})()}
+})()} */}
 {/* ================================================== */}
       </Container>
     </section>

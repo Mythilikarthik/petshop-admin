@@ -29,7 +29,9 @@ import ForgotPassword from './Pages/ForgotPassword';
 import ResetPassword from './Pages/ResetPassword';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import Offers from './Pages/Offers';
-import OfferSinglePage from './Pages/OfferSinglePage';
+// import OfferSinglePage from './Pages/OfferSinglePage';
+import TrialMock from "./Pages/TrailMock";
+
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -171,7 +173,8 @@ function AppContent() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/offers" element={<Offers />} />
-        <Route path="/offer-single-page" element={<OfferSinglePage />} />
+        {/* <Route path="/offer-single-page" element={<OfferSinglePage />} /> */}
+        <Route path='/trial' element={<TrialMock />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />
       <a 

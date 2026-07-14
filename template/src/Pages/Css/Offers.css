@@ -1,0 +1,16 @@
+.custom-share-btn {
+  border-radius: 10px !important;
+  width: 55px;
+  padding: 0.6rem;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+  background-color: transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+/* 🟢 Changes both text/icon color AND background color on hover */
+.custom-share-btn:hover {
+  background-color: #475569 !important;
+  border-color: #475569 !important;
+  color: #fff !important; 
+}
