@@ -1066,15 +1066,85 @@
 
 // export default ListingDetailPage;
 import React, { useState, useEffect } from "react";
-import { FaStar, FaWhatsapp, FaFacebook, FaInstagram, FaTwitter, FaMapMarkerAlt, FaShieldAlt, FaCheckCircle, FaEnvelope, FaClock } from "react-icons/fa";
+import { FaStar, FaWhatsapp, FaFacebook, FaInstagram, FaTwitter, FaMapMarkerAlt, FaShieldAlt, FaCheckCircle, FaEnvelope, FaClock, FaTags, FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { Form, Button, Container, Row, Col, Modal } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { incrementListingViews } from "../utils/engagementTracker";
 import { Helmet } from "react-helmet-async";
+import ReactPaginate from 'react-paginate';
 
 // Ultra-Clean Modern Light Stylesheet
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+  .map-container-wrapper {
+    width: 100%;
+    border-top: 1px solid #e2e8f0;
+    overflow: hidden;
+    position: relative;
+    background-color: #f8fafc;
+  }
+
+  .map-container-wrapper iframe {
+    transition: transform 0.3s ease;
+  }
+
+  /* Subtly zooms the map on hover for an interactive, tactile feel */
+  .clean-white-block:hover .map-container-wrapper iframe {
+    transform: scale(1.01);
+  }
+
+  /* Premium React-Paginate Styles */
+  .clean-paginate-container {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 2rem;
+  }
+
+  .clean-paginate-item {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  .clean-paginate-link {
+    display: block;
+    padding: 8px 16px;
+    color: #475569;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .clean-paginate-item:hover:not(.disabled) .clean-paginate-link {
+    border-color: #ff4e00;
+    color: #ff4e00;
+    transform: translateY(-1px);
+  }
+
+  .clean-paginate-item.active .clean-paginate-link {
+    background: #ff4e00;
+    color: #ffffff;
+    border-color: #ff4e00;
+  }
+
+  .clean-paginate-item.disabled .clean-paginate-link {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
+  }
+
+  .clean-paginate-break .clean-paginate-link {
+    border: none;
+    background: transparent;
+    cursor: default;
+  }
 
   .aesthetic-detail-page {
     background-color: #fafbfe;
@@ -1217,6 +1287,7 @@ const STYLES = `
     border-radius: 8px;
     padding: 14px 28px;
     transition: all 0.3s;
+    font-size: 14px;
   }
 
   .btn-clean-primary:hover {
@@ -1257,28 +1328,29 @@ const STYLES = `
 
 const MOCK_LISTING_DETAILS = {
   _id: "mock_listing_99881122",
-  slug: "premium-veterinary-care-center",
-  shopName: "Paws & Claws Premium Veterinary Care & Wellness Center",
+  slug: "trail_a_broad",
+  shopName: "Tails A'Board",
   plan: "premium_verified",
   isFeatured: true,
   isPremiumBadge: true,
   isVerified: true,
   isClaimed: true,
   created_by_type: "admin",
-  description: "Welcome to Paws & Claws Premium Veterinary Care Center. We specialize in advanced veterinary diagnostics, orthopedic surgeries, structural grooming treatments, and professional nutritional coaching. Serving the community with over 15 years of certified medical expertise, our clinic offers 24/7 critical emergency operations alongside premium boarding alternatives for your beloved household pets.",
-  phone: "+1 (555) 392-8871",
+  description: "Tails A'Board offers executive-tier tech-corridor pet care solutions, delivering secure overnight stays and flexible crèche options near Guindy. Featuring a high staff-to-pet ratio and rapid access to major transit links, they provide a convenient and professional corporate pet-sitting experience.",
+  phone: "+919874563210",
   email: "care@pawsandclaws-premium.com",
-  address: "742 Evergreen Terrace, Medical District, Sector 4",
-  country: "United States",
-  city: { city: "Springfield" },
-  mapUrl: "https://maps.google.com/?q=Veterinary+Clinic",
-  bannerImage: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=1200",
-  whatsappNumber: "15553928871",
+  address: "35/2A, Nellithoppu main road, Kozhumanivakkam, Mangadu, Chennai, Tamil Nadu 600122",
+  country: "India",
+  city: { city: "Chennai" },
+  mapUrl: "https://maps.app.goo.gl/pUAhNHuTw4uLPz3F9",
+  bannerImage: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600",
+  whatsappNumber: "9874563210",
   enableQuoteViaWhatsapp: true,
+  websiteUrl: "https://www.vetandpets.in",
   
-  petCategories: [{ categoryName: "Dogs" }, { categoryName: "Cats" }, { categoryName: "Avian/Birds" }, { categoryName: "Exotic Reptiles" }],
-  categories: [{ categoryName: "Veterinary Medicine" }, { categoryName: "Pet Boarding" }, { categoryName: "Emergency Hospital" }],
-  specializedServices: [{ serviceName: "Orthopedic Laser Surgery" }, { serviceName: "Ultrasound & Digital X-Ray" }, { serviceName: "Hydrotherapy Wellness" }, { serviceName: "Dental Prophylaxis" }],
+  petCategories: [{ categoryName: "Dogs" }, { categoryName: "Cats" }],
+  categories: [{ categoryName: "Pet Boarding Services" }],
+  specializedServices: [{ serviceName: "Pet Boarding Services" }],
   
   serviceCoverage: {
     type: "radius",
@@ -1322,9 +1394,21 @@ const MOCK_REVIEWS = [
 const MOCK_OFFERS = [
   {
     _id: "off_01",
-    title: "Annual Preventative Checkup Bundle - 25% Off",
-    description: "Get full core screening, blood panel metrics, standard deworming treatment doses, and dynamic vaccinations all under one packaged cost.",
-    media: [{ type: "image", url: "https://images.unsplash.com/photo-1535268647977-a403b69fc756?auto=format&fit=crop&q=80&w=500" }]
+    title: "Annual Pet Boarding - 25% Off",
+    description: "Tails A'Board offers executive-tier tech-corridor pet care solutions, delivering secure overnight stays and flexible crèche options near Guindy. Featuring a high staff-to-pet ratio and rapid access to major transit links, they provide a convenient and professional corporate pet-sitting experience",
+    media: [{ type: "image", url: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600" }]
+  },
+  {
+    _id: "off_02",
+    title: "Annual Pet Boarding - 25% Off",
+    description: "Tails A'Board offers executive-tier tech-corridor pet care solutions, delivering secure overnight stays and flexible crèche options near Guindy. Featuring a high staff-to-pet ratio and rapid access to major transit links, they provide a convenient and professional corporate pet-sitting experience",
+    media: [{ type: "image", url: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600" }]
+  },
+  {
+    _id: "off_03",
+    title: "Annual Pet Boarding - 25% Off",
+    description: "Tails A'Board offers executive-tier tech-corridor pet care solutions, delivering secure overnight stays and flexible crèche options near Guindy. Featuring a high staff-to-pet ratio and rapid access to major transit links, they provide a convenient and professional corporate pet-sitting experience",
+    media: [{ type: "image", url: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600" }]
   }
 ];
 
@@ -1339,6 +1423,17 @@ const ListingDetailPage = () => {
   const [showPhone, setShowPhone] = useState(false);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // --- ADD THIS BLOCK ---
+  const [currentOfferPage, setCurrentOfferPage] = useState(1);
+  const offersPerPage = 2; // Sets how many offers display per page
+
+  // PAGINATION CALCULATIONS
+  const indexOfLastOffer = currentOfferPage * offersPerPage;
+  const indexOfFirstOffer = indexOfLastOffer - offersPerPage;
+  const currentOffersSlice = offers.slice(indexOfFirstOffer, indexOfLastOffer);
+  const totalOfferPages = Math.ceil(offers.length / offersPerPage);
+  // ----------------------
 
   useEffect(() => {
     incrementListingViews();
@@ -1372,7 +1467,8 @@ const ListingDetailPage = () => {
         <div className="hero-absolute-cluster">
           <Container>
             <div className="mb-2">
-              <span className="cyber-badge-premium"><FaShieldAlt className="me-1"/> Verified Partner</span>
+              <span className="cyber-badge-premium"><FaShieldAlt className="me-1"/> Verified</span>
+              <span className="cyber-badge-premium"><FaTags className="me-1"/> Featured</span>
             </div>
             <h1 className="text-dark headline-font fw-bold display-5 mb-0" style={{ letterSpacing: "-0.03em" }}>{listing.shopName}</h1>
           </Container>
@@ -1390,13 +1486,13 @@ const ListingDetailPage = () => {
             </div>
 
             <div className="clean-white-block mb-4">
-              <span className="clean-accent-label">About the practice</span>
+              <span className="clean-accent-label">About {listing.shopName}</span>
               <p className="lh-relaxed text-dark fs-5 mb-4" style={{ opacity: 0.85, fontWeight: "400" }}>{listing.description}</p>
               
               <Row className="g-4 pt-4 border-top border-light">
                 {listing.categories?.length > 0 && (
                   <Col md={6}>
-                    <span className="clean-accent-label">Specialty Verticals</span>
+                    <span className="clean-accent-label">Category</span>
                     <div className="d-flex flex-wrap gap-2">
                       {listing.categories.map((c, i) => <span key={i} className="badge bg-light border text-dark px-3 py-2 rounded font-monospace">{c.categoryName}</span>)}
                     </div>
@@ -1404,7 +1500,7 @@ const ListingDetailPage = () => {
                 )}
                 {listing.specializedServices?.length > 0 && (
                   <Col md={6}>
-                    <span className="clean-accent-label">Specializations</span>
+                    <span className="clean-accent-label">Specialized Category</span>
                     <div className="d-flex flex-wrap gap-2">
                       {listing.specializedServices.map((s, i) => <span key={i} style={{ color: '#ff4e00', fontSize: '0.85rem' }} className="fw-semibold font-monospace d-block">✓ {s.serviceName}</span>)}
                     </div>
@@ -1416,7 +1512,7 @@ const ListingDetailPage = () => {
             {/* IMAGES */}
             {listing.photos?.length > 0 && (
               <div className="clean-white-block mb-4">
-                <span className="clean-accent-label">Facility Tour</span>
+                <span className="clean-accent-label">Photos</span>
                 <Row className="g-3">
                   {listing.photos.map((img, i) => (
                     <Col md={4} sm={6} key={i}>
@@ -1428,10 +1524,12 @@ const ListingDetailPage = () => {
                 </Row>
               </div>
             )}
+            
+           
 
             {/* REVIEWS */}
             <div className="clean-white-block mb-4">
-              <span className="clean-accent-label">Community Reviews</span>
+              <span className="clean-accent-label">Reviews</span>
               {reviews.map((r, index) => (
                 <div key={r._id} className={`py-4 ${index !== reviews.length - 1 ? 'border-bottom border-light' : ''}`}>
                   <div className="d-flex justify-content-between align-items-center mb-2">
@@ -1445,22 +1543,70 @@ const ListingDetailPage = () => {
                 </div>
               ))}
             </div>
+             {listing.mapUrl && (
+  <div className="clean-white-block mb-4 overflow-hidden p-0">
+    {/* Map Header */}
+    <div className="p-4 pb-0">
+      <span className="clean-accent-label mb-2">
+        <FaMapMarkerAlt className="me-1" /> Find Us on the Map
+      </span>
+      <p className="text-muted small mb-0">{listing.address}</p>
+    </div>
+
+    {/* Map Iframe Container */}
+    <div className="map-container-wrapper mt-3">
+      {listing.mapUrl.includes("iframe") || listing.mapUrl.startsWith("http") ? (
+        <iframe
+          title={`${listing.shopName} Location`}
+          src={
+            // Check if mapUrl is already an embed link. If it's a standard link, we can fallback to search query
+            listing.mapUrl.includes("embed") 
+              ? listing.mapUrl 
+              : `https://maps.google.com/maps?q=${encodeURIComponent(listing.address)}&t=k&z=15&ie=UTF8&iwloc=&output=embed`
+          }
+          width="100%"
+          height="320"
+          style={{ border: 0, display: "block" }}
+          allowFullScreen=""
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        ></iframe>
+      ) : (
+        <div className="p-4 text-center">
+          <p className="small text-muted">Unable to load interactive map.</p>
+          <a 
+            href={listing.mapUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="btn btn-sm btn-outline-secondary font-monospace"
+          >
+            Open in Google Maps
+          </a>
+        </div>
+      )}
+    </div>
+  </div>
+)}
           </Col>
+
 
           {/* RIGHT PANELS */}
           <Col lg={4}>
             <div className="position-sticky" style={{ top: "2rem" }}>
               <div className="clean-white-block mb-4">
                 <div className="d-flex align-items-center justify-content-between mb-4">
-                  <span className="headline-font fw-bold text-dark fs-5">Contact Hub</span>
-                  <div className="d-flex align-items-center gap-2 text-dark small font-monospace">
+                  <span className="headline-font fw-bold text-dark fs-5">Contact Details</span>
+                  {/* <div className="d-flex align-items-center gap-2 text-dark small font-monospace">
                     <span className="live-glow-dot"></span> CONNECTED
-                  </div>
+                  </div> */}
                 </div>
 
-                <div className="mb-4">
+                <div className="mb-4 d-flex gap-2">
                   <button className="btn-clean-primary w-100 py-3" onClick={() => setShowPhone(!showPhone)}>
-                    {showPhone ? listing.phone : "Show Phone Identity"}
+                    {showPhone ? listing.phone : "Show Phone"}
+                  </button>
+                  <button className="btn-clean-primary w-100 py-3" onClick={() => setShowPhone(!showPhone)}>
+                    {showPhone ? listing.websiteUrl : "Show Website"}
                   </button>
                 </div>
 
@@ -1468,14 +1614,14 @@ const ListingDetailPage = () => {
                   <div className="d-flex align-items-start gap-3">
                     <FaEnvelope style={{ color: '#ff4e00' }} className="mt-1"/>
                     <div>
-                      <span className="d-block text-muted small">Email Address</span>
+                      <span className="d-block text-muted small">Email</span>
                       <span className="text-dark small fw-medium">{listing.email}</span>
                     </div>
                   </div>
                   <div className="d-flex align-items-start gap-3">
                     <FaMapMarkerAlt style={{ color: '#ff4e00' }} className="mt-1"/>
                     <div>
-                      <span className="d-block text-muted small">Location Coordinates</span>
+                      <span className="d-block text-muted small">Location</span>
                       <span className="text-dark small fw-medium">{listing.address}</span>
                     </div>
                   </div>
@@ -1484,7 +1630,7 @@ const ListingDetailPage = () => {
                 {/* SOCIAL BUTTONS */}
                 {listing.socialAnchors && (
                   <div className="mt-4 pt-4 border-top border-light">
-                    <span className="clean-accent-label">Social Channels</span>
+                    <span className="clean-accent-label">Social Media Network</span>
                     <div className="d-flex gap-2 mt-2">
                       {listing.socialAnchors.facebook && (
                         <a href={listing.socialAnchors.facebook} target="_blank" rel="noreferrer" className="social-clean-btn">
@@ -1507,7 +1653,7 @@ const ListingDetailPage = () => {
 
                 {/* BUSINESS HOURS */}
                 <div className="mt-4 pt-4 border-top border-light">
-                  <span className="clean-accent-label"><FaClock className="me-1"/> Practice Hours</span>
+                  <span className="clean-accent-label"><FaClock className="me-1"/> Business Hours</span>
                   <div className="p-2 rounded bg-light border border-light mt-2">
                     {listing.businessHours?.map((bh, idx) => (
                       <div key={idx} className="hours-matrix-row text-dark">
@@ -1529,7 +1675,7 @@ const ListingDetailPage = () => {
 
               {/* WRITE REVIEW */}
               <div className="clean-white-block">
-                <span className="clean-accent-label text-center">Leave feedback</span>
+                <span className="clean-accent-label text-center">Write Reviews</span>
                 <Form onSubmit={handleSubmit}>
                   <div className="d-flex justify-content-center gap-2 mb-3">
                     {[1, 2, 3, 4, 5].map((i) => (
@@ -1537,9 +1683,15 @@ const ListingDetailPage = () => {
                     ))}
                   </div>
                   <Form.Group className="mb-3">
+                    <Form.Control as="input" rows={3} placeholder="Name" value={comment} onChange={(e) => setComment(e.target.value)} required className="clean-input-field" />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Control as="input" rows={3} placeholder="Email" value={comment} onChange={(e) => setComment(e.target.value)} required className="clean-input-field" />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
                     <Form.Control as="textarea" rows={3} placeholder="Describe your experience with the team..." value={comment} onChange={(e) => setComment(e.target.value)} required className="clean-input-field" />
                   </Form.Group>
-                  <button type="submit" className="btn-clean-primary w-100 py-2.5">Submit Report</button>
+                  <button type="submit" className="btn-clean-primary w-100 py-2.5">Submit Review</button>
                 </Form>
               </div>
             </div>
@@ -1547,27 +1699,54 @@ const ListingDetailPage = () => {
         </Row>
 
         {/* OFFERS REEL */}
+        {/* OFFERS REEL */}
         {offers.length > 0 && (
           <div className="mt-5 pt-5 border-top border-light">
             <div className="d-flex align-items-center gap-2 mb-4">
-              <span className="live-glow-dot"></span>
-              <h3 className="headline-font text-dark fw-bold mb-0">Active Notices & Offers</h3>
+              <h3 className="headline-font text-dark fw-bold mb-0">Offers / Posts / Feeds</h3>
             </div>
+            
+            {/* Displaying Sliced Offers */}
             <Row className="g-4">
-              {offers.map((offer) => (
+              {currentOffersSlice.map((offer) => (
                 <Col md={6} key={offer._id}>
                   <div className="clean-white-block h-100 p-0 overflow-hidden">
-                    <div style={{ aspectRatio: '16/6', overflow: 'hidden' }} className="border-bottom border-light">
+                    <div style={{ aspectRatio: '12/6', overflow: 'hidden' }} className="border-bottom border-light">
                       <img src={offer.media[0].url} alt={offer.title} className="w-100 h-100" style={{ objectFit: 'cover' }} />
                     </div>
                     <div className="p-4">
                       <h5 className="text-dark headline-font fw-bold mb-2">{offer.title}</h5>
-                      <p className="text-muted small mb-0 lh-relaxed">{offer.description}</p>
+                      <p className="text-muted small mb-0 lh-relaxed text-justify">{offer.description}</p>
                     </div>
                   </div>
                 </Col>
               ))}
             </Row>
+
+            {/* React Paginate Component */}
+            {totalOfferPages > 1 && (
+              <ReactPaginate
+                previousLabel={<FaAngleLeft />}
+                nextLabel={<FaAngleRight/>}
+                breakLabel={"..."}
+                pageCount={totalOfferPages}
+                marginPagesDisplayed={2}
+                pageRangeDisplayed={3}
+                onPageChange={({ selected }) => setCurrentOfferPage(selected + 1)}
+                containerClassName={"clean-paginate-container"}
+                pageClassName={"clean-paginate-item"}
+                pageLinkClassName={"clean-paginate-link"}
+                previousClassName={"clean-paginate-item"}
+                previousLinkClassName={"clean-paginate-link"}
+                nextClassName={"clean-paginate-item"}
+                nextLinkClassName={"clean-paginate-link"}
+                breakClassName={"clean-paginate-item clean-paginate-break"}
+                breakLinkClassName={"clean-paginate-link"}
+                activeClassName={"active"}
+                disabledClassName={"disabled"}
+                forcePage={currentOfferPage - 1} // Keeps state synchronized
+              />
+            )}
           </div>
         )}
       </Container>
