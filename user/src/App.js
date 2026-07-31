@@ -25,6 +25,9 @@ import Review from './Pages/Review';
 import SessionTimeoutHandler from './Hooks/SessionTimeoutHandler'; 
 import ForgotPassword from "./Pages/ForgotPassword";
 import ResetPassword from "./Pages/ResetPassword";
+import OfferListings from './Pages/OffersManagement';
+import AddEditOffers from './Pages/AddEditOffers';
+
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -61,6 +64,8 @@ function App() {
           <Route path="edit-profile" element={<EditProfile />} />
           <Route path="change-password" element={<ChangePassword />} />
           <Route path="review" element={<Review />} />
+          <Route path='/offers-management' element={<OfferListings />} />
+          <Route path='/add-edit-offers' element={<AddEditOffers />} />
           {/* <Route path="add-listing" element={<AddListing />} /> */}
           
 

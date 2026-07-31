@@ -31,6 +31,8 @@ import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import Offers from './Pages/Offers';
 // import OfferSinglePage from './Pages/OfferSinglePage';
 import TrialMock from "./Pages/TrailMock";
+import DocumentViewer from "./Pages/DocumentViewer";
+import PetGroomingCityPage from './Pages/PetGroomingDirectoryPage';
 
 
 const API_BASE =
@@ -175,6 +177,9 @@ function AppContent() {
         <Route path="/offers" element={<Offers />} />
         {/* <Route path="/offer-single-page" element={<OfferSinglePage />} /> */}
         <Route path='/trial' element={<TrialMock />} />
+        
+        <Route path="/pet-grooming" element={<PetGroomingCityPage />} />
+        <Route path="/pet-grooming/:cityName" element={<DocumentViewer />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />
       <a 

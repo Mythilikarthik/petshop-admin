@@ -757,7 +757,7 @@ if (!PHONE_REGEX.test(form.phone))
     setLoading(false);
   };
   const petCategoryOptions = [
-  { value: "ALL", label: "All Types" }, // 👈 important
+  // { value: "ALL", label: "All Types" }, // 👈 important
   ...petCategories.map(p => ({
     value: p._id,
     label: p.categoryName,
@@ -916,7 +916,7 @@ if (!PHONE_REGEX.test(form.phone))
                 }
                 placeholder="Select Type"
               /> */}
-              <Select
+              {/* <Select
                 isMulti
                 options={petCategoryOptions}
                 onChange={(selected) => {
@@ -948,7 +948,42 @@ if (!PHONE_REGEX.test(form.phone))
         }))
 }
                 placeholder="Select Type"
-              />
+              /> */}
+              <Select
+  isMulti
+  options={petCategoryOptions}
+ // isOptionDisabled={() => listing.petCategories.length >= 1} // 🚫 Disables other options once 1 is picked
+  onChange={(selected) => {
+    // selected will always be an array because isMulti is active
+    const values = selected ? selected.map(s => s.value) : [];
+
+    // ✅ Your exact original functionality stays completely intact
+    if (values.includes("ALL")) {
+      const allIds = petCategories.map(p => p._id);
+
+      setListing(prev => ({
+        ...prev,
+        petCategories: allIds,
+      }));
+    } else {
+      setListing(prev => ({
+        ...prev,
+        petCategories: values,
+      }));
+    }
+  }}
+  value={
+    listing.petCategories.length === petCategories.length
+      ? [{ value: "ALL", label: "All Types" }]
+      : petCategories
+          .filter(p => listing.petCategories.includes(p._id))
+          .map(p => ({
+            value: p._id,
+            label: p.categoryName,
+          }))
+  }
+  placeholder="Select Type"
+/>
 
               {/* CATEGORY */}
               <Select
@@ -958,6 +993,7 @@ if (!PHONE_REGEX.test(form.phone))
                   value: c._id,
                   label: c.categoryName,
                 }))}
+                isOptionDisabled={() => listing.categories.length >= 1}
                 value={categories
                   .filter(c => listing.categories.includes(c._id))
                   .map(c => ({ value: c._id, label: c.categoryName }))
@@ -981,6 +1017,7 @@ if (!PHONE_REGEX.test(form.phone))
     value: s._id,
     label: s.serviceName,
   }))}
+  //isOptionDisabled={() => (selectedServices?.length || 0) >= 1}
   value={services
     .filter(s => selectedServices.includes(s._id))
     .map(s => ({ value: s._id, label: s.serviceName }))

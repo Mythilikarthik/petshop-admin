@@ -80,6 +80,11 @@
 const mongoose = require('mongoose');
 
 const Offer = new mongoose.Schema({
+  userId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',  
+    index: true 
+  },
   category: {
     type: String,
     required: true,

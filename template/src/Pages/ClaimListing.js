@@ -1070,6 +1070,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { validateField } from "../utils/formValidation";
+import ThankyouModel from "../Components/ThankyouModel";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -1092,6 +1093,7 @@ const ClaimListing = () => {
   const [verificationMethod, setVerificationMethod] = useState("");
   const [documents, setDocuments] = useState([]);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
   const errorRef = useRef(null);
   const successRef = useRef(null);
 
@@ -1258,6 +1260,7 @@ const ClaimListing = () => {
     formData.append("email", user.email);
     formData.append("phone", user.phone);
     formData.append("password", user.password);
+    formData.append("shopName", listing?.shopName || "");
 
     // Claim fields
     formData.append("claimRole", claimRole);
@@ -1315,12 +1318,14 @@ const ClaimListing = () => {
       //   },
       // });
     } else {
+      setShowThankYou(true);
       // Document verification
       setSuccess("Claim documents submitted successfully! Redirecting to directory...");
       // navigate("/directory");
-      setTimeout(() => {
-        navigate("/directory");
-      }, 2000)
+      
+      // setTimeout(() => {
+      //   navigate("/directory");
+      // }, 2000)
     }
 
   } catch (err) {
@@ -1742,6 +1747,10 @@ const ClaimListing = () => {
             </Button>
           </div>
         </Form>
+        <ThankyouModel 
+          showThankYou={showThankYou} 
+          setShowThankYou={setShowThankYou} 
+        />
       </Container>
     </div>
   );

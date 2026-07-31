@@ -100,18 +100,20 @@ const express = require("express");
 const router = express.Router();
 const emailjs = require("@emailjs/nodejs");
 const Admin = require("../Models/Admin");
+const sendContactEmail = require("../Utils/sendContactEmail");
 
-const sendEmail = async (templateData) => {
-  return emailjs.send(
-    process.env.EMAILJS_SERVICE_ID,
-    process.env.EMAILJS_TEMPLATE_ID,
-    templateData,
-    {
-      publicKey: process.env.EMAILJS_PUBLIC_KEY,
-      privateKey: process.env.EMAILJS_PRIVATE_KEY,
-    }
-  );
-};
+
+// const sendEmail = async (templateData) => {
+//   return emailjs.send(
+//     process.env.EMAILJS_SERVICE_ID,
+//     process.env.EMAILJS_TEMPLATE_ID,
+//     templateData,
+//     {
+//       publicKey: process.env.EMAILJS_PUBLIC_KEY,
+//       privateKey: process.env.EMAILJS_PRIVATE_KEY,
+//     }
+//   );
+// };
 
 
 router.post("/", async (req, res) => {
@@ -127,13 +129,21 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ success: false, message: "Admin email not found" });
     }
 
-    await sendEmail({
+    await sendContactEmail({
       title: `Contact from ${shopName}`,
       name: shopName,
       email,
       phone: "",
       message: description,
       admin_email: admin.email,
+    });
+    await sendContactEmail({
+      title: `Contact from ${shopName}`,
+      name: shopName,
+      email,
+      phone: "",
+      message: description,
+      admin_email: "scotwebtech2025@gmail.com",
     });
 
     res.json({ success: true, message: "Message sent successfully" });
@@ -156,13 +166,21 @@ router.post("/send", async (req, res) => {
       return res.status(404).json({ success: false, message: "Admin email not found" });
     }
 
-    await sendEmail({
+    await sendContactEmail({
       title: "New Contact Form Submission",
       name,
       email,
       phone: phone || "",
       message,
       admin_email: admin.email,
+    });
+    await sendContactEmail({
+      title: "New Contact Form Submission",
+      name,
+      email,
+      phone: phone || "",
+      message,
+      admin_email: "scotwebtech2025@gmail.com",
     });
 
     res.json({ success: true, message: "Message sent successfully" });

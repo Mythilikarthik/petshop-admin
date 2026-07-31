@@ -6,11 +6,40 @@ const ListingSchema = new mongoose.Schema({
   shopName: { type: String, required: true, set: v => sanitizeText(v) },
   slug: { type: String, index: true },
   email: { type: String, required: false },
-  phone: { type: String, required: true },
+  phone: { type: String, required: true }, 
+
+  // Newly Added Fields
+  savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  whatsapp: { type: String, required: true },
+  mapLink: String,
+  yearsInBusiness: Number,
+  customersServed: Number,
+  certifications: [{ type: String }],
+  languagesSpoken: [{ type: String }],
+  amenities: [{ type: String }],
+  serviceAreas: [{ type: String }],
+  appointmentRequired: { type: Boolean, default: false },
+  responseTime: { type: String, default: "Within a few hours" }, // e.g., "2 Hours"
+
+  // Pricing & Payments
+  startingPrice: { type: Number, default: 0 },
+  paymentMethods: [{
+    type: String,
+    enum: ["Cash", "Credit Card", "Debit Card", "UPI", "Net Banking", "Digital Wallet"],
+  }],
+  videos: [
+    {
+      url: { type: String, required: true },
+      title: { type: String, default: "" },
+      thumbnail: { type: String, default: "" },
+    },
+  ],
+
+  //End Newly Added Fields
   address: String,
   city: { type: mongoose.Schema.Types.ObjectId, ref: "City", required: true },
   country: String,
-  mapUrl: String,
+  mapUrl: String, //used for website url
   businessHours: [
   {
     day: { type: String, required: true },

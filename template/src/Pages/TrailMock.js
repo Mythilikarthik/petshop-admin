@@ -1,1081 +1,21 @@
-// // import React, { useState, useEffect, useRef } from "react";
-// // import { FaStar, FaStarHalfAlt, FaRegStar, FaWhatsapp, FaFacebook, FaInstagram, FaTwitter, FaMapMarkerAlt, FaShieldAlt, FaCheckCircle, FaAward } from "react-icons/fa";
-// // import { Form, Button, Container, Row, Col, Alert, Modal } from "react-bootstrap";
-// // import { useAuth } from "../contexts/AuthContext";
-// // import { incrementListingViews } from "../utils/engagementTracker";
-// // import { useEngagementGate } from "../hooks/useEngagementGate";
-// // import AuthGateModal from "../hooks/AuthGateModel";
-// // import { Helmet } from "react-helmet-async";
-// // import { validateField } from "../utils/formValidation";
-// // import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
-
-// // const API_BASE = "http://localhost:5000";
-// // const dummyImage = "https://via.placeholder.com/600x400?text=No+Media+Available";
-
-// // // Embedded Premium Stylesheet Injection (Drop-in ready)
-// // const STYLES = `
-// //   .stylish-detail-page {
-// //     background-color: #f8fafc;
-// //     font-family: 'Inter', -apple-system, sans-serif;
-// //     color: #1e293b;
-// //     padding-bottom: 5rem;
-// //   }
-// //   .hero-premium-banner {
-// //     height: 400px;
-// //     background-size: cover;
-// //     background-position: center;
-// //     position: relative;
-// //     border-radius: 0 0 24px 24px;
-// //     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-// //   }
-// //   .hero-overlay {
-// //     background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);
-// //     border-radius: 0 0 24px 24px;
-// //   }
-// //   .glass-card {
-// //     background: rgba(255, 255, 255, 0.9);
-// //     backdrop-filter: blur(8px);
-// //     border: 1px solid rgba(255,255,255,0.6);
-// //     border-radius: 16px;
-// //   }
-// //   .badge-premium {
-// //     background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-// //     color: #0f172a;
-// //     font-weight: 600;
-// //     letter-spacing: 0.05em;
-// //   }
-// //   .badge-verified {
-// //     background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-// //     color: white;
-// //   }
-// //   .shop-title {
-// //     font-weight: 800;
-// //     letter-spacing: -0.02em;
-// //     color: #0f172a;
-// //     line-height: 1.2;
-// //   }
-// //   .category-pill {
-// //     background: #eff6ff;
-// //     color: #1d4ed8;
-// //     padding: 6px 14px;
-// //     border-radius: 9999px;
-// //     font-size: 0.85rem;
-// //     font-weight: 500;
-// //     transition: all 0.2s;
-// //   }
-// //   .category-pill:hover {
-// //     background: #dbeafe;
-// //   }
-// //   .service-pill {
-// //     background: #fef9c3;
-// //     color: #713f12;
-// //     padding: 6px 14px;
-// //     border-radius: 8px;
-// //     font-size: 0.85rem;
-// //     font-weight: 500;
-// //   }
-// //   .gallery-wrapper {
-// //     overflow: hidden;
-// //     border-radius: 12px;
-// //     box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-// //     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-// //   }
-// //   .gallery-wrapper:hover {
-// //     transform: scale(1.03);
-// //   }
-// //   .sidebar-sticky {
-// //     position: sticky;
-// //     top: 2rem;
-// //   }
-// //   .offer-card {
-// //     border: none;
-// //     border-radius: 16px;
-// //     transition: all 0.3s ease;
-// //     box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-// //   }
-// //   .offer-card:hover {
-// //     transform: translateY(-5px);
-// //     box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-// //   }
-// //   .hours-row {
-// //     display: flex;
-// //     justify-content: space-between;
-// //     padding: 8px 0;
-// //     border-bottom: 1px dashed #e2e8f0;
-// //   }
-// //   .hours-row:last-child {
-// //     border-bottom: none;
-// //   }
-// //   .pulse-dot {
-// //     width: 8px;
-// //     height: 8px;
-// //     background-color: #ef4444;
-// //     border-radius: 50%;
-// //     display: inline-block;
-// //     animation: pulse 2s infinite;
-// //   }
-// //   @keyframes pulse {
-// //     0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-// //     70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-// //     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-// //   }
-// // `;
-
-// // // ================= DYNAMIC MOCK DATA OBJECT =================
-// // const MOCK_LISTING_DETAILS = {
-// //   _id: "mock_listing_99881122",
-// //   slug: "premium-veterinary-care-center",
-// //   shopName: "Paws & Claws Premium Veterinary Care & Wellness Center",
-// //   plan: "premium_verified",
-// //   isFeatured: true,
-// //   isPremiumBadge: true,
-// //   isVerified: true,
-// //   isClaimed: true,
-// //   created_by_type: "admin",
-// //   description: "Welcome to Paws & Claws Premium Veterinary Care Center. We specialize in advanced veterinary diagnostics, orthopedic surgeries, structural grooming treatments, and professional nutritional coaching. Serving the community with over 15 years of certified medical expertise, our clinic offers 24/7 critical emergency operations alongside premium boarding alternatives for your beloved household pets.",
-// //   phone: "+1 (555) 392-8871",
-// //   email: "care@pawsandclaws-premium.com",
-// //   address: "742 Evergreen Terrace, Medical District, Sector 4",
-// //   country: "United States",
-// //   city: { city: "Springfield" },
-// //   mapUrl: "https://maps.google.com/?q=Veterinary+Clinic",
-// //   bannerImage: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=1200",
-// //   whatsappNumber: "15553928871",
-// //   enableQuoteViaWhatsapp: true,
-  
-// //   petCategories: [{ categoryName: "Dogs" }, { categoryName: "Cats" }, { categoryName: "Avian/Birds" }, { categoryName: "Exotic Reptiles" }],
-// //   categories: [{ categoryName: "Veterinary Medicine" }, { categoryName: "Pet Boarding" }, { categoryName: "Emergency Animal Hospital" }],
-// //   specializedServices: [{ serviceName: "Orthopedic Laser Surgery" }, { serviceName: "Ultrasound & Digital X-Ray" }, { serviceName: "Hydrotherapy Wellness Sessions" }, { serviceName: "Dental Scaling & Prophylaxis" }],
-  
-// //   serviceCoverage: {
-// //     type: "radius",
-// //     radiusKm: 25,
-// //     neighborhoods: ["North End", "Downtown Hub", "Greenwood Suburbs", "Westside Valley"]
-// //   },
-  
-// //   businessHours: [
-// //     { day: "monday", open: "08:00 AM", close: "08:00 PM", closed: false },
-// //     { day: "tuesday", open: "08:00 AM", close: "08:00 PM", closed: false },
-// //     { day: "wednesday", open: "08:00 AM", close: "08:00 PM", closed: false },
-// //     { day: "thursday", open: "08:00 AM", close: "08:00 PM", closed: false },
-// //     { day: "friday", open: "08:00 AM", close: "10:00 PM", closed: false },
-// //     { day: "saturday", open: "09:00 AM", close: "06:00 PM", closed: false },
-// //     { day: "sunday", open: "00:00 AM", close: "00:00 AM", closed: true }
-// //   ],
-  
-// //   socialAnchors: {
-// //     facebook: "https://facebook.com/mock-paws-claws",
-// //     instagram: "https://instagram.com/mock-paws-claws",
-// //     twitter: "https://twitter.com/mock-paws-claws"
-// //   },
-  
-// //   photos: [
-// //     { url: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600", alt: "Modern Diagnostics Laboratory Room" },
-// //     { url: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600", alt: "Luxury Dog Boarding Suites" },
-// //     { url: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=600", alt: "Professional Pet Grooming and Bathing Station" }
-// //   ]
-// // };
-
-// // const MOCK_REVIEWS = [
-// //   {
-// //     _id: "rev_01",
-// //     userName: "Sarah Jenkins",
-// //     created_at: "2026-06-14T10:30:00.000Z",
-// //     rating: 5,
-// //     comment: "Dr. Alistair and the nursing crew saved my golden retriever after an accidental poisoning incident. The communication level was phenomenal, and the cost structure was highly transparent.",
-// //     photos: ["https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=150"]
-// //   },
-// //   {
-// //     _id: "rev_02",
-// //     userName: "Marcus Vance",
-// //     created_at: "2026-07-02T14:15:00.000Z",
-// //     rating: 4,
-// //     comment: "Excellent grooming work done on my senior cat. The specialized handlers here are highly empathetic.",
-// //     photos: []
-// //   }
-// // ];
-
-// // const MOCK_OFFERS = [
-// //   {
-// //     _id: "off_01",
-// //     title: "Annual Preventative Checkup Bundle - 25% Off",
-// //     description: "Get full core screening, blood panel metrics, standard deworming treatment doses, and dynamic vaccinations all under one packaged cost.",
-// //     media: [
-// //       { type: "image", url: "https://images.unsplash.com/photo-1535268647977-a403b69fc756?auto=format&fit=crop&q=80&w=500" },
-// //       { type: "image", url: "https://images.unsplash.com/photo-1612531386530-97286d97c2d2?auto=format&fit=crop&q=80&w=500" }
-// //     ]
-// //   },
-// //   {
-// //     _id: "off_02",
-// //     title: "Free Dental Screening Every Wednesday",
-// //     description: "Book an express structural evaluation with one of our oral health experts to identify early calculus buildups or periodontal concerns.",
-// //     media: [
-// //       { type: "image", url: "https://images.unsplash.com/photo-1581888227599-779811939961?auto=format&fit=crop&q=80&w=500" }
-// //     ]
-// //   }
-// // ];
-
-// // const ListingDetailPage = () => {
-// //   const alertRef = useRef(null);
-// //   const fileInputRef = useRef(null);
-// //   const { user, authLoading } = useAuth();
-// //   const engagementGate = useEngagementGate(user);
-
-// //   const [listing] = useState(MOCK_LISTING_DETAILS);
-// //   const [alert, setAlert] = useState({ show: false, type: "", message: "" });
-// //   const [isSubmitting, setIsSubmitting] = useState(false);
-// //   const [rating, setRating] = useState(0);
-// //   const [comment, setComment] = useState("");
-// //   const [userEmail, setUserEmail] = useState("");
-// //   const [userName, setUserName] = useState("");
-// //   const [photos, setPhotos] = useState([]);
-// //   const [reviews, setReviews] = useState(MOCK_REVIEWS);
-// //   const [offers] = useState(MOCK_OFFERS);
-  
-// //   const [showAuthGate, setShowAuthGate] = useState(false);
-// //   const [showGalleryModal, setShowGalleryModal] = useState(false);
-// //   const [selectedImage, setSelectedImage] = useState(null);
-// //   const [currentPage, setCurrentPage] = useState(1);
-// //   const [carouselIndices, setCarouselIndices] = useState({});
-// //   const [showPhone, setShowPhone] = useState(false);
-// //   const [isTracking, setIsTracking] = useState(false);
-// //   const [showUrl, setShowUrl] = useState(false);
-// //   const [urlIsTracking, setUrlIsTracking] = useState(false);
-
-// //   const offersPerPage = 2; 
-// //   const listingTier = listing?.plan || "free"; 
-// //   const isFeaturedTier = listing?.isFeatured || listingTier === "featured_city" || listingTier === "premium_verified";
-// //   const isPremiumTier = listing?.isPremiumBadge || listingTier === "premium_verified";
-// //   const isVerifiedListing = listing?.isVerified;
-
-// //   useEffect(() => {
-// //     incrementListingViews();
-// //     window.scrollTo({ top: 0, behavior: "smooth" });
-// //   }, []);
-
-// //   const moveCarousel = (offerId, direction, totalMedia) => {
-// //     setCarouselIndices((prev) => {
-// //       const currentIdx = prev[offerId] || 0;
-// //       let nextIdx = direction === 'next' ? currentIdx + 1 : currentIdx - 1;
-// //       if (nextIdx >= totalMedia) nextIdx = 0;
-// //       if (nextIdx < 0) nextIdx = totalMedia - 1;
-// //       return { ...prev, [offerId]: nextIdx };
-// //     });
-// //   };
-
-// //   const handleShowPhone = () => {
-// //     if (!user) { setShowAuthGate(true); return; }
-// //     setIsTracking(true);
-// //     setTimeout(() => { setShowPhone(true); setIsTracking(false); }, 600);
-// //   };
-
-// //   const handleShowUrl = () => {
-// //     if (!user) { setShowAuthGate(true); return; }
-// //     setUrlIsTracking(true);
-// //     setTimeout(() => { setShowUrl(true); setUrlIsTracking(false); }, 600);
-// //   };
-
-// //   const handleSubmit = (e) => {
-// //     e.preventDefault();
-// //     if (!rating) { setAlert({ show: true, type: "danger", message: "Please select a rating." }); return; }
-// //     setIsSubmitting(true);
-// //     setTimeout(() => {
-// //       const newReview = {
-// //         _id: `rev_mock_${Date.now()}`,
-// //         userName: user ? user.name : userName || "Anonymous Guest",
-// //         created_at: new Date().toISOString(),
-// //         rating: rating,
-// //         comment: comment,
-// //         photos: []
-// //       };
-// //       setReviews([newReview, ...reviews]);
-// //       setAlert({ show: true, type: "success", message: "Review posted smoothly onto simulated view!" });
-// //       setRating(0); setComment(""); setUserName(""); setUserEmail("");
-// //       setIsSubmitting(false);
-// //     }, 800);
-// //   };
-
-// //   return (
-// //     <div className="stylish-detail-page">
-// //       <style>{STYLES}</style>
-// //       <Helmet>
-// //         <title>{`Vet and Pets - ${listing?.shopName}`}</title>
-// //       </Helmet>
-
-// //       <AuthGateModal show={showAuthGate} onClose={() => setShowAuthGate(false)} />
-
-// //       {/* STYLISH PREMIUM BANNER */}
-// //       {isFeaturedTier && listing.bannerImage && (
-// //         <div className="hero-premium-banner" style={{ backgroundImage: `url(${listing.bannerImage})` }}>
-// //           <div className="hero-overlay w-100 h-100 position-absolute top-0 start-0 d-flex align-items-end">
-// //             <Container className="mb-4">
-// //               <div className="d-flex flex-wrap gap-2 mb-2">
-// //                 {isPremiumTier && <span className="badge badge-premium px-3 py-2 shadow-sm rounded-pill"><FaShieldAlt className="me-1 text-warning"/> PREMIUM VENDOR</span>}
-// //                 {isVerifiedListing && <span className="badge badge-verified px-3 py-2 shadow-sm rounded-pill"><FaCheckCircle className="me-1"/> VERIFIED BUSINESS</span>}
-// //               </div>
-// //               <h1 className="text-white shop-title text-shadow mb-0">{listing.shopName}</h1>
-// //             </Container>
-// //           </div>
-// //         </div>
-// //       )}
-
-// //       <Container className="mt-5">
-// //         <Row>
-// //           {/* LEFT CONTENT COLUMN */}
-// //           <Col lg={8} className="pe-lg-4">
-// //             {/* Quick Type Tags */}
-// //             <div className="d-flex flex-wrap gap-2 mb-4">
-// //               {listing.petCategories?.map((cat, i) => (
-// //                 <span className="category-pill" key={i}>{cat.categoryName}</span>
-// //               ))}
-// //             </div>
-
-// //             <div className="bg-white p-4 rounded-4 shadow-sm border mb-4">
-// //               <h4 className="fw-bold mb-3" style={{ letterSpacing: "-0.01em" }}>About the Business</h4>
-// //               <p className="text-secondary lh-lg mb-4" style={{ fontSize: "1.05rem" }}>{listing.description}</p>
-              
-// //               {/* Category tags setup */}
-// //               <div className="d-flex flex-column gap-3 pt-3 border-top">
-// //                 {listing.categories?.length > 0 && (
-// //                   <div>
-// //                     <span className="d-block text-xs fw-bold text-uppercase text-muted mb-2">Primary Specializations</span>
-// //                     <div className="d-flex flex-wrap gap-2">
-// //                       {listing.categories.map((c, i) => <span key={i} className="badge bg-light text-dark border px-3 py-2 rounded-3">{c.categoryName}</span>)}
-// //                     </div>
-// //                   </div>
-// //                 )}
-                
-// //                 {listing.specializedServices?.length > 0 && (
-// //                   <div>
-// //                     <span className="d-block text-xs fw-bold text-uppercase text-muted mb-2">Advanced Care & Machinery</span>
-// //                     <div className="d-flex flex-wrap gap-2">
-// //                       {listing.specializedServices.map((s, i) => <span key={i} className="service-pill">{s.serviceName}</span>)}
-// //                     </div>
-// //                   </div>
-// //                 )}
-// //               </div>
-// //             </div>
-
-// //             {/* RADAR/RADIUS FOOTPRINT COVERAGE */}
-// //             {listing.serviceCoverage && (
-// //               <div className="p-4 rounded-4 shadow-sm border mb-4 text-white" style={{ background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)" }}>
-// //                 <h5 className="d-flex align-items-center gap-2 text-warning mb-2"><FaMapMarkerAlt /> Core Operations Area Map</h5>
-// //                 <p className="mb-0 text-slate-300 opacity-90">
-// //                   Providing responsive specialized support within a <strong>{listing.serviceCoverage.radiusKm} km radius</strong> encompassing regional sectors like: {listing.serviceCoverage.neighborhoods.join(', ')}.
-// //                 </p>
-// //               </div>
-// //             )}
-
-// //             {/* GALLERIES SHOWCASE */}
-// //             {listing.photos?.length > 0 && (
-// //               <div className="mb-5">
-// //                 <h4 className="fw-bold mb-3">Facility Showcase</h4>
-// //                 <Row className="g-3">
-// //                   {listing.photos.map((img, i) => (
-// //                     <Col md={4} sm={6} key={i}>
-// //                       <div className="gallery-wrapper" onClick={() => { setSelectedImage(img.url); setShowGalleryModal(true); }}>
-// //                         <img src={img.url} alt={img.alt} className="w-100" style={{ height: "180px", objectFit: "cover", cursor: "pointer" }} />
-// //                       </div>
-// //                     </Col>
-// //                   ))}
-// //                 </Row>
-// //               </div>
-// //             )}
-
-// //             {/* CLIENT COMMENTS & REVIEWS */}
-// //             <div className="bg-white p-4 rounded-4 shadow-sm border mb-4">
-// //               <h4 className="fw-bold mb-4">Verified Customer Reviews</h4>
-// //               {reviews.map((r) => (
-// //                 <div key={r._id} className="pb-4 mb-4 border-bottom last-border-0">
-// //                   <div className="d-flex justify-content-between align-items-start mb-2">
-// //                     <div>
-// //                       <h6 className="fw-bold mb-0 text-slate-800">{r.userName}</h6>
-// //                       <div className="text-warning small my-1">
-// //                         {Array.from({ length: 5 }).map((_, idx) => <FaStar key={idx} color={idx < r.rating ? "#ffc107" : "#e4e5e9"} />)}
-// //                       </div>
-// //                     </div>
-// //                     <span className="text-muted small">{new Date(r.created_at).toLocaleDateString()}</span>
-// //                   </div>
-// //                   <p className="text-secondary mb-0 font-sans">{r.comment}</p>
-// //                 </div>
-// //               ))}
-// //             </div>
-// //           </Col>
-
-// //           {/* RIGHT SIDEBAR COLUMN */}
-// //           <Col lg={4}>
-// //             <div className="sidebar-sticky">
-// //               {/* CONTACT MATRIX CARD */}
-// //               <div className="bg-white p-4 rounded-4 shadow-sm border mb-4">
-// //                 <h5 className="fw-bold mb-3 pb-2 border-bottom">Information Center</h5>
-                
-// //                 <div className="mb-3">
-// //                   <span className="d-block text-xs text-muted mb-1">Direct Line</span>
-// //                   {!showPhone ? (
-// //                     <Button size="sm" variant="primary" className="w-100 rounded-3" onClick={handleShowPhone} disabled={isTracking}>
-// //                       {isTracking ? "Decrypting..." : "Reveal Secure Number"}
-// //                     </Button>
-// //                   ) : (
-// //                     <a href={`tel:${listing.phone}`} className="fw-bold fs-5 text-primary text-decoration-none d-block text-center p-2 bg-light rounded-3">{listing.phone}</a>
-// //                   )}
-// //                 </div>
-
-// //                 <div className="mb-3">
-// //                   <span className="d-block text-xs text-muted mb-1">Clinic Address</span>
-// //                   <p className="fw-medium text-dark mb-0 small">{listing.address}</p>
-// //                 </div>
-
-// //                 <div className="mb-4">
-// //                   <span className="d-block text-xs text-muted mb-2">Working Matrix Hours</span>
-// //                   <div className="bg-light p-3 rounded-3 border-0 small">
-// //                     {listing.businessHours?.map((bh, idx) => (
-// //                       <div key={idx} className="hours-row">
-// //                         <span className="text-capitalize fw-semibold text-secondary">{bh.day.substring(0,3)}</span>
-// //                         <span className="font-monospace">{bh.closed ? <span className="text-danger fw-bold">Closed</span> : `${bh.open} - ${bh.close}`}</span>
-// //                       </div>
-// //                     ))}
-// //                   </div>
-// //                 </div>
-
-// //                 {isFeaturedTier && listing.whatsappNumber && (
-// //                   <Button variant="success" className="w-100 rounded-3 py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold" href={`https://wa.me/${listing.whatsappNumber}`} target="_blank">
-// //                     <FaWhatsapp size={18}/> Instant WhatsApp Chat
-// //                   </Button>
-// //                 )}
-// //               </div>
-
-// //               {/* REVIEW SIDE-WIDGET COMPONENT */}
-// //               <div className="bg-white p-4 rounded-4 shadow-sm border">
-// //                 <h5 className="fw-bold mb-3 text-center">Leave Feedback</h5>
-// //                 <Form onSubmit={handleSubmit}>
-// //                   <div className="d-flex justify-content-center gap-1 mb-3">
-// //                     {[1, 2, 3, 4, 5].map((i) => (
-// //                       <span key={i} style={{ fontSize: "2rem", cursor: "pointer", color: i <= rating ? "#ffc107" : "#cbd5e1" }} onClick={() => setRating(i)}>★</span>
-// //                     ))}
-// //                   </div>
-// //                   <Form.Group className="mb-3">
-// //                     <Form.Control as="textarea" rows={3} placeholder="Tell others about your diagnostic experience..." value={comment} onChange={(e) => setComment(e.target.value)} required maxLength={300} className="rounded-3" />
-// //                   </Form.Group>
-// //                   <Button variant="outline-dark" type="submit" className="w-100 rounded-3 fw-semibold">Submit Dynamic Post</Button>
-// //                 </Form>
-// //               </div>
-// //             </div>
-// //           </Col>
-// //         </Row>
-
-// //         {/* OFFERS CAROUSEL ROW */}
-// //         {offers.length > 0 && (() => {
-// //           const currentOffers = offers.slice((currentPage - 1) * offersPerPage, currentPage * offersPerPage);
-// //           const totalPages = Math.ceil(offers.length / offersPerPage);
-
-// //           return (
-// //             <div className="mt-5 border-top pt-5">
-// //               <h3 className="fw-bold mb-4 d-flex align-items-center gap-2">
-// //                 <span className="pulse-dot"></span> Active Campaign Promotions
-// //               </h3>
-// //               <Row>
-// //                 {currentOffers.map((offer) => {
-// //                   const currentImgIdx = carouselIndices[offer._id] || 0;
-// //                   const currentMedia = offer.media?.[currentImgIdx];
-
-// //                   return (
-// //                     <Col md={6} key={offer._id} className="mb-4">
-// //                       <div className="card offer-card h-100">
-// //                         <div className="position-relative bg-light" style={{ aspectRatio: '16/9', overflow: 'hidden', borderRadius: '16px 16px 0 0' }}>
-// //                           {currentMedia && <img src={currentMedia.url} alt={offer.title} className="w-100 h-100 position-absolute top-0 start-0" style={{ objectFit: 'cover' }} />}
-// //                           {offer.media?.length > 1 && (
-// //                             <>
-// //                               <Button onClick={() => moveCarousel(offer._id, 'prev', offer.media.length)} variant="light" className="position-absolute start-0 top-50 translate-middle-y m-2 rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style={{ width: '32px', height: '32px' }}><BiChevronLeft size={20}/></Button>
-// //                               <Button onClick={() => moveCarousel(offer._id, 'next', offer.media.length)} variant="light" className="position-absolute end-0 top-50 translate-middle-y m-2 rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style={{ width: '32px', height: '32px' }}><BiChevronRight size={20}/></Button>
-// //                             </>
-// //                           )}
-// //                         </div>
-// //                         <div className="card-body p-4">
-// //                           <h5 className="fw-bold text-dark mb-2">{offer.title}</h5>
-// //                           <p className="text-secondary small line-clamp-2 mb-0">{offer.description}</p>
-// //                         </div>
-// //                       </div>
-// //                     </Col>
-// //                   );
-// //                 })}
-// //               </Row>
-// //               {totalPages > 1 && (
-// //                 <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
-// //                   <Button size="sm" variant="light" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="shadow-sm border">Prev</Button>
-// //                   <span className="small text-muted font-monospace">Page {currentPage} of {totalPages}</span>
-// //                   <Button size="sm" variant="light" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="shadow-sm border">Next</Button>
-// //                 </div>
-// //               )}
-// //             </div>
-// //           );
-// //         })()}
-// //       </Container>
-
-// //       {/* GALLERY PREVIEW MODAL */}
-// //       <Modal show={showGalleryModal} onHide={() => setShowGalleryModal(false)} centered size="lg">
-// //         <Modal.Body className="p-0 bg-black rounded-3 overflow-hidden">
-// //           <img src={selectedImage} alt="Structural preview" className="w-100" style={{ maxHeight: "80vh", objectFit: "contain" }} />
-// //         </Modal.Body>
-// //       </Modal>
-// //     </div>
-// //   );
-// // };
-
-// // export default ListingDetailPage;
-// import React, { useState, useEffect } from "react";
-// import { FaStar, FaWhatsapp, FaFacebook, FaInstagram, FaTwitter, FaMapMarkerAlt, FaShieldAlt, FaCheckCircle, FaEnvelope, FaClock } from "react-icons/fa";
-// import { Form, Button, Container, Row, Col, Modal } from "react-bootstrap";
-// import { useAuth } from "../contexts/AuthContext";
-// import { incrementListingViews } from "../utils/engagementTracker";
-// import { Helmet } from "react-helmet-async";
-
-// // Embedded Ultra-Aesthetic Stylesheet
-// const STYLES = `
-//   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
-//   .aesthetic-detail-page {
-//     background-color: #fdfdfd;
-//     font-family: 'Plus Jakarta Sans', sans-serif;
-//     color: #334155;
-//     padding-bottom: 6rem;
-//     letter-spacing: -0.01em;
-//   }
-//   .premium-hero-header {
-//     height: 440px;
-//     background-size: cover;
-//     background-position: center;
-//     position: relative;
-//     border-radius: 0 0 32px 32px;
-//     overflow: hidden;
-//   }
-//   .premium-hero-header::after {
-//     content: '';
-//     position: absolute;
-//     inset: 0;
-//     background: linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.85) 100%);
-//   }
-//   .hero-content-cluster {
-//     position: absolute;
-//     bottom: 0;
-//     left: 0;
-//     width: 100%;
-//     z-index: 2;
-//     padding-bottom: 2.5rem;
-//   }
-//   .aesthetic-card {
-//     background: #ffffff;
-//     border: 1px solid #f1f5f9;
-//     border-radius: 24px;
-//     box-shadow: 0 4px 30px rgba(15, 23, 42, 0.02);
-//     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-//   }
-//   .glass-sidebar-panel {
-//     background: rgba(255, 255, 255, 0.85);
-//     backdrop-filter: blur(16px);
-//     -webkit-backdrop-filter: blur(16px);
-//     border: 1px solid rgba(241, 245, 249, 0.9);
-//     border-radius: 24px;
-//     box-shadow: 0 20px 40px rgba(15, 23, 42, 0.04);
-//   }
-//   .pill-badge {
-//     font-size: 0.75rem;
-//     font-weight: 700;
-//     text-transform: uppercase;
-//     letter-spacing: 0.08em;
-//     padding: 6px 16px;
-//     border-radius: 9999px;
-//   }
-//   .pill-badge-premium {
-//     background: linear-gradient(135deg, #fef08a 0%, #facc15 100%);
-//     color: #713f12;
-//   }
-//   .pill-badge-verified {
-//     background: #dcfce7;
-//     color: #15803d;
-//   }
-//   .tag-pet-category {
-//     background: #f8fafc;
-//     color: #475569;
-//     border: 1px solid #e2e8f0;
-//     padding: 8px 18px;
-//     border-radius: 9999px;
-//     font-size: 0.85rem;
-//     font-weight: 500;
-//     transition: all 0.3s;
-//   }
-//   .tag-pet-category:hover {
-//     background: #0f172a;
-//     color: #ffffff;
-//     border-color: #0f172a;
-//   }
-//   .tag-specialized {
-//     background: #f0fdfa;
-//     color: #0d9488;
-//     padding: 6px 12px;
-//     border-radius: 10px;
-//     font-size: 0.8rem;
-//     font-weight: 600;
-//     display: inline-block;
-//   }
-//   .gallery-grid-item {
-//     border-radius: 20px;
-//     overflow: hidden;
-//     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-//   }
-//   .gallery-grid-item:hover {
-//     transform: translateY(-4px) scale(1.02);
-//     box-shadow: 0 20px 30px rgba(0,0,0,0.06);
-//   }
-//   .hours-grid-row {
-//     display: flex;
-//     justify-content: space-between;
-//     align-items: center;
-//     padding: 10px 0;
-//     border-bottom: 1px dashed #f1f5f9;
-//     font-size: 0.9rem;
-//   }
-//   .hours-grid-row:last-child {
-//     border-bottom: none;
-//   }
-//   .aesthetic-input {
-//     border: 1px solid #e2e8f0;
-//     border-radius: 12px;
-//     padding: 12px;
-//     font-size: 0.95rem;
-//     transition: all 0.2s;
-//   }
-//   .aesthetic-input:focus {
-//     border-color: #0f172a;
-//     box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
-//   }
-//   .btn-aesthetic-primary {
-//     background: #0f172a;
-//     color: white;
-//     border: none;
-//     border-radius: 14px;
-//     padding: 12px 24px;
-//     font-weight: 600;
-//     transition: all 0.3s;
-//   }
-//   .btn-aesthetic-primary:hover {
-//     background: #1e293b;
-//     transform: translateY(-1px);
-//   }
-//   .aesthetic-offer-card {
-//     border: 1px solid #f1f5f9;
-//     border-radius: 24px;
-//     overflow: hidden;
-//     background: #ffffff;
-//     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-//   }
-//   .aesthetic-offer-card:hover {
-//     transform: translateY(-6px);
-//     box-shadow: 0 22px 40px rgba(15, 23, 42, 0.06);
-//   }
-//   .section-label {
-//     font-size: 0.75rem;
-//     text-transform: uppercase;
-//     letter-spacing: 0.1em;
-//     font-weight: 700;
-//     color: #94a3b8;
-//     margin-bottom: 0.75rem;
-//     display: block;
-//   }
-//   .pulse-indicator {
-//     width: 6px;
-//     height: 6px;
-//     background: #10b981;
-//     border-radius: 50%;
-//     position: relative;
-//   }
-//   .pulse-indicator::after {
-//     content: '';
-//     position: absolute;
-//     inset: -4px;
-//     border-radius: 50%;
-//     border: 2px solid #10b981;
-//     animation: pulse-ring 1.5s infinite;
-//   }
-//   .social-anchor-btn {
-//     width: 40px;
-//     height: 40px;
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//     border-radius: 12px;
-//     background: #f8fafc;
-//     color: #64748b;
-//     border: 1px solid #e2e8f0;
-//     transition: all 0.2s ease;
-//   }
-//   .social-anchor-btn:hover {
-//     background: #0f172a;
-//     color: #ffffff;
-//     border-color: #0f172a;
-//     transform: translateY(-2px);
-//   }
-//   @keyframes pulse-ring {
-//     0% { transform: scale(0.5); opacity: 1; }
-//     100% { transform: scale(1.5); opacity: 0; }
-//   }
-// `;
-
-// // Mock Details Config
-// const MOCK_LISTING_DETAILS = {
-//   _id: "mock_listing_99881122",
-//   slug: "premium-veterinary-care-center",
-//   shopName: "Paws & Claws Premium Veterinary Care & Wellness Center",
-//   plan: "premium_verified",
-//   isFeatured: true,
-//   isPremiumBadge: true,
-//   isVerified: true,
-//   isClaimed: true,
-//   created_by_type: "admin",
-//   description: "Welcome to Paws & Claws Premium Veterinary Care Center. We specialize in advanced veterinary diagnostics, orthopedic surgeries, structural grooming treatments, and professional nutritional coaching. Serving the community with over 15 years of certified medical expertise, our clinic offers 24/7 critical emergency operations alongside premium boarding alternatives for your beloved household pets.",
-//   phone: "+1 (555) 392-8871",
-//   email: "care@pawsandclaws-premium.com",
-//   address: "742 Evergreen Terrace, Medical District, Sector 4",
-//   country: "United States",
-//   city: { city: "Springfield" },
-//   mapUrl: "https://maps.google.com/?q=Veterinary+Clinic",
-//   bannerImage: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=1200",
-//   whatsappNumber: "15553928871",
-//   enableQuoteViaWhatsapp: true,
-  
-//   petCategories: [{ categoryName: "Dogs" }, { categoryName: "Cats" }, { categoryName: "Avian/Birds" }, { categoryName: "Exotic Reptiles" }],
-//   categories: [{ categoryName: "Veterinary Medicine" }, { categoryName: "Pet Boarding" }, { categoryName: "Emergency Hospital" }],
-//   specializedServices: [{ serviceName: "Orthopedic Laser Surgery" }, { serviceName: "Ultrasound & Digital X-Ray" }, { serviceName: "Hydrotherapy Wellness" }, { serviceName: "Dental Prophylaxis" }],
-  
-//   serviceCoverage: {
-//     type: "radius",
-//     radiusKm: 25,
-//     neighborhoods: ["North End", "Downtown Hub", "Greenwood Suburbs"]
-//   },
-  
-//   businessHours: [
-//     { day: "monday", open: "08:00 AM", close: "08:00 PM", closed: false },
-//     { day: "tuesday", open: "08:00 AM", close: "08:00 PM", closed: false },
-//     { day: "wednesday", open: "08:00 AM", close: "08:00 PM", closed: false },
-//     { day: "thursday", open: "08:00 AM", close: "08:00 PM", closed: false },
-//     { day: "friday", open: "08:00 AM", close: "10:00 PM", closed: false },
-//     { day: "saturday", open: "09:00 AM", close: "06:00 PM", closed: false },
-//     { day: "sunday", open: "00:00 AM", close: "00:00 AM", closed: true }
-//   ],
-  
-//   socialAnchors: {
-//     facebook: "https://facebook.com",
-//     instagram: "https://instagram.com",
-//     twitter: "https://twitter.com"
-//   },
-  
-//   photos: [
-//     { url: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600", alt: "Lab" },
-//     { url: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600", alt: "Suites" },
-//     { url: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=600", alt: "Grooming" }
-//   ]
-// };
-
-// const MOCK_REVIEWS = [
-//   {
-//     _id: "rev_01",
-//     userName: "Sarah Jenkins",
-//     created_at: "2026-06-14T10:30:00.000Z",
-//     rating: 5,
-//     comment: "Dr. Alistair and the nursing crew saved my golden retriever after an accidental poisoning incident. The communication level was phenomenal, and the cost structure was highly transparent. Truly an elite facility."
-//   },
-//   {
-//     _id: "rev_02",
-//     userName: "Marcus Vance",
-//     created_at: "2026-07-02T14:15:00.000Z",
-//     rating: 4,
-//     comment: "Excellent grooming work done on my senior cat. The specialized handlers here are highly empathetic. Highly recommend."
-//   }
-// ];
-
-// const MOCK_OFFERS = [
-//   {
-//     _id: "off_01",
-//     title: "Annual Preventative Checkup Bundle - 25% Off",
-//     description: "Get full core screening, blood panel metrics, standard deworming treatment doses, and dynamic vaccinations all under one packaged cost.",
-//     media: [{ type: "image", url: "https://images.unsplash.com/photo-1535268647977-a403b69fc756?auto=format&fit=crop&q=80&w=500" }]
-//   }
-// ];
-
-// const ListingDetailPage = () => {
-//   const { user } = useAuth();
-//   const [listing] = useState(MOCK_LISTING_DETAILS);
-//   const [reviews, setReviews] = useState(MOCK_REVIEWS);
-//   const [offers] = useState(MOCK_OFFERS);
-  
-//   const [rating, setRating] = useState(0);
-//   const [comment, setComment] = useState("");
-//   const [showPhone, setShowPhone] = useState(false);
-//   const [showGalleryModal, setShowGalleryModal] = useState(false);
-//   const [selectedImage, setSelectedImage] = useState(null);
-
-//   useEffect(() => {
-//     incrementListingViews();
-//     window.scrollTo({ top: 0, behavior: "smooth" });
-//   }, []);
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     if (!rating) return;
-//     const newReview = {
-//       _id: `rev_${Date.now()}`,
-//       userName: user?.name || "Anonymous Guest",
-//       created_at: new Date().toISOString(),
-//       rating: rating,
-//       comment: comment
-//     };
-//     setReviews([newReview, ...reviews]);
-//     setComment("");
-//     setRating(0);
-//   };
-
-//   return (
-//     <div className="aesthetic-detail-page">
-//       <style>{STYLES}</style>
-//       <Helmet>
-//         <title>{listing.shopName}</title>
-//       </Helmet>
-
-//       {/* HERO HEADER */}
-//       <div className="premium-hero-header" style={{ backgroundImage: `url(${listing.bannerImage})` }}>
-//         <div className="hero-content-cluster">
-//           <Container>
-//             <div className="d-flex flex-wrap gap-2 mb-3">
-//               <span className="pill-badge pill-badge-premium"><FaShieldAlt className="me-1"/> Premium Partner</span>
-//               <span className="pill-badge pill-badge-verified"><FaCheckCircle className="me-1"/> Verified Care</span>
-//             </div>
-//             <h1 className="text-white fw-800 display-5 mb-0" style={{ letterSpacing: "-0.03em", fontWeight: 800 }}>{listing.shopName}</h1>
-//           </Container>
-//         </div>
-//       </div>
-
-//       <Container className="mt-5">
-//         <Row className="g-5">
-//           {/* CONTENT GRID */}
-//           <Col lg={8}>
-//             <div className="d-flex flex-wrap gap-2 mb-4">
-//               {listing.petCategories?.map((cat, i) => (
-//                 <span className="tag-pet-category" key={i}>{cat.categoryName}</span>
-//               ))}
-//             </div>
-
-//             <div className="aesthetic-card p-4 mb-5">
-//               <span className="section-label">Executive Summary</span>
-//               <p className="text-secondary lh-relaxed fs-5 mb-4" style={{ fontWeight: "400", color: "#475569" }}>{listing.description}</p>
-              
-//               <Row className="g-4 pt-4 border-top">
-//                 {listing.categories?.length > 0 && (
-//                   <Col md={6}>
-//                     <span className="section-label">Medical Focus Sectors</span>
-//                     <div className="d-flex flex-wrap gap-2">
-//                       {listing.categories.map((c, i) => <span key={i} className="badge bg-slate text-dark border px-3 py-2 rounded-pill small fw-medium">{c.categoryName}</span>)}
-//                     </div>
-//                   </Col>
-//                 )}
-//                 {listing.specializedServices?.length > 0 && (
-//                   <Col md={6}>
-//                     <span className="section-label">Specialized Target Capabilities</span>
-//                     <div className="d-flex flex-wrap gap-2">
-//                       {listing.specializedServices.map((s, i) => <span key={i} className="tag-specialized">{s.serviceName}</span>)}
-//                     </div>
-//                   </Col>
-//                 )}
-//               </Row>
-//             </div>
-
-//             <div className="aesthetic-card p-4 mb-5" style={{ background: "#0f172a", color: "#f8fafc" }}>
-//               <div className="d-flex align-items-center gap-2 mb-2">
-//                 <FaMapMarkerAlt className="text-warning"/>
-//                 <span className="text-uppercase fw-bold small tracking-wider" style={{ color: "#94a3b8" }}>Service Footprint Bounds</span>
-//               </div>
-//               <p className="mb-0 opacity-90 font-sans lh-relaxed">
-//                 Actively serving clinical priorities across a <strong>{listing.serviceCoverage.radiusKm} km scope</strong> radius including key sectors: {listing.serviceCoverage.neighborhoods.join(', ')}.
-//               </p>
-//             </div>
-
-//             {listing.photos?.length > 0 && (
-//               <div className="mb-5">
-//                 <span className="section-label">Architectural Facility Tour</span>
-//                 <Row className="g-3">
-//                   {listing.photos.map((img, i) => (
-//                     <Col md={4} sm={6} key={i}>
-//                       <div className="gallery-grid-item" onClick={() => { setSelectedImage(img.url); setShowGalleryModal(true); }}>
-//                         <img src={img.url} alt={img.alt} className="w-100" style={{ height: "190px", objectFit: "cover", cursor: "pointer" }} />
-//                       </div>
-//                     </Col>
-//                   ))}
-//                 </Row>
-//               </div>
-//             )}
-
-//             <div className="aesthetic-card p-4 mb-4">
-//               <span className="section-label">Community Experience Reports</span>
-//               {reviews.map((r, index) => (
-//                 <div key={r._id} className={`py-4 ${index !== reviews.length - 1 ? 'border-bottom' : ''}`}>
-//                   <div className="d-flex justify-content-between align-items-center mb-2">
-//                     <h6 className="fw-700 mb-0 text-dark" style={{ fontWeight: 700 }}>{r.userName}</h6>
-//                     <span className="text-muted small">{new Date(r.created_at).toLocaleDateString()}</span>
-//                   </div>
-//                   <div className="text-warning small mb-2">
-//                     {Array.from({ length: 5 }).map((_, idx) => <FaStar key={idx} color={idx < r.rating ? "#facc15" : "#e2e8f0"} />)}
-//                   </div>
-//                   <p className="text-secondary mb-0 font-sans">{r.comment}</p>
-//                 </div>
-//               ))}
-//             </div>
-//           </Col>
-
-//           {/* SIDEBAR */}
-//           <Col lg={4}>
-//             <div className="position-sticky" style={{ top: "2rem" }}>
-//               <div className="glass-sidebar-panel p-4 mb-4">
-//                 <div className="d-flex align-items-center justify-content-between mb-4">
-//                   <span className="fw-800 fs-5 text-dark" style={{ fontWeight: 800 }}>HQ Matrix</span>
-//                   <div className="d-flex align-items-center gap-2 text-success small fw-semibold">
-//                     <span className="pulse-indicator"></span> Available
-//                   </div>
-//                 </div>
-
-//                 <div className="mb-4">
-//                   <button className="btn-aesthetic-primary w-100 py-3" onClick={() => setShowPhone(!showPhone)}>
-//                     {showPhone ? listing.phone : "Request Contact Identity"}
-//                   </button>
-//                 </div>
-
-//                 <div className="d-flex flex-column gap-3 text-sm border-top pt-4">
-//                   <div className="d-flex align-items-start gap-3">
-//                     <FaEnvelope className="text-muted mt-1"/>
-//                     <div>
-//                       <span className="d-block text-xs text-muted">Secure Email</span>
-//                       <span className="text-dark fw-medium">{listing.email}</span>
-//                     </div>
-//                   </div>
-//                   <div className="d-flex align-items-start gap-3">
-//                     <FaMapMarkerAlt className="text-muted mt-1"/>
-//                     <div>
-//                       <span className="d-block text-xs text-muted">Geographical Point</span>
-//                       <span className="text-dark fw-medium">{listing.address}</span>
-//                     </div>
-//                   </div>
-//                 </div>
-
-//                 {/* SOCIAL CHANNELS INTEGRATION BLOCK */}
-//                 {listing.socialAnchors && (
-//                   <div className="mt-4 pt-4 border-top">
-//                     <span className="section-label">Social Coordinates</span>
-//                     <div className="d-flex gap-2 mt-2">
-//                       {listing.socialAnchors.facebook && (
-//                         <a href={listing.socialAnchors.facebook} target="_blank" rel="noreferrer" className="social-anchor-btn" aria-label="Facebook Profile">
-//                           <FaFacebook size={18} />
-//                         </a>
-//                       )}
-//                       {listing.socialAnchors.instagram && (
-//                         <a href={listing.socialAnchors.instagram} target="_blank" rel="noreferrer" className="social-anchor-btn" aria-label="Instagram Profile">
-//                           <FaInstagram size={18} />
-//                         </a>
-//                       )}
-//                       {listing.socialAnchors.twitter && (
-//                         <a href={listing.socialAnchors.twitter} target="_blank" rel="noreferrer" className="social-anchor-btn" aria-label="Twitter Profile">
-//                           <FaTwitter size={16} />
-//                         </a>
-//                       )}
-//                     </div>
-//                   </div>
-//                 )}
-
-//                 {/* BUSINESS HOURS TIMELINE MATRIX */}
-//                 <div className="mt-4 pt-4 border-top">
-//                   <span className="section-label"><FaClock className="me-1"/> Operating Hours Matrix</span>
-//                   <div className="p-2 rounded-3 bg-white border border-light mt-2">
-//                     {listing.businessHours?.map((bh, idx) => (
-//                       <div key={idx} className="hours-grid-row">
-//                         <span className="text-capitalize fw-medium text-muted">{bh.day.substring(0,3)}</span>
-//                         <span className="font-monospace text-dark fw-semibold" style={{ fontSize: '0.85rem' }}>
-//                           {bh.closed ? <span className="text-danger">Closed</span> : `${bh.open} - ${bh.close}`}
-//                         </span>
-//                       </div>
-//                     ))}
-//                   </div>
-//                 </div>
-
-//                 {listing.whatsappNumber && (
-//                   <Button variant="success" className="w-100 rounded-3 py-3 mt-4 d-flex align-items-center justify-content-center gap-2 fw-bold text-white border-0" style={{ background: '#22c55e' }} href={`https://wa.me/${listing.whatsappNumber}`} target="_blank">
-//                     <FaWhatsapp size={20}/> Connect via WhatsApp
-//                   </Button>
-//                 )}
-//               </div>
-
-//               {/* POST REVIEW */}
-//               <div className="aesthetic-card p-4">
-//                 <span className="section-label text-center">Register Feedback</span>
-//                 <Form onSubmit={handleSubmit}>
-//                   <div className="d-flex justify-content-center gap-2 mb-3">
-//                     {[1, 2, 3, 4, 5].map((i) => (
-//                       <span key={i} style={{ fontSize: "1.8rem", cursor: "pointer", color: i <= rating ? "#facc15" : "#e2e8f0", transition: 'color 0.2s' }} onClick={() => setRating(i)}>★</span>
-//                     ))}
-//                   </div>
-//                   <Form.Group className="mb-3">
-//                     <Form.Control as="textarea" rows={3} placeholder="Share details of your clinical support standard..." value={comment} onChange={(e) => setComment(e.target.value)} required className="aesthetic-input" />
-//                   </Form.Group>
-//                   <button type="submit" className="btn-aesthetic-primary w-100 py-2.5">Post Report</button>
-//                 </Form>
-//               </div>
-//             </div>
-//           </Col>
-//         </Row>
-
-//         {/* PROMOTIONS MATRIX */}
-//         {offers.length > 0 && (
-//           <div className="mt-5 pt-5 border-top">
-//             <div className="d-flex align-items-center gap-2 mb-4">
-//               <span className="pulse-indicator"></span>
-//               <h3 className="fw-800 mb-0 text-dark" style={{ fontWeight: 800, letterSpacing: '-0.02em' }}>Corporate Offers & Notices</h3>
-//             </div>
-//             <Row className="g-4">
-//               {offers.map((offer) => (
-//                 <Col md={6} key={offer._id}>
-//                   <div className="aesthetic-offer-card h-100">
-//                     <div style={{ aspectRatio: '16/7', overflow: 'hidden', position: 'relative' }}>
-//                       <img src={offer.media[0].url} alt={offer.title} className="w-100 h-100" style={{ objectFit: 'cover' }} />
-//                     </div>
-//                     <div className="p-4">
-//                       <h5 className="fw-700 text-dark mb-2" style={{ fontWeight: 700 }}>{offer.title}</h5>
-//                       <p className="text-secondary small mb-0 lh-relaxed">{offer.description}</p>
-//                     </div>
-//                   </div>
-//                 </Col>
-//               ))}
-//             </Row>
-//           </div>
-//         )}
-//       </Container>
-
-//       {/* LIGHTBOX MODAL */}
-//       <Modal show={showGalleryModal} onHide={() => setShowGalleryModal(false)} centered size="lg">
-//         <Modal.Body className="p-0 bg-dark rounded-4 overflow-hidden">
-//           <img src={selectedImage} alt="Preview" className="w-100" style={{ maxHeight: "80vh", objectFit: "contain" }} />
-//         </Modal.Body>
-//       </Modal>
-//     </div>
-//   );
-// };
-
-// export default ListingDetailPage;
 import React, { useState, useEffect } from "react";
-import { FaStar, FaWhatsapp, FaFacebook, FaInstagram, FaTwitter, FaMapMarkerAlt, FaShieldAlt, FaCheckCircle, FaEnvelope, FaClock, FaTags, FaAngleLeft, FaAngleRight } from "react-icons/fa";
-import { Form, Button, Container, Row, Col, Modal } from "react-bootstrap";
+import { 
+  FaStar, FaWhatsapp, FaFacebook, FaInstagram, FaTwitter, FaMapMarkerAlt, 
+  FaShieldAlt, FaCheckCircle, FaEnvelope, FaClock, FaTags, FaAngleLeft, 
+  FaAngleRight, FaBookmark, FaPhoneAlt, FaDirections, FaGlobe, FaAward, 
+  FaCheck, FaVideo, FaCommentDots, FaCar, FaSnowflake, FaTruck, 
+  FaWheelchair, FaCouch, FaPlay, FaInfoCircle, FaConciergeBell, FaImages, FaComments, FaBullhorn
+} from "react-icons/fa";
+import { Form, Container, Row, Col, Modal, Badge, Nav, Tab } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { incrementListingViews } from "../utils/engagementTracker";
 import { Helmet } from "react-helmet-async";
 import ReactPaginate from 'react-paginate';
 
-// Ultra-Clean Modern Light Stylesheet
+// Ultra-Clean Modern Light Stylesheet with Custom Tab Styling
 const STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+  
+  
   .map-container-wrapper {
     width: 100%;
     border-top: 1px solid #e2e8f0;
@@ -1088,9 +28,32 @@ const STYLES = `
     transition: transform 0.3s ease;
   }
 
-  /* Subtly zooms the map on hover for an interactive, tactile feel */
   .clean-white-block:hover .map-container-wrapper iframe {
     transform: scale(1.01);
+  }
+
+  /* Custom Tab Styling */
+  .custom-detail-tabs .nav-link {
+    // font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    color: #64748b;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 20px;
+    background: transparent;
+    transition: all 0.2s ease;
+    border-radius: 0;
+  }
+
+  .custom-detail-tabs .nav-link:hover {
+    color: #ff4e00;
+    border-color: rgba(255, 78, 0, 0.3);
+  }
+
+  .custom-detail-tabs .nav-link.active {
+    color: #ff4e00 !important;
+    background: transparent !important;
+    border-bottom: 2px solid #ff4e00 !important;
   }
 
   /* Premium React-Paginate Styles */
@@ -1101,11 +64,11 @@ const STYLES = `
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-top: 2rem;
+    margin-top: 1.5rem;
   }
 
   .clean-paginate-item {
-    font-family: 'Space Grotesk', sans-serif;
+    // font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
     font-size: 0.85rem;
   }
@@ -1148,14 +111,14 @@ const STYLES = `
 
   .aesthetic-detail-page {
     background-color: #fafbfe;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    // font-family: 'Plus Jakarta Sans', sans-serif;
     color: #475569;
     padding-bottom: 6rem;
     letter-spacing: -0.01em;
   }
   
   .headline-font {
-    font-family: 'Space Grotesk', sans-serif;
+    // font-family: 'Space Grotesk', sans-serif;
   }
 
   .premium-monolith-header {
@@ -1201,7 +164,7 @@ const STYLES = `
     background: #fff5f0;
     color: #ff4e00;
     border: 1px solid rgba(255, 78, 0, 0.2);
-    font-family: 'Space Grotesk', sans-serif;
+    // font-family: 'Space Grotesk', sans-serif;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -1227,7 +190,7 @@ const STYLES = `
   }
 
   .clean-accent-label {
-    font-family: 'Space Grotesk', sans-serif;
+    // font-family: 'Space Grotesk', sans-serif;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -1279,21 +242,47 @@ const STYLES = `
   .btn-clean-primary {
     background: #ff4e00;
     color: #ffffff;
-    font-family: 'Space Grotesk', sans-serif;
+    // font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border: none;
     border-radius: 8px;
-    padding: 14px 28px;
+    padding: 12px 20px;
     transition: all 0.3s;
     font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
 
   .btn-clean-primary:hover {
     background: #1e293b;
     color: #ffffff;
     box-shadow: 0 8px 24px rgba(255, 78, 0, 0.2);
+  }
+
+  .btn-clean-outline {
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    // font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 12px 20px;
+    transition: all 0.3s;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-clean-outline:hover {
+    border-color: #ff4e00;
+    color: #ff4e00;
+    background: #fff5f0;
   }
 
   .social-clean-btn {
@@ -1319,10 +308,37 @@ const STYLES = `
   .live-glow-dot {
     width: 8px;
     height: 8px;
-    background: #ff4e00;
+    background: #22c55e;
     border-radius: 50%;
-    box-shadow: 0 0 8px rgba(255, 78, 0, 0.6);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
     display: inline-block;
+  }
+
+  .amenity-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #334155;
+  }
+
+  .amenity-chip.available {
+    border-color: rgba(34, 197, 94, 0.3);
+    background: #f0fdf4;
+    color: #166534;
+  }
+
+  .stat-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
   }
 `;
 
@@ -1343,19 +359,48 @@ const MOCK_LISTING_DETAILS = {
   country: "India",
   city: { city: "Chennai" },
   mapUrl: "https://maps.app.goo.gl/pUAhNHuTw4uLPz3F9",
+  directionsUrl: "https://maps.google.com/?q=35/2A,+Nellithoppu+main+road,+Kozhumanivakkam,+Mangadu,+Chennai",
   bannerImage: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600",
   whatsappNumber: "9874563210",
   enableQuoteViaWhatsapp: true,
   websiteUrl: "https://www.vetandpets.in",
   
-  petCategories: [{ categoryName: "Dogs" }, { categoryName: "Cats" }],
-  categories: [{ categoryName: "Pet Boarding Services" }],
-  specializedServices: [{ serviceName: "Pet Boarding Services" }],
+  yearsInBusiness: "8+ Years",
+  customersServed: "1,500+ Pets",
+  certifications: ["ISO 9001:2015 Pet Care Standard", "Certified Veterinary Assistant on-site", "First Aid Certified"],
+  languagesSpoken: ["English", "Tamil", "Hindi"],
+  
+  petCategories: [{ categoryName: "Dogs" }, { categoryName: "Cats" }, { categoryName: "Small Animals" }],
+  categories: [{ categoryName: "Pet Boarding Services" }, { categoryName: "Pet Grooming" }],
+  specializedServices: [
+    { serviceName: "Executive Suites Boarding" },
+    { serviceName: "Day Crèche & Playcare" },
+    { serviceName: "Medication Administration" },
+    { serviceName: "Hydrotherapy Sessions" }
+  ],
+
+  amenities: {
+    parking: true,
+    acFacility: true,
+    homePickup: true,
+    onlineConsultation: true,
+    wheelchairAccess: true,
+    petFriendlySeating: true,
+    homeVisit: false
+  },
+
+  isOpenNow: true,
+  appointmentRequired: true,
+  responseTime: "Within 2 Hours",
+  pricing: {
+    startingFrom: "₹650",
+    paymentMethods: ["UPI / GPay", "Credit/Debit Cards", "Cash", "Net Banking"]
+  },
   
   serviceCoverage: {
     type: "radius",
     radiusKm: 25,
-    neighborhoods: ["North End", "Downtown Hub", "Greenwood Suburbs"]
+    neighborhoods: ["Guindy", "Mangadu", "Porur", "Vadapalani"]
   },
   
   businessHours: [
@@ -1370,14 +415,17 @@ const MOCK_LISTING_DETAILS = {
   
   socialAnchors: {
     facebook: "https://facebook.com",
-    instagram: "https://instagram.com",
-    twitter: "https://twitter.com"
+    instagram: "https://instagram.com"
   },
   
   photos: [
     { url: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600", alt: "Lab" },
     { url: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600", alt: "Suites" },
     { url: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=600", alt: "Grooming" }
+  ],
+
+  videos: [
+    { url: "https://www.w3schools.com/html/mov_bbb.mp4", title: "Virtual Facility Tour", thumbnail: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600" }
   ]
 };
 
@@ -1387,7 +435,11 @@ const MOCK_REVIEWS = [
     userName: "Sarah Jenkins",
     created_at: "2026-06-14T10:30:00.000Z",
     rating: 5,
-    comment: "Dr. Alistair and the nursing crew saved my golden retriever after an accidental poisoning incident. The communication level was phenomenal, and the cost structure was highly transparent. Truly an elite facility."
+    comment: "Dr. Alistair and the nursing crew saved my golden retriever after an accidental poisoning incident. The communication level was phenomenal, and the cost structure was highly transparent. Truly an elite facility.",
+    ownerResponse: {
+      responded_at: "2026-06-14T14:00:00.000Z",
+      comment: "Thank you Sarah! We are so glad to hear your Golden is thriving and back to full health."
+    }
   }
 ];
 
@@ -1395,20 +447,14 @@ const MOCK_OFFERS = [
   {
     _id: "off_01",
     title: "Annual Pet Boarding - 25% Off",
-    description: "Tails A'Board offers executive-tier tech-corridor pet care solutions, delivering secure overnight stays and flexible crèche options near Guindy. Featuring a high staff-to-pet ratio and rapid access to major transit links, they provide a convenient and professional corporate pet-sitting experience",
+    description: "Tails A'Board offers executive-tier tech-corridor pet care solutions, delivering secure overnight stays and flexible crèche options near Guindy.",
     media: [{ type: "image", url: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600" }]
   },
   {
     _id: "off_02",
-    title: "Annual Pet Boarding - 25% Off",
-    description: "Tails A'Board offers executive-tier tech-corridor pet care solutions, delivering secure overnight stays and flexible crèche options near Guindy. Featuring a high staff-to-pet ratio and rapid access to major transit links, they provide a convenient and professional corporate pet-sitting experience",
-    media: [{ type: "image", url: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600" }]
-  },
-  {
-    _id: "off_03",
-    title: "Annual Pet Boarding - 25% Off",
-    description: "Tails A'Board offers executive-tier tech-corridor pet care solutions, delivering secure overnight stays and flexible crèche options near Guindy. Featuring a high staff-to-pet ratio and rapid access to major transit links, they provide a convenient and professional corporate pet-sitting experience",
-    media: [{ type: "image", url: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=80&w=600" }]
+    title: "Complimentary Hydrotherapy Trial",
+    description: "Book 3 consecutive days of premium boarding and get a free hydrotherapy session for your dog.",
+    media: [{ type: "image", url: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=600" }]
   }
 ];
 
@@ -1420,20 +466,25 @@ const ListingDetailPage = () => {
   
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [reviewerName, setReviewerName] = useState("");
+  const [reviewerEmail, setReviewerEmail] = useState("");
   const [showPhone, setShowPhone] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  
+  // Gallery Modals
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
-  // --- ADD THIS BLOCK ---
+  // Pagination for Offers
   const [currentOfferPage, setCurrentOfferPage] = useState(1);
-  const offersPerPage = 2; // Sets how many offers display per page
+  const offersPerPage = 2;
 
-  // PAGINATION CALCULATIONS
   const indexOfLastOffer = currentOfferPage * offersPerPage;
   const indexOfFirstOffer = indexOfLastOffer - offersPerPage;
   const currentOffersSlice = offers.slice(indexOfFirstOffer, indexOfLastOffer);
   const totalOfferPages = Math.ceil(offers.length / offersPerPage);
-  // ----------------------
 
   useEffect(() => {
     incrementListingViews();
@@ -1445,13 +496,15 @@ const ListingDetailPage = () => {
     if (!rating) return;
     const newReview = {
       _id: `rev_${Date.now()}`,
-      userName: user?.name || "Anonymous Guest",
+      userName: reviewerName || user?.name || "Anonymous Guest",
       created_at: new Date().toISOString(),
       rating: rating,
       comment: comment
     };
     setReviews([newReview, ...reviews]);
     setComment("");
+    setReviewerName("");
+    setReviewerEmail("");
     setRating(0);
   };
 
@@ -1466,148 +519,398 @@ const ListingDetailPage = () => {
       <div className="premium-monolith-header" style={{ backgroundImage: `url(${listing.bannerImage})` }}>
         <div className="hero-absolute-cluster">
           <Container>
-            <div className="mb-2">
-              <span className="cyber-badge-premium"><FaShieldAlt className="me-1"/> Verified</span>
-              <span className="cyber-badge-premium"><FaTags className="me-1"/> Featured</span>
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+              <div>
+                <div className="mb-2 d-flex gap-2">
+                  <span className="cyber-badge-premium"><FaShieldAlt className="me-1"/> Verified</span>
+                  <span className="cyber-badge-premium"><FaTags className="me-1"/> Featured</span>
+                </div>
+                <h1 className="text-dark headline-font fw-bold display-5 mb-0" style={{ letterSpacing: "-0.03em" }}>{listing.shopName}</h1>
+              </div>
+
+              {/* QUICK ACTION BAR */}
+              <div className="d-flex flex-wrap gap-2">
+                <button 
+                  className={`btn ${isSaved ? 'btn-danger' : 'btn-clean-outline'}`}
+                  onClick={() => setIsSaved(!isSaved)}
+                >
+                  <FaBookmark /> {isSaved ? 'Saved' : 'Save'}
+                </button>
+                <a href={`tel:${listing.phone}`} className="btn-clean-outline">
+                  <FaPhoneAlt /> Call
+                </a>
+                {listing.whatsappNumber && (
+                  <a href={`https://wa.me/${listing.whatsappNumber}`} target="_blank" rel="noreferrer" className="btn-clean-primary" style={{ background: '#22c55e' }}>
+                    <FaWhatsapp /> WhatsApp
+                  </a>
+                )}
+                <a href={listing.directionsUrl} target="_blank" rel="noreferrer" className="btn-clean-outline">
+                  <FaDirections /> Directions
+                </a>
+                <a href={listing.websiteUrl} target="_blank" rel="noreferrer" className="btn-clean-outline">
+                  <FaGlobe /> Website
+                </a>
+              </div>
             </div>
-            <h1 className="text-dark headline-font fw-bold display-5 mb-0" style={{ letterSpacing: "-0.03em" }}>{listing.shopName}</h1>
           </Container>
         </div>
       </div>
 
       <Container className="mt-4">
         <Row className="g-4">
-          {/* MAIN BLOCK */}
+          {/* LEFT MAIN CONTENT */}
           <Col lg={8}>
-            <div className="d-flex flex-wrap gap-2 mb-4">
-              {listing.petCategories?.map((cat, i) => (
-                <span className="tag-pet-pill" key={i}>{cat.categoryName}</span>
-              ))}
+            {/* PET CATEGORIES & AVAILABILITY */}
+            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+              <div className="d-flex flex-wrap gap-2">
+                {listing.petCategories?.map((cat, i) => (
+                  <span className="tag-pet-pill" key={i}>{cat.categoryName}</span>
+                ))}
+              </div>
+              <div className="d-flex align-items-center gap-2 font-monospace small">
+                <span className="live-glow-dot"></span> 
+                <span className="text-success fw-bold">{listing.isOpenNow ? "OPEN NOW" : "CLOSED"}</span>
+              </div>
             </div>
 
-            <div className="clean-white-block mb-4">
-              <span className="clean-accent-label">About {listing.shopName}</span>
-              <p className="lh-relaxed text-dark fs-5 mb-4" style={{ opacity: 0.85, fontWeight: "400" }}>{listing.description}</p>
-              
-              <Row className="g-4 pt-4 border-top border-light">
-                {listing.categories?.length > 0 && (
-                  <Col md={6}>
-                    <span className="clean-accent-label">Category</span>
-                    <div className="d-flex flex-wrap gap-2">
-                      {listing.categories.map((c, i) => <span key={i} className="badge bg-light border text-dark px-3 py-2 rounded font-monospace">{c.categoryName}</span>)}
-                    </div>
-                  </Col>
-                )}
-                {listing.specializedServices?.length > 0 && (
-                  <Col md={6}>
-                    <span className="clean-accent-label">Specialized Category</span>
-                    <div className="d-flex flex-wrap gap-2">
-                      {listing.specializedServices.map((s, i) => <span key={i} style={{ color: '#ff4e00', fontSize: '0.85rem' }} className="fw-semibold font-monospace d-block">✓ {s.serviceName}</span>)}
-                    </div>
-                  </Col>
-                )}
-              </Row>
-            </div>
+            {/* TAB CONTAINER */}
+            <Tab.Container defaultActiveKey="overview">
+              <div className="border-bottom border-light mb-4 bg-white rounded p-1 border">
+                <Nav className="custom-detail-tabs d-flex flex-row flex-nowrap overflow-auto">
+                  <Nav.Item>
+                    <Nav.Link eventKey="overview" className="d-flex align-items-center gap-2">
+                      <FaInfoCircle /> Overview
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="services" className="d-flex align-items-center gap-2">
+                      <FaConciergeBell /> Services & Amenities
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="gallery" className="d-flex align-items-center gap-2">
+                      <FaImages /> Gallery
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="reviews" className="d-flex align-items-center gap-2">
+                      <FaComments /> Reviews ({reviews.length})
+                    </Nav.Link>
+                  </Nav.Item>
+                </Nav>
+              </div>
 
-            {/* IMAGES */}
-            {listing.photos?.length > 0 && (
+              <Tab.Content>
+                {/* OVERVIEW TAB */}
+                <Tab.Pane eventKey="overview">
+                  <div className="clean-white-block mb-4">
+                    <span className="clean-accent-label">Overview & About</span>
+                    <p className="mb-4">{listing.description}</p>
+
+                    <Row className="g-3 mb-4">
+                      <Col sm={6}>
+                        <div className="stat-card">
+                          <span className="d-block text-muted small">Experience</span>
+                          <strong className="fs-5 text-dark headline-font">{listing.yearsInBusiness}</strong>
+                        </div>
+                      </Col>
+                      <Col sm={6}>
+                        <div className="stat-card">
+                          <span className="d-block text-muted small">Customers Served</span>
+                          <strong className="fs-5 text-dark headline-font">{listing.customersServed}</strong>
+                        </div>
+                      </Col>
+                    </Row>
+
+                    {/* CERTIFICATIONS & LANGUAGES */}
+                    <Row className="g-4 border-top border-light pt-4">
+                      {listing.certifications?.length > 0 && (
+                        <Col md={6}>
+                          <span className="clean-accent-label"><FaAward className="me-1"/> Certifications</span>
+                          <ul className="list-unstyled mb-0 small">
+                            {listing.certifications.map((cert, i) => (
+                              <li key={i} className="mb-1 text-dark d-flex align-items-center gap-2">
+                                <FaCheck className="text-success" /> {cert}
+                              </li>
+                            ))}
+                          </ul>
+                        </Col>
+                      )}
+                      {listing.languagesSpoken?.length > 0 && (
+                        <Col md={6}>
+                          <span className="clean-accent-label">Languages Spoken</span>
+                          <div className="d-flex flex-wrap gap-1">
+                            {listing.languagesSpoken.map((lang, i) => (
+                              <Badge key={i} bg="light" text="dark" className="border px-2 py-1 font-monospace">{lang}</Badge>
+                            ))}
+                          </div>
+                        </Col>
+                      )}
+                    </Row>
+                  </div>
+                </Tab.Pane>
+
+                {/* SERVICES & AMENITIES TAB */}
+                <Tab.Pane eventKey="services">
+                  <div className="clean-white-block mb-4">
+                    
+                    <Row className="g-4">
+                      
+                      {listing.categories?.length > 0 && (
+                        <Col md={6}>
+                          <span className="clean-accent-label">Categories</span>
+                          {/* <span className="text-muted small d-block mb-2 font-monospace">Core Categories</span> */}
+                          <div className="d-flex flex-wrap gap-2">
+                            {listing.categories.map((c, i) => <span key={i} className="badge bg-light border text-dark px-3 py-2 rounded font-monospace">{c.categoryName}</span>)}
+                          </div>
+                        </Col>
+                      )}
+                      {listing.specializedServices?.length > 0 && (
+                        <Col md={6}>
+                          <span className="clean-accent-label">Specialized Services</span>
+                          {/* <span className="text-muted small d-block mb-2 font-monospace">Specialized Services</span> */}
+                          <div className="d-flex flex-column gap-2">
+                            {listing.specializedServices.map((s, i) => <span key={i} className="d-block" style={{fontSize: "14px"}}> <FaCheck /> {s.serviceName}</span>)}
+                          </div>
+                        </Col>
+                      )}
+                    </Row>
+
+                    {/* AMENITIES */}
+                    <div className="mt-4 pt-4 border-top border-light">
+                      <span className="clean-accent-label">Amenities</span>
+                      <Row className="g-2">
+                        <Col md={4} sm={6}>
+                          <div className={`amenity-chip ${listing.amenities?.parking ? 'available' : ''}`}>
+                            <FaCar /> Parking {listing.amenities?.parking ? 'Available' : 'N/A'}
+                          </div>
+                        </Col>
+                        <Col md={4} sm={6}>
+                          <div className={`amenity-chip ${listing.amenities?.acFacility ? 'available' : ''}`}>
+                            <FaSnowflake /> Climate Controlled / AC
+                          </div>
+                        </Col>
+                        <Col md={4} sm={6}>
+                          <div className={`amenity-chip ${listing.amenities?.homePickup ? 'available' : ''}`}>
+                            <FaTruck /> Home Pickup & Drop
+                          </div>
+                        </Col>
+                        <Col md={4} sm={6}>
+                          <div className={`amenity-chip ${listing.amenities?.onlineConsultation ? 'available' : ''}`}>
+                            <FaVideo /> Online Vet Consults
+                          </div>
+                        </Col>
+                        <Col md={4} sm={6}>
+                          <div className={`amenity-chip ${listing.amenities?.wheelchairAccess ? 'available' : ''}`}>
+                            <FaWheelchair /> Wheelchair Accessible
+                          </div>
+                        </Col>
+                        <Col md={4} sm={6}>
+                          <div className={`amenity-chip ${listing.amenities?.petFriendlySeating ? 'available' : ''}`}>
+                            <FaCouch /> Pet-Friendly Seating
+                          </div>
+                        </Col>
+                      </Row>
+                    </div>
+                  </div>
+                </Tab.Pane>
+
+                {/* GALLERY TAB */}
+                <Tab.Pane eventKey="gallery">
+                  <div className="clean-white-block mb-4">
+                    <span className="clean-accent-label">Gallery & Media</span>
+                    
+                    {/* Photos */}
+                    {listing.photos?.length > 0 && (
+                      <div className="mb-4">
+                        <span className="text-muted small d-block mb-2 font-monospace">Photos</span>
+                        <Row className="g-3">
+                          {listing.photos.map((img, i) => (
+                            <Col md={4} sm={6} key={i}>
+                              <div className="gallery-clean-frame" onClick={() => { setSelectedImage(img.url); setShowGalleryModal(true); }}>
+                                <img src={img.url} alt={img.alt} className="w-100" style={{ height: "140px", objectFit: "cover", cursor: "pointer" }} />
+                              </div>
+                            </Col>
+                          ))}
+                        </Row>
+                      </div>
+                    )}
+
+                    {/* Videos */}
+                    {listing.videos?.length > 0 && (
+                      <div className="pt-3 border-top border-light">
+                        <span className="text-muted small d-block mb-2 font-monospace">Videos (Premium)</span>
+                        <Row className="g-3">
+                          {listing.videos.map((vid, i) => (
+                            <Col md={6} key={i}>
+                              <div 
+                                className="gallery-clean-frame position-relative" 
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => { setSelectedVideo(vid.url); setShowVideoModal(true); }}
+                              >
+                                <img src={vid.thumbnail} alt={vid.title} className="w-100" style={{ height: "160px", objectFit: "cover" }} />
+                                <div className="position-absolute top-50 start-50 translate-middle bg-dark bg-opacity-75 rounded-circle p-3 text-white">
+                                  <FaPlay size={20} />
+                                </div>
+                              </div>
+                            </Col>
+                          ))}
+                        </Row>
+                      </div>
+                    )}
+                  </div>
+                </Tab.Pane>
+
+                {/* REVIEWS TAB */}
+                <Tab.Pane eventKey="reviews">
+                  <div className="clean-white-block mb-4">
+                    <span className="clean-accent-label">Customer Reviews</span>
+                    {reviews.map((r, index) => (
+                      <div key={r._id} className={`py-4 ${index !== reviews.length - 1 ? 'border-bottom border-light' : ''}`}>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <h6 className="fw-bold text-dark mb-0">{r.userName}</h6>
+                          <span className="text-muted small font-monospace">{new Date(r.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div className="mb-2">
+                          {Array.from({ length: 5 }).map((_, idx) => <FaStar key={idx} color={idx < r.rating ? "#ff4e00" : "#e2e8f0"} />)}
+                        </div>
+                        <p className="text-secondary mb-2 small">{r.comment}</p>
+
+                        {/* Owner Response */}
+                        {/* {r.ownerResponse && (
+                          <div className="bg-light p-3 rounded border border-light mt-3">
+                            <div className="d-flex align-items-center gap-2 mb-1">
+                              <FaCommentDots style={{ color: '#ff4e00' }} />
+                              <span className="fw-bold text-dark small">Response from Business Owner</span>
+                            </div>
+                            <p className="text-muted small mb-0">{r.ownerResponse.comment}</p>
+                          </div>
+                        )} */}
+                      </div>
+                    ))}
+                  </div>
+                </Tab.Pane>
+              </Tab.Content>
+            </Tab.Container>
+
+            
+
+            {/* OFFERS & FEEDS (MOVED UNDER LOCATION) */}
+            {offers.length > 0 && (
               <div className="clean-white-block mb-4">
-                <span className="clean-accent-label">Photos</span>
+                <span className="clean-accent-label">
+                  <FaBullhorn className="me-1" /> Offers & Feeds
+                </span>
+                
                 <Row className="g-3">
-                  {listing.photos.map((img, i) => (
-                    <Col md={4} sm={6} key={i}>
-                      <div className="gallery-clean-frame" onClick={() => { setSelectedImage(img.url); setShowGalleryModal(true); }}>
-                        <img src={img.url} alt={img.alt} className="w-100" style={{ height: "160px", objectFit: "cover", cursor: "pointer" }} />
+                  {currentOffersSlice.map((offer) => (
+                    <Col md={6} key={offer._id}>
+                      <div className="border border-light rounded overflow-hidden h-100 bg-white">
+                        <div style={{ aspectRatio: '16/9', overflow: 'hidden' }}>
+                          <img src={offer.media[0].url} alt={offer.title} className="w-100 h-100" style={{ objectFit: 'cover' }} />
+                        </div>
+                        <div className="p-3">
+                          <h6 className="text-dark headline-font fw-bold mb-1">{offer.title}</h6>
+                          <p className="text-muted small mb-0 lh-relaxed">{offer.description}</p>
+                        </div>
                       </div>
                     </Col>
                   ))}
                 </Row>
+
+                {totalOfferPages > 1 && (
+                  <ReactPaginate
+                    previousLabel={<FaAngleLeft />}
+                    nextLabel={<FaAngleRight/>}
+                    breakLabel={"..."}
+                    pageCount={totalOfferPages}
+                    marginPagesDisplayed={2}
+                    pageRangeDisplayed={3}
+                    onPageChange={({ selected }) => setCurrentOfferPage(selected + 1)}
+                    containerClassName={"clean-paginate-container"}
+                    pageClassName={"clean-paginate-item"}
+                    pageLinkClassName={"clean-paginate-link"}
+                    previousClassName={"clean-paginate-item"}
+                    previousLinkClassName={"clean-paginate-link"}
+                    nextClassName={"clean-paginate-item"}
+                    nextLinkClassName={"clean-paginate-link"}
+                    breakClassName={"clean-paginate-item clean-paginate-break"}
+                    breakLinkClassName={"clean-paginate-link"}
+                    activeClassName={"active"}
+                    disabledClassName={"disabled"}
+                    forcePage={currentOfferPage - 1}
+                  />
+                )}
               </div>
             )}
-            
-           
 
-            {/* REVIEWS */}
-            <div className="clean-white-block mb-4">
-              <span className="clean-accent-label">Reviews</span>
-              {reviews.map((r, index) => (
-                <div key={r._id} className={`py-4 ${index !== reviews.length - 1 ? 'border-bottom border-light' : ''}`}>
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h6 className="fw-bold text-dark mb-0">{r.userName}</h6>
-                    <span className="text-muted small font-monospace">{new Date(r.created_at).toLocaleDateString()}</span>
+            {/* GOOGLE MAP & LOCATION */}
+            {listing.mapUrl && (
+              <div className="clean-white-block mb-4 overflow-hidden p-0">
+                <div className="p-4 pb-0 d-flex align-items-center justify-content-between">
+                  <div>
+                    <span className="clean-accent-label mb-2">
+                      <FaMapMarkerAlt className="me-1" /> Location & Directions
+                    </span>
+                    <p className="text-muted small mb-0">{listing.address}</p>
                   </div>
-                  <div className="mb-2">
-                    {Array.from({ length: 5 }).map((_, idx) => <FaStar key={idx} color={idx < r.rating ? "#ff4e00" : "#e2e8f0"} />)}
-                  </div>
-                  <p className="text-secondary mb-0 small">{r.comment}</p>
+                  <a href={listing.directionsUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-secondary font-monospace">
+                    Get Directions
+                  </a>
                 </div>
-              ))}
-            </div>
-             {listing.mapUrl && (
-  <div className="clean-white-block mb-4 overflow-hidden p-0">
-    {/* Map Header */}
-    <div className="p-4 pb-0">
-      <span className="clean-accent-label mb-2">
-        <FaMapMarkerAlt className="me-1" /> Find Us on the Map
-      </span>
-      <p className="text-muted small mb-0">{listing.address}</p>
-    </div>
 
-    {/* Map Iframe Container */}
-    <div className="map-container-wrapper mt-3">
-      {listing.mapUrl.includes("iframe") || listing.mapUrl.startsWith("http") ? (
-        <iframe
-          title={`${listing.shopName} Location`}
-          src={
-            // Check if mapUrl is already an embed link. If it's a standard link, we can fallback to search query
-            listing.mapUrl.includes("embed") 
-              ? listing.mapUrl 
-              : `https://maps.google.com/maps?q=${encodeURIComponent(listing.address)}&t=k&z=15&ie=UTF8&iwloc=&output=embed`
-          }
-          width="100%"
-          height="320"
-          style={{ border: 0, display: "block" }}
-          allowFullScreen=""
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        ></iframe>
-      ) : (
-        <div className="p-4 text-center">
-          <p className="small text-muted">Unable to load interactive map.</p>
-          <a 
-            href={listing.mapUrl} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="btn btn-sm btn-outline-secondary font-monospace"
-          >
-            Open in Google Maps
-          </a>
-        </div>
-      )}
-    </div>
-  </div>
-)}
+                <div className="map-container-wrapper mt-3">
+                  <iframe
+                    title={`${listing.shopName} Location`}
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(listing.address)}&t=m&z=15&ie=UTF8&iwloc=&output=embed`}
+                    width="100%"
+                    height="320"
+                    style={{ border: 0, display: "block" }}
+                    allowFullScreen=""
+                    loading="lazy"
+                  ></iframe>
+                </div>
+              </div>
+            )}
           </Col>
 
-
-          {/* RIGHT PANELS */}
+          {/* RIGHT SIDEBAR PANELS */}
           <Col lg={4}>
             <div className="position-sticky" style={{ top: "2rem" }}>
+              
+              {/* PRICING & AVAILABILITY WIDGET */}
               <div className="clean-white-block mb-4">
-                <div className="d-flex align-items-center justify-content-between mb-4">
-                  <span className="headline-font fw-bold text-dark fs-5">Contact Details</span>
-                  {/* <div className="d-flex align-items-center gap-2 text-dark small font-monospace">
-                    <span className="live-glow-dot"></span> CONNECTED
-                  </div> */}
+                <span className="clean-accent-label">Pricing</span>
+                <div className="p-3 bg-light rounded border border-light mb-3">
+                  <span className="d-block text-muted small">Starting Price</span>
+                  <span className="fs-4 fw-bold headline-font text-dark">{listing.pricing?.startingFrom}</span>
                 </div>
+                
+                <div className="d-flex flex-column gap-2 small font-monospace mb-3">
+                  <div><strong>Appointment:</strong> {listing.appointmentRequired ? "Required" : "Walk-ins Welcome"}</div>
+                  <div><strong>Response Time:</strong> {listing.responseTime}</div>
+                  <div><strong>Payment Methods:</strong> 
+                    <div className="d-flex flex-wrap gap-1 mt-2">
+                      {listing.pricing?.paymentMethods.map((pm, i) => (
+                        <Badge bg="white" text="dark" className="border py-1 px-2 font-monospace" key={i}>{pm}</Badge>
+                      ))}
+                    </div> 
+                  </div>
+                </div>
+                
+              </div>
 
-                <div className="mb-4 d-flex gap-2">
-                  <button className="btn-clean-primary w-100 py-3" onClick={() => setShowPhone(!showPhone)}>
-                    {showPhone ? listing.phone : "Show Phone"}
+              {/* CONTACT DETAILS PANEL */}
+              <div className="clean-white-block mb-4">
+                <span className="headline-font fw-bold text-dark fs-5 d-block mb-3">Contact Details</span>
+
+                <div className="mb-4 d-flex flex-column gap-2">
+                  <button className="btn-clean-primary w-100" onClick={() => setShowPhone(!showPhone)}>
+                    <FaPhoneAlt /> {showPhone ? listing.phone : "Show Phone Number"}
                   </button>
-                  <button className="btn-clean-primary w-100 py-3" onClick={() => setShowPhone(!showPhone)}>
-                    {showPhone ? listing.websiteUrl : "Show Website"}
-                  </button>
+                  <a href={listing.websiteUrl} target="_blank" rel="noreferrer" className="btn-clean-outline w-100">
+                    <FaGlobe /> Visit Official Website
+                  </a>
                 </div>
 
                 <div className="d-flex flex-column gap-3 text-sm border-top border-light pt-4 font-monospace">
@@ -1627,10 +930,10 @@ const ListingDetailPage = () => {
                   </div>
                 </div>
 
-                {/* SOCIAL BUTTONS */}
+                {/* SOCIAL MEDIA */}
                 {listing.socialAnchors && (
                   <div className="mt-4 pt-4 border-top border-light">
-                    <span className="clean-accent-label">Social Media Network</span>
+                    <span className="clean-accent-label">Social Media</span>
                     <div className="d-flex gap-2 mt-2">
                       {listing.socialAnchors.facebook && (
                         <a href={listing.socialAnchors.facebook} target="_blank" rel="noreferrer" className="social-clean-btn">
@@ -1653,7 +956,7 @@ const ListingDetailPage = () => {
 
                 {/* BUSINESS HOURS */}
                 <div className="mt-4 pt-4 border-top border-light">
-                  <span className="clean-accent-label"><FaClock className="me-1"/> Business Hours</span>
+                  <span className="clean-accent-label"><FaClock className="me-1"/> Operating Hours</span>
                   <div className="p-2 rounded bg-light border border-light mt-2">
                     {listing.businessHours?.map((bh, idx) => (
                       <div key={idx} className="hours-matrix-row text-dark">
@@ -1665,17 +968,11 @@ const ListingDetailPage = () => {
                     ))}
                   </div>
                 </div>
-
-                {listing.whatsappNumber && (
-                  <Button variant="success" className="w-100 rounded py-3 mt-4 d-flex align-items-center justify-content-center gap-2 fw-bold text-white border-0" style={{ background: '#22c55e' }} href={`https://wa.me/${listing.whatsappNumber}`} target="_blank">
-                    <FaWhatsapp size={20}/> Message via WhatsApp
-                  </Button>
-                )}
               </div>
 
-              {/* WRITE REVIEW */}
+              {/* WRITE REVIEW FORM */}
               <div className="clean-white-block">
-                <span className="clean-accent-label text-center">Write Reviews</span>
+                <span className="clean-accent-label text-center">Write a Review</span>
                 <Form onSubmit={handleSubmit}>
                   <div className="d-flex justify-content-center gap-2 mb-3">
                     {[1, 2, 3, 4, 5].map((i) => (
@@ -1683,10 +980,10 @@ const ListingDetailPage = () => {
                     ))}
                   </div>
                   <Form.Group className="mb-3">
-                    <Form.Control as="input" rows={3} placeholder="Name" value={comment} onChange={(e) => setComment(e.target.value)} required className="clean-input-field" />
+                    <Form.Control type="text" placeholder="Your Name" value={reviewerName} onChange={(e) => setReviewerName(e.target.value)} required className="clean-input-field" />
                   </Form.Group>
                   <Form.Group className="mb-3">
-                    <Form.Control as="input" rows={3} placeholder="Email" value={comment} onChange={(e) => setComment(e.target.value)} required className="clean-input-field" />
+                    <Form.Control type="email" placeholder="Your Email" value={reviewerEmail} onChange={(e) => setReviewerEmail(e.target.value)} required className="clean-input-field" />
                   </Form.Group>
                   <Form.Group className="mb-3">
                     <Form.Control as="textarea" rows={3} placeholder="Describe your experience with the team..." value={comment} onChange={(e) => setComment(e.target.value)} required className="clean-input-field" />
@@ -1694,67 +991,23 @@ const ListingDetailPage = () => {
                   <button type="submit" className="btn-clean-primary w-100 py-2.5">Submit Review</button>
                 </Form>
               </div>
+
             </div>
           </Col>
         </Row>
-
-        {/* OFFERS REEL */}
-        {/* OFFERS REEL */}
-        {offers.length > 0 && (
-          <div className="mt-5 pt-5 border-top border-light">
-            <div className="d-flex align-items-center gap-2 mb-4">
-              <h3 className="headline-font text-dark fw-bold mb-0">Offers / Posts / Feeds</h3>
-            </div>
-            
-            {/* Displaying Sliced Offers */}
-            <Row className="g-4">
-              {currentOffersSlice.map((offer) => (
-                <Col md={6} key={offer._id}>
-                  <div className="clean-white-block h-100 p-0 overflow-hidden">
-                    <div style={{ aspectRatio: '12/6', overflow: 'hidden' }} className="border-bottom border-light">
-                      <img src={offer.media[0].url} alt={offer.title} className="w-100 h-100" style={{ objectFit: 'cover' }} />
-                    </div>
-                    <div className="p-4">
-                      <h5 className="text-dark headline-font fw-bold mb-2">{offer.title}</h5>
-                      <p className="text-muted small mb-0 lh-relaxed text-justify">{offer.description}</p>
-                    </div>
-                  </div>
-                </Col>
-              ))}
-            </Row>
-
-            {/* React Paginate Component */}
-            {totalOfferPages > 1 && (
-              <ReactPaginate
-                previousLabel={<FaAngleLeft />}
-                nextLabel={<FaAngleRight/>}
-                breakLabel={"..."}
-                pageCount={totalOfferPages}
-                marginPagesDisplayed={2}
-                pageRangeDisplayed={3}
-                onPageChange={({ selected }) => setCurrentOfferPage(selected + 1)}
-                containerClassName={"clean-paginate-container"}
-                pageClassName={"clean-paginate-item"}
-                pageLinkClassName={"clean-paginate-link"}
-                previousClassName={"clean-paginate-item"}
-                previousLinkClassName={"clean-paginate-link"}
-                nextClassName={"clean-paginate-item"}
-                nextLinkClassName={"clean-paginate-link"}
-                breakClassName={"clean-paginate-item clean-paginate-break"}
-                breakLinkClassName={"clean-paginate-link"}
-                activeClassName={"active"}
-                disabledClassName={"disabled"}
-                forcePage={currentOfferPage - 1} // Keeps state synchronized
-              />
-            )}
-          </div>
-        )}
       </Container>
 
-      {/* LIGHTBOX MODAL */}
+      {/* PHOTO LIGHTBOX MODAL */}
       <Modal show={showGalleryModal} onHide={() => setShowGalleryModal(false)} centered size="lg">
         <Modal.Body className="p-0 bg-transparent rounded overflow-hidden border-0">
           <img src={selectedImage} alt="Preview" className="w-100" style={{ maxHeight: "80vh", objectFit: "contain" }} />
+        </Modal.Body>
+      </Modal>
+
+      {/* VIDEO PLAYER MODAL */}
+      <Modal show={showVideoModal} onHide={() => setShowVideoModal(false)} centered size="lg">
+        <Modal.Body className="p-0 bg-black rounded overflow-hidden border-0">
+          <video src={selectedVideo} controls autoPlay className="w-100" style={{ maxHeight: "80vh" }} />
         </Modal.Body>
       </Modal>
     </div>

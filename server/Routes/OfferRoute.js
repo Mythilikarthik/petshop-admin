@@ -297,6 +297,45 @@ router.get('/', async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+// get user's offers
+router.get('/user/:user_id', async (req, res) => {
+  try {
+    const userId = req.params.user_id;
+
+    // 1. Find all listing IDs where the user is either the creator (user_id) OR the claim owner (claimedBy)
+    const userListings = await Listing.find({
+      $or: [
+        { user_id: userId },
+        { claimedBy: userId }
+      ]
+    }).select('_id');
+
+    // Extract an array of Listing ObjectIDs
+    const listingIds = userListings.map(listing => listing._id);
+
+    // 2. Fetch offers where either:
+    //    a) Offer.userId matches the user directly
+    //    b) Offer.business.listingId matches any of the user's created/claimed listings
+    const offers = await Offer.find({
+      $or: [
+        { userId: userId },
+        { 'business.listingId': { $in: listingIds } }
+      ]
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({ 
+      success: true, 
+      count: offers.length,
+      offers 
+    });
+
+  } catch (err) {
+    return res.status(500).json({ 
+      success: false, 
+      message: err.message 
+    });
+  }
+});
 
 // 3. POST Create Offer
 router.post('/', async (req, res) => {

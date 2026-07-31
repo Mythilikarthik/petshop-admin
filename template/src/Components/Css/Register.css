@@ -13,8 +13,8 @@
 /* GPay Wrapper Layout */
 .gpay-wrapper {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 80px;
+  height: 80px;
   margin: 0 auto 10px auto;
   display: flex;
   align-items: center;
@@ -22,8 +22,8 @@
 }
 
 .gpay-success-circle {
-  width: 75px;
-  height: 75px;
+  width: 50px;
+  height: 50px;
   background-color: #22c55e;
   border-radius: 50%;
   display: flex;
@@ -36,7 +36,7 @@
 
 .gpay-success-check {
   color: #ffffff;
-  font-size: 2.2rem;
+  font-size: 1rem;
 }
 
 /* Star Ribbon Positions & Colors */
@@ -46,12 +46,12 @@
   z-index: 1;
 }
 
-.star-1 { top: 15px; left: 20px; color: #3b82f6; font-size: 1.2rem; }       /* Blue Star */
-.star-2 { top: 10px; right: 25px; color: #22c55e; font-size: 0.9rem; }      /* Small Green Star */
-.star-3 { top: 50px; right: 10px; color: #3b82f6; font-size: 1.3rem; }      /* Blue Star Right */
-.star-4 { bottom: 25px; right: 25px; color: #f97316; font-size: 1.1rem; }   /* Orange Star */
-.star-5 { bottom: 15px; left: 35px; color: #eab308; font-size: 1.4rem; }    /* Yellow Star */
-.star-6 { top: 60px; left: 5px; color: #f97316; font-size: 0.9rem; }        /* Small Orange Star */
+.star-1 { top: 0px; left: 40px; color: #3b82f6; font-size: 0.5rem; }       /* Blue Star */
+.star-2 { top: 15px; right: 65px; color: #22c55e; font-size: 0.5rem; }      /* Small Green Star */
+.star-3 { top: 68px; right: 30px; color: #3b82f6; font-size: 0.5rem; }      /* Blue Star Right */
+.star-4 { bottom: 35px; right: 0px; color: #f97316; font-size: 0.5rem; }   /* Orange Star */
+.star-5 { right: 0; top: 0; color: #eab308; font-size: 0.5rem; }    /* Yellow Star */
+.star-6 { top: 60px; left: 5px; color: #f97316; font-size: 0.5rem; }        /* Small Orange Star */
 
 /* --- Layout Accents --- */
 .thankyou-title-wrapper {
@@ -74,8 +74,8 @@
 }
 
 .step-icon-circle {
-  width: 85px;         /* Increased from 50px */
-  height: 85px;        /* Increased from 50px */
+  width: 50px;         /* Increased from 50px */
+  height: 50px;        /* Increased from 50px */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -86,7 +86,7 @@
 }
 
 .step-text {
-  font-size: 0.78rem;  /* Slightly smaller font to emphasize the icon size */
+  font-size: 0.74rem;  /* Slightly smaller font to emphasize the icon size */
   font-weight: 600;
   color: #4b5563;      /* Clean neutral gray text */
   line-height: 1.4;

@@ -36,7 +36,12 @@ const daysOfWeek = [
   "Saturday",
   "Sunday"
 ];
-
+// ------------------
+// Input states for string arrays
+  const [newCertification, setNewCertification] = useState("");
+  
+  const [newServiceArea, setNewServiceArea] = useState("");
+// -----------------------
 const [businessHours, setBusinessHours] = useState(
   daysOfWeek.map(day => ({
     day,
@@ -49,6 +54,7 @@ const [businessHours, setBusinessHours] = useState(
     shopName: '',
     email: '',
     phone: '',
+    whatsapp: '',
     address: '',
     city: '',          // 🧩 will hold city _id
     country: '',
@@ -71,8 +77,80 @@ const [businessHours, setBusinessHours] = useState(
     isClaimed: false,
     isSignup: false,
     signupStatus: "pending",
+    // ------------
+    
+    mapLink:  "",
+    yearsInBusiness:  0,
+    customersServed:  0,
+    certifications:  [],
+    languagesSpoken:   [],
+    amenities:   [],
+    serviceAreas:  [],
+    appointmentRequired:  false,
+    responseTime: "Within a few hours",
+
+    // Pricing & Payments
+    startingPrice:  0,
+    paymentMethods: [],
+    // ------------
   });
 
+  // ---------
+  const amenityOptions = [
+    { value: "all", label: "All" },
+    { value: "WiFi", label: "WiFi" },
+    { value: "Parking", label: "Parking" },
+    { value: "Air Conditioning", label: "Air Conditioning" },
+    { value: "Pet Friendly", label: "Pet Friendly" },
+    { value: "Wheelchair Accessible", label: "Wheelchair Accessible" },
+    { value: "Waiting Area", label: "Waiting Area" }
+  ];
+  const languageOptions = [
+  { value: "all", label: "All" },
+  { value: "English", label: "English" },
+  { value: "Tamil", label: "Tamil" },
+  { value: "Hindi", label: "Hindi" }
+];
+  const paymentOptions = [
+    { value: "all", label: "All" }, 
+    { value: "Cash", label: "Cash" },
+    { value: "Credit Card", label: "Credit Card" },
+    { value: "Debit Card", label: "Debit Card" },
+    { value: "UPI", label: "UPI" },
+    { value: "Net Banking", label: "Net Banking" },
+    { value: "Digital Wallet", label: "Digital Wallet" }
+  ];
+  // Add these states at the top of EditListing
+const [video, setVideo] = useState(null);
+const [videoPreview, setVideoPreview] = useState(null);
+const [existingVideo, setExistingVideo] = useState(null);
+  // ✅ Helper function to place outside your component or near the top
+const safeParseArray = (val) => {
+  if (!val) return [];
+  
+  // If it's already an array, clean each element
+  if (Array.isArray(val)) {
+    return val.flatMap(item => safeParseArray(item)).filter(Boolean);
+  }
+  
+  // If it's a string, check if it's JSON stringified (e.g. '["tag1", "tag2"]')
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return safeParseArray(parsed); // Recursively parse un-nested arrays
+      } catch (e) {
+        // Fallback if JSON parse fails
+      }
+    }
+    // Handle standard comma-separated strings like "tag1, tag2"
+    return trimmed.split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+  }
+  
+  return [];
+};
+  // ---------
   const { confirmLeave, markAsSaved, resetInitialSnapshot } =
     useUnsavedChanges(formData, { excludeKeys: ['photos', 'existingPhotos'] });
 const fetchServices = async (categories) => {
@@ -162,6 +240,21 @@ useEffect(() => {
   }, []);
 
   // ✅ Fetch listing by ID
+  // ✅ Helper to extract video URL as a clean string
+const extractVideoUrl = (val) => {
+  if (!val) return null;
+  if (typeof val === "string") return val;
+  if (Array.isArray(val) && val.length > 0) {
+    // If videos is stored as an array like ["uploads/..."] or [{ url: "..." }]
+    const first = val[0];
+    if (typeof first === "string") return first;
+    if (first && typeof first === "object" && first.url) return first.url;
+  }
+  if (typeof val === "object" && val.url) return val.url;
+  return null;
+};
+
+
   useEffect(() => {
     if (!id) return;
 
@@ -169,16 +262,27 @@ useEffect(() => {
       try {
         const res = await fetch(`${API_BASE}/api/listing/${id}`);
         const data = await res.json();
+        // Inside fetchListing (useEffect) in EditListing.js:
 
+        
         if (res.ok && data.success) {
           setListing(data.listing);
           setExistingBanner(data.listing.bannerImage || null);
-
+          //setExistingVideo(data.listing.videos || null);
+          if (data.listing.videos && data.listing.videos.length > 0) {
+  // Extract url from the schema object
+  const firstVideo = data.listing.videos[0];
+  const videoUrl = typeof firstVideo === "string" ? firstVideo : firstVideo.url;
+  setExistingVideo(videoUrl);
+} else {
+  setExistingVideo(null);
+}
           setFormData({
             u_name: data.listing.user_id?.name || '',
             shopName: data.listing.shopName || '',
             email: data.listing.email || '',
             phone: data.listing.phone || '',
+            whatsapp: data.listing.whatsapp || '',
             address: data.listing.address || '',
             city: data.listing.city?._id || data.listing.city || '',
             country: data.listing.country || '',
@@ -189,24 +293,25 @@ useEffect(() => {
             specializedServices: data.listing.specializedServices?.map(s => s._id || s) || [],
             photos: [],
             bannerImage: data.listing.bannerImage || null,
+            videos: data.listing.videos || null,
             existingPhotos:
   (data.listing.photos || []).map(photo => ({
     url: photo.url || photo,
     alt: photo.alt || ""
   })),
             metaTitle: data.listing.metaTitle || '',
-            metaKeyword: data.listing.metaKeyword
-            ? (
-                Array.isArray(data.listing.metaKeyword)
-                  ? data.listing.metaKeyword
-                      .flatMap(k => k.split(',').map(x => x.trim()))
-                      .filter(k => k) 
-                  : data.listing.metaKeyword
-                      .split(',')
-                      .map(k => k.trim())
-                      .filter(k => k)
-              )
-            : [],
+            // metaKeyword: data.listing.metaKeyword
+            // ? (
+            //     Array.isArray(data.listing.metaKeyword)
+            //       ? data.listing.metaKeyword
+            //           .flatMap(k => k.split(',').map(x => x.trim()))
+            //           .filter(k => k) 
+            //       : data.listing.metaKeyword
+            //           .split(',')
+            //           .map(k => k.trim())
+            //           .filter(k => k)
+            //   )
+            // : [],
             metaDescription: data.listing.metaDescription || '',
             status: data.listing.status === 'approved',
             isVerified: data.listing.isVerified || false, // 
@@ -216,6 +321,30 @@ useEffect(() => {
             verificationDocs: data.listing.verificationDocs || [],
             isClaimed: data.listing.isClaimed || false,
             isSignup: data.listing.isSignup || false,
+
+            // ------------
+    
+    mapLink: data.listing.mapLink || "",
+    yearsInBusiness: data.listing.yearsInBusiness || 0,
+    customersServed: data.listing.customersServed || 0,
+    // certifications: data.listing.certifications || [],
+    // languagesSpoken: data.listing.languagesSpoken || [],
+    // serviceAreas: data.listing.serviceAreas || [],
+    appointmentRequired: data.listing.appointmentRequired || false,
+    responseTime: data.listing.responseTime || "Within a few hours",
+
+    // Pricing & Payments
+    startingPrice: data.listing.startingPrice || 0,
+    // paymentMethods: data.listing.paymentMethods || [],
+    // ✅ CLEAN & SAFE
+metaKeyword: safeParseArray(data.listing.metaKeyword),
+certifications: safeParseArray(data.listing.certifications),
+languagesSpoken: safeParseArray(data.listing.languagesSpoken),
+amenities: safeParseArray(data.listing.amenities),
+serviceAreas: safeParseArray(data.listing.serviceAreas),
+paymentMethods: safeParseArray(data.listing.paymentMethods),
+
+    // ------------
           });
           // ✅ Load business hours from DB
           if (data.listing.businessHours && data.listing.businessHours.length > 0) {
@@ -236,6 +365,26 @@ useEffect(() => {
 
     fetchListing();
   }, [id, navigate]);
+  const handleVideoChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Max 50MB limit check
+  if (file.size > 50 * 1024 * 1024) {
+    alert("Video size must be less than 50MB.");
+    e.target.value = "";
+    return;
+  }
+
+  setVideo(file);
+  setVideoPreview(URL.createObjectURL(file));
+};
+
+const handleRemoveVideo = () => {
+  setVideo(null);
+  setVideoPreview(null);
+};
+
   const handleExistingPhotoAltChange = (index,value)=>{
 
   setFormData(prev=>{
@@ -333,10 +482,62 @@ const handleDeleteExistingPhoto = (index) => {
   }));
 };
   // ✅ Handlers
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setFormData(prev => ({ ...prev, [name]: value }));
+  // };
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    if (type === "checkbox") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
+  const handleAddCertification = (e) => {
+    e.preventDefault();
+    if (newCertification.trim() && !formData.certifications.includes(newCertification.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        certifications: [...prev.certifications, newCertification.trim()]
+      }));
+      setNewCertification("");
+    }
+  };
+
+  const handleRemoveCertification = (itemToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      certifications: prev.certifications.filter((item) => item !== itemToRemove)
+    }));
+  };
+
+  
+
+  const handleAddServiceArea = (e) => {
+    e.preventDefault();
+    if (newServiceArea.trim() && !formData.serviceAreas.includes(newServiceArea.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        serviceAreas: [...prev.serviceAreas, newServiceArea.trim()]
+      }));
+      setNewServiceArea("");
+    }
+  };
+
+  const handleRemoveServiceArea = (itemToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      serviceAreas: prev.serviceAreas.filter((item) => item !== itemToRemove)
+    }));
+  };
+  // -----------
 
   const handleCategoryChange = (selected) => {
     setFormData(prev => ({
@@ -421,19 +622,51 @@ const handleDeleteExistingPhoto = (index) => {
         shopName: formData.shopName,
         email: formData.email,
         phone: formData.phone,
+        whatsapp: formData.whatsapp,
         address: formData.address,
         city: formData.city,
         country: formData.country,
         mapUrl: formData.mapUrl,
         description: formData.description,
         metaTitle: formData.metaTitle,
-        metaKeyword: formData.metaKeyword.join(','),
+        //metaKeyword: formData.metaKeyword.join(','),
         metaDescription: formData.metaDescription,
         status: formData.status ? 'approved' : 'pending',
         isVerified: formData.isVerified, 
         createdBy: formData.createdBy,
       }).forEach(([key, val]) => formDataToSend.append(key, val));
 formDataToSend.append("businessHours", JSON.stringify(businessHours));
+
+
+// ----------
+      formDataToSend.append("mapLink", formData.mapLink);
+      formDataToSend.append("yearsInBusiness", formData.yearsInBusiness);
+      formDataToSend.append("customersServed", formData.customersServed);
+      //formDataToSend.append("certifications", JSON.stringify(formData.certifications));
+     // formDataToSend.append("languagesSpoken", JSON.stringify(formData.languagesSpoken));
+      //formDataToSend.append("serviceAreas", JSON.stringify(formData.serviceAreas));
+      formDataToSend.append("appointmentRequired", formData.appointmentRequired);
+      formDataToSend.append("responseTime", formData.responseTime);
+      formDataToSend.append("startingPrice", formData.startingPrice);
+      // formDataToSend.append("paymentMethods", formData.paymentMethods);
+      if (video) {
+  formDataToSend.append("videos", video);
+}
+
+
+      // ✅ In handleSubmit:
+formDataToSend.append("metaKeyword", formData.metaKeyword.join(','));
+formDataToSend.append("certifications", JSON.stringify(formData.certifications));
+formDataToSend.append("languagesSpoken", JSON.stringify(formData.languagesSpoken));
+formDataToSend.append("amenities", JSON.stringify(formData.amenities));
+formDataToSend.append("serviceAreas", JSON.stringify(formData.serviceAreas));
+      // ✅ CORRECT
+if (Array.isArray(formData.paymentMethods)) {
+  formData.paymentMethods.forEach((method) => {
+    formDataToSend.append("paymentMethods[]", method);
+  });
+}
+      // ----------
       formData.categories.forEach(cat => formDataToSend.append('categories[]', cat));
       formData.petCategories.forEach(cat => formDataToSend.append('petCategories[]', cat));
       // formData.photos.forEach(photo => formDataToSend.append('photos', photo));
@@ -692,6 +925,297 @@ formData.petCategories.length === petCategoryList.length
               <Form.Label>Phone <span className="text-danger">*</span></Form.Label>
               <Form.Control type="number" name="phone" value={formData.phone} onChange={handleChange} required />
             </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Whatsapp <span className="text-danger">*</span></Form.Label>
+              <Form.Control type="number" name="whatsapp" value={formData.whatsapp} onChange={handleChange} required />
+            </Form.Group>
+            {/* Newly added Fields */}
+                        {/* Map Link */}
+                        <Form.Group className="mb-3">
+                          <Form.Label>Map Link</Form.Label>
+                          <Form.Control
+                            type="url"
+                            name="mapLink"
+                            value={formData.mapLink}
+                            onChange={handleChange}
+                          />
+                        </Form.Group>
+            
+                        {formData.mapLink && (
+                          <div className="mb-3">
+                            <iframe
+                              src={formData.mapLink}
+                              width="100%"
+                              height="250"
+                              style={{ border: 0 }}
+                              allowFullScreen
+                              loading="lazy"
+                              title="Location Map"
+                            ></iframe>
+                          </div>
+                        )}
+            
+                        <Row>
+                          <Col md={6}>
+                            <Form.Group className="mb-3">
+                              <Form.Label>Years in Business</Form.Label>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                name="yearsInBusiness"
+                                value={formData.yearsInBusiness}
+                                onChange={handleChange}
+                              />
+                            </Form.Group>
+                          </Col>
+                          <Col md={6}>
+                            <Form.Group className="mb-3">
+                              <Form.Label>Customers Served</Form.Label>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                name="customersServed"
+                                value={formData.customersServed}
+                                onChange={handleChange}
+                              />
+                            </Form.Group>
+                          </Col>
+                        </Row>
+            
+                        {/* Certifications Array */}
+                        <Form.Group className="mb-3">
+                          <Form.Label>Certifications</Form.Label>
+                          <div className="d-flex flex-wrap gap-2 mb-2">
+                            {formData.certifications.map((item, idx) => (
+                              <span key={idx} className="badge bg-secondary d-flex align-items-center">
+                                {item}
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="text-white ms-1 p-0"
+                                  onClick={() => handleRemoveCertification(item)}
+                                  style={{ lineHeight: "1" }}
+                                >
+                                  ✕
+                                </Button>
+                              </span>
+                            ))}
+                          </div>
+                          <div className="d-flex">
+                            <Form.Control
+                              type="text"
+                              placeholder="Add certification..."
+                              value={newCertification}
+                              onChange={(e) => setNewCertification(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleAddCertification(e)}
+                            />
+                            <Button variant="outline-primary" onClick={handleAddCertification} className="ms-2">
+                              Add
+                            </Button>
+                          </div>
+                        </Form.Group>
+            
+                        {/* Languages Spoken Array */}
+                        <Form.Group className="mb-3">
+                          <Form.Label>Languages Spoken</Form.Label>
+                          <Select
+                            isMulti
+                            options={languageOptions}
+                            value={languageOptions.filter(
+                              (opt) => opt.value !== "all" && formData.languagesSpoken.includes(opt.value)
+                            )}
+                            onChange={(selected) => {
+                              if (!selected || selected.length === 0) {
+                                setFormData((prev) => ({ ...prev, languagesSpoken: [] }));
+                                return;
+                              }
+
+                              // Filter real options (excluding 'all')
+                              const realLanguages = languageOptions
+                                .filter((opt) => opt.value !== "all")
+                                .map((opt) => opt.value);
+
+                              // If "Select All" was clicked
+                              if (selected.some((s) => s.value === "all")) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  languagesSpoken: realLanguages
+                                }));
+                              } else {
+                                // Normal selection
+                                const selectedValues = selected
+                                  .map((s) => s.value)
+                                  .filter((v) => v !== "all");
+
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  languagesSpoken: selectedValues
+                                }));
+                              }
+                            }}
+                          />
+                        </Form.Group>
+                        {/* Amenities Field */}
+<Form.Group className="mb-3">
+  <Form.Label>Amenities</Form.Label>
+  <Select
+    isMulti
+    options={amenityOptions}
+    value={amenityOptions.filter(
+      (opt) => opt.value !== "all" && formData.amenities?.includes(opt.value)
+    )}
+    onChange={(selected) => {
+      if (!selected || selected.length === 0) {
+        setFormData((prev) => ({ ...prev, amenities: [] }));
+        return;
+      }
+
+      // Filter real amenity values (excluding 'all')
+      const realAmenities = amenityOptions
+        .filter((opt) => opt.value !== "all")
+        .map((opt) => opt.value);
+
+      // If "Select All" was clicked
+      if (selected.some((s) => s.value === "all")) {
+        setFormData((prev) => ({
+          ...prev,
+          amenities: realAmenities
+        }));
+      } else {
+        // Normal selection
+        const selectedValues = selected
+          .map((s) => s.value)
+          .filter((v) => v !== "all");
+
+        setFormData((prev) => ({
+          ...prev,
+          amenities: selectedValues
+        }));
+      }
+    }}
+  />
+</Form.Group>
+            
+                        {/* Service Areas Array */}
+                        <Form.Group className="mb-3">
+                          <Form.Label>Service Areas</Form.Label>
+                          <div className="d-flex flex-wrap gap-2 mb-2">
+                            {formData.serviceAreas.map((item, idx) => (
+                              <span key={idx} className="badge bg-secondary d-flex align-items-center">
+                                {item}
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="text-white ms-1 p-0"
+                                  onClick={() => handleRemoveServiceArea(item)}
+                                  style={{ lineHeight: "1" }}
+                                >
+                                  ✕
+                                </Button>
+                              </span>
+                            ))}
+                          </div>
+                          <div className="d-flex">
+                            <Form.Control
+                              type="text"
+                              placeholder="e.g. Downtown, South City..."
+                              value={newServiceArea}
+                              onChange={(e) => setNewServiceArea(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleAddServiceArea(e)}
+                            />
+                            <Button variant="outline-primary" onClick={handleAddServiceArea} className="ms-2">
+                              Add
+                            </Button>
+                          </div>
+                        </Form.Group>
+                        <Row>
+                          <Col md={6}>
+                            <Form.Group className="mb-3">
+                              <Form.Check
+                                type="checkbox"
+                                label="Appointment Required"
+                                name="appointmentRequired"
+                                checked={formData.appointmentRequired}
+                                onChange={handleChange}
+                              />
+                            </Form.Group>
+                          </Col>
+                          <Col md={6}>
+                            <Form.Group className="mb-3">
+                              <Form.Label>Response Time</Form.Label>
+                              <Form.Control
+                                type="text"
+                                name="responseTime"
+                                placeholder="e.g. Within a few hours"
+                                value={formData.responseTime}
+                                onChange={handleChange}
+                              />
+                            </Form.Group>
+                          </Col>
+                        </Row>
+            
+                        {/* Pricing & Payments */}
+                        <h4 className="mt-4 mb-3 text-primary">Pricing & Payment Methods</h4>
+                        <Row>
+                          <Col md={6}>
+                            <Form.Group className="mb-3">
+                              <Form.Label>Starting Price (₹)</Form.Label>
+                              <Form.Control
+                                type="number"
+                                min="0"
+                                name="startingPrice"
+                                value={formData.startingPrice}
+                                onChange={handleChange}
+                              />
+                            </Form.Group>
+                          </Col>
+                          <Col md={6}>
+                            <Form.Group className="mb-3">
+                              <Form.Label>Payment Methods Accepted</Form.Label>
+                              {/* ✅ NEW SELECT CODE WITH "ALL" OPTION */}
+                              <Select
+  isMulti
+  options={paymentOptions}
+  value={paymentOptions.filter(
+    (opt) => opt.value !== "all" && formData.paymentMethods.includes(opt.value)
+  )}
+  onChange={(selected) => {
+    if (!selected || selected.length === 0) {
+      setFormData((prev) => ({ ...prev, paymentMethods: [] }));
+      return;
+    }
+
+    // List of real payment values (excluding 'all')
+    const realOptions = paymentOptions
+      .filter((opt) => opt.value !== "all")
+      .map((opt) => opt.value);
+
+    // If 'all' was selected from the dropdown
+    if (selected.some((s) => s.value === "all")) {
+      setFormData((prev) => ({
+        ...prev,
+        paymentMethods: realOptions // Save only real payment options!
+      }));
+    } else {
+      // Filter out 'all' explicitly just in case
+      const selectedValues = selected
+        .map((s) => s.value)
+        .filter((v) => v !== "all");
+
+      setFormData((prev) => ({
+        ...prev,
+        paymentMethods: selectedValues
+      }));
+    }
+  }}
+/>
+                            </Form.Group>
+                          </Col>
+                        </Row>
+                        
+            
+            
+                        {/* End Newly added Fields */}
             <Form.Group className="mb-4">
   <Form.Label className="fw-bold">Business Hours</Form.Label>
 
@@ -991,6 +1515,55 @@ onChange={(e)=>
 </Col>
 
 ))}
+
+{/* Video Upload Section */}
+<Form.Group className="mb-4">
+  <Form.Label className="fw-bold">Upload Listing Video</Form.Label>
+  <Form.Control
+    type="file"
+    accept="video/mp4,video/webm,video/ogg"
+    onChange={handleVideoChange}
+  />
+  <Form.Text className="text-muted">
+    Upload MP4, WebM, or OGG format (Max 50MB).
+  </Form.Text>
+
+  {/* Preview newly selected video */}
+  {videoPreview && (
+    <div className="mt-3 position-relative" style={{ maxWidth: "400px" }}>
+      <Button
+        variant="danger"
+        size="sm"
+        className="position-absolute"
+        style={{ top: "10px", right: "10px", zIndex: 10, borderRadius: "50%" }}
+        onClick={handleRemoveVideo}
+      >
+        ✕
+      </Button>
+      <video
+        controls
+        src={videoPreview}
+        style={{ width: "100%", borderRadius: "8px" }}
+      />
+    </div>
+  )}
+
+  {/* ✅ SAFE VIDEO DISPLAY COMPONENT */}
+{!videoPreview && existingVideo && (
+  <div className="mt-3" style={{ maxWidth: "400px" }}>
+    <p className="text-muted mb-1">Current Saved Video:</p>
+    <video
+      controls
+      src={
+        typeof existingVideo === "string" && existingVideo.startsWith("http")
+          ? existingVideo
+          : `${API_BASE}/${existingVideo}`
+      }
+      style={{ width: "100%", borderRadius: "8px" }}
+    />
+  </div>
+)}
+</Form.Group>
 
             {/* Meta Fields */}
             <Form.Group className="mb-3">

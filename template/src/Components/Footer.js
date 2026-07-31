@@ -12,6 +12,10 @@ const API_BASE =
     : "http://localhost:5000";
 
 const Footer = ({home, categoryPage}) => {
+    const directoryCategory = [{
+        categoryName: "Pet Grooming",
+        categorySlug: "pet-grooming"
+    }]
   return (
     <div className='footer'>
         <footer className="bg-gray-900 text-white ">
@@ -61,6 +65,24 @@ const Footer = ({home, categoryPage}) => {
                                 <li><Link to="/blog" className="text-white">Blogs</Link></li>                                
                                 <li><Link to="/contact" className="text-white">Contact Us</Link></li>
                             </ul>
+                        </Col>
+                        <Col>
+                            <h5 className="mb-3">Directory Categories</h5>
+                            <ul className="list-unstyled">
+                                {/* {console.log("Footer categoryPage:", categoryPage)} */}
+                                {directoryCategory && directoryCategory.map((category) => (
+                                    <li key={category.categoryName}>
+                                        <Link to={`/${category.categorySlug.toLowerCase()}`} className="text-white">{category.categoryName}</Link>
+                                    </li>
+                                ))}
+                                {/* <li><Link to="/directory?category=dogs" className="text-white">Dogs</Link></li>
+                                <li><Link to="/directory?category=cats" className="text-white">Cats</Link></li>
+                                <li><Link to="/directory?category=birds" className="text-white">Birds</Link></li>
+                                <li><Link to="/directory?category=fish" className="text-white">Fish</Link></li>
+                                <li><Link to="/directory?category=small-pets" className="text-white">Small Pets</Link></li>
+                                <li><Link to="/directory?category=exotic-pets" className="text-white">Exotic Pets</Link></li> */}
+                            </ul>
+
                         </Col>
                         <Col>
                             <h5 className="mb-3">Pet Categories</h5>

@@ -6,7 +6,8 @@ import {
   MdMessage ,
   MdOutlineContactPhone ,
   MdOutlineMenuBook ,
-  MdPets
+  MdPets,
+  MdLocalOffer
 } from 'react-icons/md';
 import { GiNestBirds, GiNodular  } from "react-icons/gi";
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -16,6 +17,7 @@ const menuItems = [
   { name: "Dashboard", path: "/dashboard", icon: <MdPets /> },
   { name: "Edit Listing", path: "/edit-listing", icon: <GiNestBirds /> },
   { name: "Reviews", path: "/review", icon: <GiNodular /> },
+  { name: "Offers Management", path: "/offers-management", icon: <MdLocalOffer />, badgeKey: "offers" },
   { 
     name: "Message", 
     path: "/business-listing", 

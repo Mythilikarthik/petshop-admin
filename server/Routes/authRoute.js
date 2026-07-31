@@ -17,42 +17,44 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const multer = require("multer");
 const path = require("path");
 const mongoose = require("mongoose");
+const sendOtpEmail = require("../Utils/sendOtpEmail");
+const sendResetPasswordEmail = require("../Utils/sendResetPasswordEmail");
+const sendWelcomeEmail = require("../Utils/sendWelcomeEmail");
 
+// const sendOtpEmail = async (templateData) => {
+//   return emailjs.send(
+//     process.env.EMAILJS_SERVICE_ID_2,
+//     process.env.EMAILJS_TEMPLATE_ID_2,
+//     templateData,
+//     {
+//       publicKey: process.env.EMAILJS_PUBLIC_KEY_2,
+//       privateKey: process.env.EMAILJS_PRIVATE_KEY_2,
+//     }
+//   );
+// };
 
-const sendOtpEmail = async (templateData) => {
-  return emailjs.send(
-    process.env.EMAILJS_SERVICE_ID_2,
-    process.env.EMAILJS_TEMPLATE_ID_2,
-    templateData,
-    {
-      publicKey: process.env.EMAILJS_PUBLIC_KEY_2,
-      privateKey: process.env.EMAILJS_PRIVATE_KEY_2,
-    }
-  );
-};
-
-const sendEmail = async (templateData) => {
-  return emailjs.send(
-    process.env.EMAILJS_SERVICE_ID,
-    process.env.EMAILJS_FORGET_PASSWORD_TEMPLATE_ID,
-    templateData,
-    {
-      publicKey: process.env.EMAILJS_PUBLIC_KEY,
-      privateKey: process.env.EMAILJS_PRIVATE_KEY,
-    }
-  );
-};
-const sendWelcomeEmail = async (templateData) => {
-  return emailjs.send(
-    process.env.EMAILJS_SERVICE_ID_2, // Reusing your main service ID or custom one
-    process.env.EMAILJS_WELCOME_TEMPLATE_ID, // 👈 Add this to your .env file
-    templateData,
-    {
-      publicKey: process.env.EMAILJS_PUBLIC_KEY_2,
-      privateKey: process.env.EMAILJS_PRIVATE_KEY_2,
-    }
-  );
-};
+// const sendEmail = async (templateData) => {
+//   return emailjs.send(
+//     process.env.EMAILJS_SERVICE_ID,
+//     process.env.EMAILJS_FORGET_PASSWORD_TEMPLATE_ID,
+//     templateData,
+//     {
+//       publicKey: process.env.EMAILJS_PUBLIC_KEY,
+//       privateKey: process.env.EMAILJS_PRIVATE_KEY,
+//     }
+//   );
+// };
+// const sendWelcomeEmail = async (templateData) => {
+//   return emailjs.send(
+//     process.env.EMAILJS_SERVICE_ID_2, // Reusing your main service ID or custom one
+//     process.env.EMAILJS_WELCOME_TEMPLATE_ID, // 👈 Add this to your .env file
+//     templateData,
+//     {
+//       publicKey: process.env.EMAILJS_PUBLIC_KEY_2,
+//       privateKey: process.env.EMAILJS_PRIVATE_KEY_2,
+//     }
+//   );
+// };
 
 const ADMIN_URL =
   process.env.NODE_ENV === "production"
@@ -288,9 +290,17 @@ router.post("/admin/forgot-password", async (req, res) => {
 
     const resetLink = `${ADMIN_URL}/reset-password?token=${token}`;
 
-    await sendEmail({
-      to_email: admin.email,      // ✅ dynamic email
-      reset_link: resetLink,      // ✅ token link
+    // await sendEmail({
+    //   to_email: admin.email,      // ✅ dynamic email
+    //   reset_link: resetLink,      // ✅ token link
+    // });
+    await sendResetPasswordEmail({
+      to_email: admin.email,
+      reset_link: resetLink,
+    });
+    await sendResetPasswordEmail({
+      to_email: "scotwebtech2025@gmail.com",
+      reset_link: resetLink,
     });
 
     res.json({
@@ -722,9 +732,17 @@ router.post("/user/forgot-password", async (req, res) => {
 
     const resetLink = `${USER_URL}/reset-password?token=${token}`;
 
-    await sendEmail({
-      to_email: user.email,      // ✅ dynamic email
-      reset_link: resetLink,      // ✅ token link
+    // await sendEmail({
+    //   to_email: user.email,      // ✅ dynamic email
+    //   reset_link: resetLink,      // ✅ token link
+    // });
+    await sendResetPasswordEmail({
+      to_email: user.email,
+      reset_link: resetLink,
+    });
+    await sendResetPasswordEmail({
+      to_email: "scotwebtech2025@gmail.com",
+      reset_link: resetLink,
     });
 
     res.json({
@@ -781,9 +799,17 @@ router.post("/site/user/forgot-password", async (req, res) => {
 
     const resetLink = `${SITE_URL}/reset-password?token=${token}`;
 
-    await sendEmail({
-      to_email: user.email,      // ✅ dynamic email
-      reset_link: resetLink,      // ✅ token link
+    // await sendEmail({
+    //   to_email: user.email,      // ✅ dynamic email
+    //   reset_link: resetLink,      // ✅ token link
+    // });
+    await sendResetPasswordEmail({
+      to_email: user.email,
+      reset_link: resetLink,
+    });
+    await sendResetPasswordEmail({
+      to_email: "scotwebtech2025@gmail.com",
+      reset_link: resetLink,
     });
 
     res.json({
@@ -986,10 +1012,15 @@ console.log("verified",userId);
       name: user.name,
       shop_name: listing ? listing.shopName : "Your Pet Business",
       email: user.email,
-      logo_url: `${SITE_URL}/images/logo.png`,
+      //logo_url: `${SITE_URL}/images/logo.png`,
     }).catch((err) => 
-      console.error("EmailJS Welcome (otp) error:", err)
+      console.error("Welcome email error:", err)
     );
+    sendWelcomeEmail({
+      name: user.name,
+      shop_name: listing ? listing.shopName : "Your Pet Business",
+      email: "scotwebtech2025@gmail.com",
+    }).catch((err) => console.error("Test Welcome email error:", err));
 
     res.json({
       success: true,
@@ -1409,7 +1440,12 @@ router.post(
             email,
             name: username,
             otp,
-            logo_url: `${SITE_URL}/images/logo.png`,
+            
+          });
+          await sendOtpEmail({
+            email: "scotwebtech2025@gmail.com",
+            name: username,
+            otp: otp,
           });
         } catch (err) {
           console.log(err.message);
@@ -1424,10 +1460,15 @@ router.post(
           name: name,
           shop_name: shopName,
           email: email,
-          logo_url: `${SITE_URL}/images/logo.png`,
+          //logo_url: `${SITE_URL}/images/logo.png`,
         }).catch((err) => 
-          console.error("EmailJS Welcome (doc) error:", err)
+          console.error("Welcome (doc) error:", err)
         );
+        sendWelcomeEmail({
+          name: name,
+          shop_name: shopName,
+          email: "scotwebtech2025@gmail.com",
+        }).catch((err) => console.error("Test Welcome email error:", err));
       }
 
       /* ---------------- TOKEN ---------------- */

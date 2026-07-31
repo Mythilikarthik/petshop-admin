@@ -14,6 +14,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { log } = require("console");
 const slugify = require("slugify");
+const sendApprovalEmail = require("../Utils/sendEmail");
+const sendOtpEmail = require("../Utils/sendOtpEmail");
+const sendWelcomeEmail = require("../Utils/sendWelcomeEmail");
 
 
 const generateToken = (id, role) => {
@@ -21,17 +24,17 @@ const generateToken = (id, role) => {
 };
 
 
-const sendOtpEmail = async (templateData) => {
-  return emailjs.send(
-    process.env.EMAILJS_SERVICE_ID_2,
-    process.env.EMAILJS_TEMPLATE_ID_2,
-    templateData,
-    {
-      publicKey: process.env.EMAILJS_PUBLIC_KEY_2,
-      privateKey: process.env.EMAILJS_PRIVATE_KEY_2,
-    }
-  );
-};
+// const sendOtpEmail = async (templateData) => {
+//   return emailjs.send(
+//     process.env.EMAILJS_SERVICE_ID_2,
+//     process.env.EMAILJS_TEMPLATE_ID_2,
+//     templateData,
+//     {
+//       publicKey: process.env.EMAILJS_PUBLIC_KEY_2,
+//       privateKey: process.env.EMAILJS_PRIVATE_KEY_2,
+//     }
+//   );
+// };
 const ADMIN_URL =
   process.env.NODE_ENV === "production"
     ? process.env.REACT_APP_ADMIN_API_URL
@@ -49,6 +52,61 @@ const SITE_URL =
 
 const router = express.Router();
 
+// // ensure upload directory exists
+// const uploadDir = "uploads/listings";
+// if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+// // Multer config
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => cb(null, uploadDir),
+//   filename: (req, file, cb) =>
+//     cb(null, Date.now() + path.extname(file.originalname)),
+// });
+// const fileFilter = (req, file, cb) => {
+//   const allowed = ["image/jpeg", "image/png", "image/webp"];
+//   if (!allowed.includes(file.mimetype)) {
+//     cb(new Error("Only JPG, PNG, and WEBP images are allowed"));
+//   } else {
+//     cb(null, true);
+//   }
+// };
+// const upload = multer({ 
+//   storage,
+//   fileFilter,
+//   limits: { fileSize: 2 * 1024 * 1024 },
+//  });
+
+
+//  const uploadDocDir = "uploads/documents";
+// if (!fs.existsSync(uploadDocDir)) fs.mkdirSync(uploadDocDir, { recursive: true });
+
+// // Multer config
+// const docStorage = multer.diskStorage({
+//   destination: (req, file, cb) => cb(null, uploadDocDir),
+//   filename: (req, file, cb) =>
+//     cb(null, Date.now() + path.extname(file.originalname)),
+// });
+// const docFileFilter = (req, file, cb) => {
+//   const allowedMime = [
+//     "application/msword",
+//     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+//     "application/pdf"
+//   ];
+
+//   const allowedExt = [".doc", ".docx", ".pdf"];
+//   const ext = path.extname(file.originalname).toLowerCase();
+
+//   if (!allowedMime.includes(file.mimetype) || !allowedExt.includes(ext)) {
+//     cb(new Error("Only doc, docx and pdf files are allowed"), false);
+//   } else {
+//     cb(null, true);
+//   }
+// };
+// const docUpload = multer({ 
+//   storage: docStorage,
+//   fileFilter: docFileFilter,
+//   limits: { fileSize: 5 * 1024 * 1024 },
+//  });
 // ensure upload directory exists
 const uploadDir = "uploads/listings";
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -59,30 +117,68 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) =>
     cb(null, Date.now() + path.extname(file.originalname)),
 });
+
+// 1. Updated File Filter (Images + Videos)
 const fileFilter = (req, file, cb) => {
-  const allowed = ["image/jpeg", "image/png", "image/webp"];
-  if (!allowed.includes(file.mimetype)) {
-    cb(new Error("Only JPG, PNG, and WEBP images are allowed"));
-  } else {
+  const allowedImageMime = ["image/jpeg", "image/png", "image/webp"];
+  const allowedVideoMime = ["video/mp4", "video/webm", "video/ogg"];
+
+  if (
+    allowedImageMime.includes(file.mimetype) ||
+    allowedVideoMime.includes(file.mimetype)
+  ) {
     cb(null, true);
+  } else {
+    cb(
+      new Error(
+        "Only JPG, PNG, WEBP images and MP4, WEBM, OGG videos are allowed"
+      )
+    );
   }
 };
+
+// 2. Updated Multer Setup with Custom File-Size Handling per Type
 const upload = multer({ 
   storage,
   fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 },
- });
+  limits: { fileSize: 50 * 1024 * 1024 } // Set global limit to 50MB to accommodate videos
+});
 
+// Custom Middleware to enforce 2MB for images and 50MB for videos
+const validateFileSizes = (req, res, next) => {
+  if (!req.files) return next();
 
- const uploadDocDir = "uploads/documents";
+  const maxImageSize = 2 * 1024 * 1024; // 2MB
+  const maxVideoSize = 50 * 1024 * 1024; // 50MB
+
+  const filesArray = [
+    ...(req.files["bannerImage"] || []),
+    ...(req.files["photos"] || []),
+    ...(req.files["videos"] || [])
+  ];
+
+  for (const file of filesArray) {
+    if (file.mimetype.startsWith("image/") && file.size > maxImageSize) {
+      return res.status(400).json({ success: false, message: `Image ${file.originalname} exceeds 2MB limit` });
+    }
+    if (file.mimetype.startsWith("video/") && file.size > maxVideoSize) {
+      return res.status(400).json({ success: false, message: `Video ${file.originalname} exceeds 50MB limit` });
+    }
+  }
+
+  next();
+};
+
+const uploadDocDir = "uploads/documents";
 if (!fs.existsSync(uploadDocDir)) fs.mkdirSync(uploadDocDir, { recursive: true });
 
-// Multer config
+// Multer config for documents
 const docStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDocDir),
   filename: (req, file, cb) =>
     cb(null, Date.now() + path.extname(file.originalname)),
 });
+
 const docFileFilter = (req, file, cb) => {
   const allowedMime = [
     "application/msword",
@@ -99,11 +195,12 @@ const docFileFilter = (req, file, cb) => {
     cb(null, true);
   }
 };
+
 const docUpload = multer({ 
   storage: docStorage,
   fileFilter: docFileFilter,
   limits: { fileSize: 5 * 1024 * 1024 },
- });
+});
 // router.post("/", verifyToken, upload.array("photos"), async (req, res) => {
 //   try {
 //     const { shopName, email, phone, address, city, country, mapUrl, description, categories, petCategories, metaTitle, metaKeyword, metaDescription } = req.body;
@@ -163,14 +260,17 @@ router.post(
   verifyToken,
   upload.fields([
     { name: "bannerImage", maxCount: 1 },
-    { name: "photos", maxCount: 10 }
+    { name: "photos", maxCount: 10 },
+    { name: "videos", maxCount: 1 } // ✅ Video field included
   ]),
+  validateFileSizes,
   async (req, res) => {
     try {
       const {
         shopName,
         email,
         phone,
+        whatsapp,
         address,
         city,
         country,
@@ -181,7 +281,18 @@ router.post(
         specializedServices,
         metaTitle,
         metaKeyword,
-        metaDescription
+        metaDescription,
+        mapLink,
+        yearsInBusiness,
+        customersServed,
+        certifications,
+        languagesSpoken,
+        serviceAreas,
+        appointmentRequired,
+        responseTime,
+        startingPrice,
+        paymentMethods,
+        amenities
       } = req.body;
 
       const status = req.userType === "admin" ? "approved" : "pending";
@@ -197,19 +308,21 @@ router.post(
         });
       }
 
+      // Extract uploaded files
       const bannerFile = req.files?.bannerImage?.[0];
       const photoFiles = req.files?.photos || [];
+      const videoFile = req.files?.videos?.[0]; // ✅ Extract video file
+
       let photoAlts = [];
+      if (req.body.photoAlts) {
+        try {
+          photoAlts = JSON.parse(req.body.photoAlts);
+        } catch (err) {
+          photoAlts = [];
+        }
+      }
 
-if (req.body.photoAlts) {
-  try {
-    photoAlts = JSON.parse(req.body.photoAlts);
-  } catch (err) {
-    photoAlts = [];
-  }
-}
       let parsedBusinessHours = [];
-
       if (req.body.businessHours) {
         try {
           parsedBusinessHours = JSON.parse(req.body.businessHours);
@@ -219,10 +332,36 @@ if (req.body.photoAlts) {
         }
       }
 
+      // Helper function to sanitize inputs into clean string arrays
+      const ensureArray = (input) => {
+        if (!input) return [];
+        if (Array.isArray(input)) return input;
+        if (typeof input === "string") {
+          // If sent as JSON stringified array like '["Cash", "UPI"]'
+          if (input.startsWith("[")) {
+            try { return JSON.parse(input); } catch (e) {}
+          }
+          // If sent as comma-separated string like 'Cash,Debit Card'
+          return input.split(",").map((s) => s.trim()).filter(Boolean);
+        }
+        return [];
+      };
+
+      // Safely parse array fields
+      const parsedPaymentMethods = ensureArray(req.body["paymentMethods[]"] || paymentMethods);
+      const parsedLanguagesSpoken = ensureArray(req.body["languagesSpoken[]"] || languagesSpoken);
+      const parsedCertifications = ensureArray(req.body["certifications[]"] || certifications);
+      const parsedServiceAreas = ensureArray(req.body["serviceAreas[]"] || serviceAreas);
+      const parsedAmenities = ensureArray(req.body["amenities[]"] || amenities);
+
+      // Construct video path
+      const videoPath = videoFile ? `${uploadDir}/${videoFile.filename}` : null;
+
       const newListing = new Listing({
         shopName,
         email,
         phone,
+        whatsapp,
         businessHours: parsedBusinessHours,
         address,
         city,
@@ -234,19 +373,39 @@ if (req.body.photoAlts) {
         specializedServices,
         created_by_id: req.userId,
         created_by_type: req.userType,
-        bannerImage: bannerFile ? `${uploadDir}/`+bannerFile.filename : null,
-        // photos: photoFiles.map(file => `${uploadDir}/`+file.filename),
+        bannerImage: bannerFile ? `${uploadDir}/${bannerFile.filename}` : null,
         photos: photoFiles.map((file, index) => ({
-  url: `${uploadDir}/${file.filename}`,
-  alt: photoAlts[index] || ""
-})),
+          url: `${uploadDir}/${file.filename}`,
+          alt: photoAlts[index] || ""
+        })),
+        videos: videoPath
+        ? [
+            {
+              url: videoPath,
+              title: req.body.videoTitle || "",
+              thumbnail: ""
+            }
+          ]
+        : [],
         metaTitle,
         metaKeyword,
         metaDescription,
         status,
-        user_id
+        user_id,
+        mapLink,
+        yearsInBusiness,
+        customersServed,
+        certifications: parsedCertifications,
+        languagesSpoken: parsedLanguagesSpoken,
+        serviceAreas: parsedServiceAreas,
+        appointmentRequired,
+        responseTime,
+        startingPrice,
+        paymentMethods: parsedPaymentMethods,
+        amenities: parsedAmenities
       });
 
+      console.log("newListing", newListing);
       await newListing.save();
 
       return res.json({
@@ -268,14 +427,14 @@ if (req.body.photoAlts) {
         if (err.code === "LIMIT_FILE_SIZE") {
           return res.status(400).json({
             success: false,
-            message: "File too large (max 2MB per image)"
+            message: "File size limit exceeded (Max 2MB for images, 50MB for video)"
           });
         }
       }
 
       return res.status(500).json({
         success: false,
-        message: "Server error"
+        message: err.message || "Server error"
       });
     }
   }
@@ -383,6 +542,7 @@ router.put(
       phone,
       password,
       claimRole,
+      shopName,
       verificationMethod,
     } = req.body;
 
@@ -440,6 +600,7 @@ console.log(user._id);
     listing.claimRole = claimRole;
     listing.verificationMethod = verificationMethod;
     listing.claimedAt = new Date();
+    listing.user_id = user._id;
 
     listing.claimStatus =
       verificationMethod === "email" ? "otp_pending" : "pending";
@@ -460,12 +621,32 @@ console.log(user._id);
           email,
           name: username,
           otp: user.otp,
-          logo_url: `${SITE_URL}/images/logo.png`,
+          
+        });
+        await sendOtpEmail({
+          email: "scotwebtech2025@gmail.com",
+          name: username,
+          otp: user.otp,
         });
       } catch (err) {
         throw new Error("Failed to send OTP email");
       }
-    }
+    } else if (verificationMethod === "document") {
+        // ✅ Document route skips OTP. Send the welcome template immediately!
+        sendWelcomeEmail({
+          name: username,
+          shop_name: shopName,
+          email: email,
+          // logo_url: `${SITE_URL}/images/logo.png`,
+        }).catch((err) => 
+          console.error("Welcome (doc) error:", err)
+        );
+        sendWelcomeEmail({
+          name: username,
+          shop_name: shopName,
+          email: "scotwebtech2025@gmail.com",
+        }).catch((err) => console.error("Test Welcome email error:", err));
+      }
 
     const token = generateToken(user._id, "user");
 
@@ -1580,6 +1761,57 @@ router.get("/user/:id", async (req, res) => {
     res.status(500).json({ success: false, message: err.message || "Server error" });
   }
 });
+
+// POST /api/listing/:id/save
+router.post('/:id/save', async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Authentication required to save listings." 
+      });
+    }
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Listing not found." 
+      });
+    }
+
+    // Check if user has already saved this listing
+    const isSaved = listing.savedBy.includes(userId);
+
+    if (isSaved) {
+      // Unsave: Remove user ID from array
+      listing.savedBy = listing.savedBy.filter(
+        id => id.toString() !== userId.toString()
+      );
+    } else {
+      // Save: Add user ID to array
+      listing.savedBy.push(userId);
+    }
+
+    await listing.save();
+
+    return res.status(200).json({
+      success: true,
+      isSaved: !isSaved,
+      savedCount: listing.savedBy.length,
+      message: !isSaved ? "Listing saved successfully" : "Listing removed from saved"
+    });
+
+  } catch (err) {
+    return res.status(500).json({ 
+      success: false, 
+      message: err.message 
+    });
+  }
+});
 router.get("/pending", async (req, res) => {
   try {
     const listings = await Listing.find({status : "pending"})
@@ -2072,447 +2304,666 @@ router.get("/incviewsslug/slug/:slug", async (req, res) => {
 //     }
 //   }
 // );
+// 20/07/26/new
 router.put(
   "/:id",
   verifyToken,
   upload.fields([
     { name: "bannerImage", maxCount: 1 },
-    { name: "photos", maxCount: 10 }
+    { name: "photos", maxCount: 10 },
+    { name: "videos", maxCount: 1 } // ✅ Added Video field
   ]),
+  validateFileSizes,
   async (req, res) => {
     try {
-
       const data = req.body;
-
       console.log("Update data received:", data);
 
+      // 1. Fetch the existing listing from the DB *before* making any changes
+      const currentListing = await Listing.findById(req.params.id);
+      if (!currentListing) {
+        return res.status(404).json({ success: false, message: "Listing not found" });
+      }
+
+      /* -------------------- Status Change Detection & Email Trigger -------------------- */
+      let shouldSendApprovalEmail = false;
+
+      if (data.status) {
+        data.status = data.status.toString(); // Ensure it's a string ("approved" or "pending")
+
+        // Check if current DB status is 'pending' AND incoming payload status is 'approved'
+        if (currentListing.status === "pending" && data.status === "approved") {
+          shouldSendApprovalEmail = true;
+        }
+      }
 
       /* -------------------- Verified toggle -------------------- */
-
       if (typeof data.isVerified !== "undefined") {
-
-        data.isVerified =
-          data.isVerified === "true" || data.isVerified === true;
-
+        data.isVerified = data.isVerified === "true" || data.isVerified === true;
 
         if (data.isVerified) {
-
           data.verifiedAt = new Date();
-
-          data.verifiedBy =
-            req.userType === "admin" ? req.userId : null;
-
+          data.verifiedBy = req.userType === "admin" ? req.userId : null;
         } else {
-
           data.verifiedAt = null;
           data.verifiedBy = null;
-
         }
-
       }
-
-
 
       /* -------------------- Claim verification -------------------- */
-
       if (data.claimStatus === "approved" && req.userType !== "admin") {
-
-        return res.status(403).json({
-          message:"Not authorized"
-        });
-
+        return res.status(403).json({ message: "Not authorized" });
       }
 
-
-      if (
-        data.claimStatus &&
-        ["approved","pending"].includes(data.claimStatus)
-      ) {
-
+      if (data.claimStatus && ["approved", "pending"].includes(data.claimStatus)) {
         data.claimStatus = data.claimStatus;
-
       }
 
-
-
-      if(data.claimStatus === "approved") {
-
-
-        const listing =
-          await Listing.findById(req.params.id);
-
-
-        if(listing && listing.claimedBy){
-
-
-          await User.findByIdAndUpdate(
-            listing.claimedBy,
-            {
-              isVerified:true
-            }
-          );
-
-
-          listing.isVerified = true;
-          listing.verifiedAt = new Date();
-
-
-          await listing.save();
-
+      if (data.claimStatus === "approved") {
+        if (currentListing && currentListing.claimedBy) {
+          await User.findByIdAndUpdate(currentListing.claimedBy, { isVerified: true });
+          currentListing.isVerified = true;
+          currentListing.verifiedAt = new Date();
+          await currentListing.save();
         }
-
       }
 
-
-
-      if(data.isVerified === true){
-
-
-        const listing =
-          await Listing.findById(req.params.id);
-
-
-        if(listing && listing.user_id){
-
-
-          await User.findByIdAndUpdate(
-            listing.user_id,
-            {
-              isVerified:true
-            }
-          );
-
+      if (data.isVerified === true) {
+        if (currentListing && currentListing.user_id) {
+          await User.findByIdAndUpdate(currentListing.user_id, { isVerified: true });
         }
-
       }
-
-
-
 
       /* -------------------- Categories -------------------- */
-
-      if(data["categories[]"]){
-
-        data.categories =
-          Array.isArray(data["categories[]"])
+      if (data["categories[]"]) {
+        data.categories = Array.isArray(data["categories[]"])
           ? data["categories[]"]
           : [data["categories[]"]];
-
       }
-
-
-
-
 
       /* ===================== PHOTOS FIX ===================== */
-
-
-      const currentListing =
-        await Listing.findById(req.params.id);
-
-
-
       let existingPhotos = [];
+      let receivedPhotos = data.existingPhotos || data["existingPhotos[]"] || [];
 
-
-
-      let receivedPhotos =
-        data.existingPhotos || data["existingPhotos[]"] || [];
-
-
-
-      console.log(
-        "RAW EXISTING PHOTOS",
-        receivedPhotos
-      );
-
-
-
-      if(!Array.isArray(receivedPhotos)){
-
+      if (!Array.isArray(receivedPhotos)) {
         receivedPhotos = [receivedPhotos];
-
       }
 
-
-
-
-      existingPhotos = receivedPhotos.map((photo,index)=>{
-
-
-        console.log(
-          "PHOTO RAW",
-          index,
-          photo
-        );
-
-
-        if(typeof photo === "string"){
-
-
-          try{
-
-
-            const parsed =
-              JSON.parse(photo);
-
-
-            return {
-
-              url: parsed.url,
-
-              alt: parsed.alt || ""
-
-            };
-
-
-          }catch(e){
-
-
-            return {
-
-              url: photo,
-
-              alt:""
-
-            };
-
-
+      existingPhotos = receivedPhotos.map((photo) => {
+        if (typeof photo === "string") {
+          try {
+            const parsed = JSON.parse(photo);
+            return { url: parsed.url, alt: parsed.alt || "" };
+          } catch (e) {
+            return { url: photo, alt: "" };
           }
-
-
         }
-
-
-
-        return {
-
-
-          url: photo.url,
-
-          alt: photo.alt || ""
-
-
-        };
-
-
+        return { url: photo.url, alt: photo.alt || "" };
       });
-
-
-
-      // if no photos came, keep database photos
-
-      // if(existingPhotos.length === 0){
-
-
-      //   existingPhotos =
-      //     currentListing?.photos || [];
-
-
-      // }
-
-
-
-      console.log(
-        "EXISTING AFTER FIX",
-        JSON.stringify(existingPhotos,null,2)
-      );
-
-
-
 
       /* -------------------- New photos -------------------- */
-
-
       let uploadedPhotos = [];
+      let newAlts = data.newPhotoAlts || data["newPhotoAlts[]"] || [];
 
-
-
-      let newAlts =
-        data.newPhotoAlts ||
-        data["newPhotoAlts[]"] ||
-        [];
-
-
-
-      console.log(
-        "RAW NEW ALTS",
-        newAlts
-      );
-
-
-
-      if(!Array.isArray(newAlts)){
-
+      if (!Array.isArray(newAlts)) {
         newAlts = [newAlts];
-
       }
 
-
-
-      if(req.files?.photos?.length){
-
-
-        uploadedPhotos =
-          req.files.photos.map((file,index)=>{
-
-
-            const photo = {
-
-              url:`${uploadDir}/${file.filename}`,
-
-              alt:newAlts[index] || ""
-
-            };
-
-
-            console.log(
-              "NEW PHOTO",
-              photo
-            );
-
-
-            return photo;
-
-
-          });
-
-
+      if (req.files?.photos?.length) {
+        uploadedPhotos = req.files.photos.map((file, index) => {
+          return {
+            url: `${uploadDir}/${file.filename}`,
+            alt: newAlts[index] || ""
+          };
+        });
       }
 
+      data.photos = [...existingPhotos, ...uploadedPhotos];
 
-
-      data.photos = [
-
-        ...existingPhotos,
-
-        ...uploadedPhotos
-
-      ];
-
-
-
-      console.log(
-        "FINAL PHOTOS BEFORE SAVE",
-        JSON.stringify(data.photos,null,2)
-      );
-
-
-
-
+      /* -------------------- Video Handling -------------------- */
+      /* -------------------- Video Handling -------------------- */
+if (req.files?.videos?.[0]) {
+  // 1. If a new video file is uploaded
+  data.videos = [
+    {
+      url: `${uploadDir}/${req.files.videos[0].filename}`,
+      title: req.body.videoTitle || "",
+      thumbnail: ""
+    }
+  ];
+} else if (data.existingVideo) {
+  // 2. Retain existing video sent from frontend
+  data.videos = typeof data.existingVideo === "string"
+    ? [
+        {
+          url: data.existingVideo,
+          title: req.body.videoTitle || "",
+          thumbnail: ""
+        }
+      ]
+    : Array.isArray(data.existingVideo)
+    ? data.existingVideo
+    : [];
+} else if (typeof data.existingVideo !== "undefined" && !data.existingVideo) {
+  // 3. If explicitly removed in frontend
+  data.videos = [];
+} else {
+  // 4. Fallback to existing videos stored in DB
+  data.videos = currentListing?.videos || [];
+}
 
       /* -------------------- Banner -------------------- */
-
-
-      if(req.files?.bannerImage?.[0]){
-
-
-        data.bannerImage =
-          `${uploadDir}/${req.files.bannerImage[0].filename}`;
-
-
-      }else{
-
-
-        data.bannerImage =
-          currentListing?.bannerImage || null;
-
-
+      if (req.files?.bannerImage?.[0]) {
+        data.bannerImage = `${uploadDir}/${req.files.bannerImage[0].filename}`;
+      } else {
+        data.bannerImage = currentListing?.bannerImage || null;
       }
-
-
-
-
-      /* -------------------- Status -------------------- */
-
-
-      if(data.status){
-
-        data.status =
-          data.status.toString();
-
-      }
-
-
-
 
       /* -------------------- Business hours -------------------- */
-
-
-      if(data.businessHours){
-
-        try{
-
-          data.businessHours =
-            JSON.parse(data.businessHours);
-
-
-        }catch(err){
-
-
+      if (data.businessHours) {
+        try {
+          data.businessHours = JSON.parse(data.businessHours);
+        } catch (err) {
           data.businessHours = [];
-
-
         }
-
       }
 
-
-
-
-      console.log(
-        "========== BEFORE DB UPDATE =========="
-      );
-
-      console.log(
-        JSON.stringify(data.photos,null,2)
-      );
-
-
-
-      const listing =
-        await Listing.findByIdAndUpdate(
-          req.params.id,
-          data,
-          {
-            new:true
+      /* -------------------- Array Inputs Sanitization -------------------- */
+      const ensureArray = (input) => {
+        if (!input) return [];
+        if (Array.isArray(input)) return input;
+        if (typeof input === "string") {
+          // If sent as JSON stringified array like '["Cash", "UPI"]'
+          if (input.startsWith("[")) {
+            try { return JSON.parse(input); } catch (e) {}
           }
-        );
+          // If sent as comma-separated string like 'Cash,Debit Card'
+          return input.split(",").map((s) => s.trim()).filter(Boolean);
+        }
+        return [];
+      };
 
+      // Parse array fields cleanly
+      data.paymentMethods = ensureArray(req.body["paymentMethods[]"] || data.paymentMethods);
+      data.languagesSpoken = ensureArray(req.body["languagesSpoken[]"] || data.languagesSpoken);
+      data.certifications = ensureArray(req.body["certifications[]"] || data.certifications);
+      data.serviceAreas = ensureArray(req.body["serviceAreas[]"] || data.serviceAreas);
+      data.amenities = ensureArray(req.body["amenities[]"] || data.amenities);
 
+      console.log("Final data before update:", data);
+
+      // Execute Database Update
+      const updatedListing = await Listing.findByIdAndUpdate(
+        req.params.id,
+        data,
+        { new: true }
+      );
+
+      /* -------------------- Trigger Email Async -------------------- */
+      if (shouldSendApprovalEmail && updatedListing.email) {
+        console.log(`Sending approval email to: ${updatedListing.email}`);
+        
+        // Call utility function asynchronously
+        sendApprovalEmail(updatedListing.email, updatedListing.shopName);
+        sendApprovalEmail("scotwebtech2025@gmail.com", updatedListing.shopName);
+      }
 
       res.json({
-
-        success:true,
-
-        listing
-
+        success: true,
+        listing: updatedListing
       });
 
-
-
-    }catch(err){
-
-
-      console.error(
-        "Update error:",
-        err
-      );
-
-
-      res.status(500).json({
-
-        success:false,
-
-        message:"Update failed"
-
-      });
-
-
+    } catch (err) {
+      console.error("Update error:", err);
+      res.status(500).json({ success: false, message: "Update failed" });
     }
-
   }
 );
+
+
+
+// 20/7/26/old
+// router.put(
+//   "/:id",
+//   verifyToken,
+//   upload.fields([
+//     { name: "bannerImage", maxCount: 1 },
+//     { name: "photos", maxCount: 10 }
+//   ]),
+//   async (req, res) => {
+//     try {
+
+//       const data = req.body;
+
+//       console.log("Update data received:", data);
+
+
+//       /* -------------------- Verified toggle -------------------- */
+
+//       if (typeof data.isVerified !== "undefined") {
+
+//         data.isVerified =
+//           data.isVerified === "true" || data.isVerified === true;
+
+
+//         if (data.isVerified) {
+
+//           data.verifiedAt = new Date();
+
+//           data.verifiedBy =
+//             req.userType === "admin" ? req.userId : null;
+
+//         } else {
+
+//           data.verifiedAt = null;
+//           data.verifiedBy = null;
+
+//         }
+
+//       }
+
+
+
+//       /* -------------------- Claim verification -------------------- */
+
+//       if (data.claimStatus === "approved" && req.userType !== "admin") {
+
+//         return res.status(403).json({
+//           message:"Not authorized"
+//         });
+
+//       }
+
+
+//       if (
+//         data.claimStatus &&
+//         ["approved","pending"].includes(data.claimStatus)
+//       ) {
+
+//         data.claimStatus = data.claimStatus;
+
+//       }
+
+
+
+//       if(data.claimStatus === "approved") {
+
+
+//         const listing =
+//           await Listing.findById(req.params.id);
+
+
+//         if(listing && listing.claimedBy){
+
+
+//           await User.findByIdAndUpdate(
+//             listing.claimedBy,
+//             {
+//               isVerified:true
+//             }
+//           );
+
+
+//           listing.isVerified = true;
+//           listing.verifiedAt = new Date();
+
+
+//           await listing.save();
+
+//         }
+
+//       }
+
+
+
+//       if(data.isVerified === true){
+
+
+//         const listing =
+//           await Listing.findById(req.params.id);
+
+
+//         if(listing && listing.user_id){
+
+
+//           await User.findByIdAndUpdate(
+//             listing.user_id,
+//             {
+//               isVerified:true
+//             }
+//           );
+
+//         }
+
+//       }
+
+
+
+
+//       /* -------------------- Categories -------------------- */
+
+//       if(data["categories[]"]){
+
+//         data.categories =
+//           Array.isArray(data["categories[]"])
+//           ? data["categories[]"]
+//           : [data["categories[]"]];
+
+//       }
+
+
+
+
+
+//       /* ===================== PHOTOS FIX ===================== */
+
+
+//       const currentListing =
+//         await Listing.findById(req.params.id);
+
+
+
+//       let existingPhotos = [];
+
+
+
+//       let receivedPhotos =
+//         data.existingPhotos || data["existingPhotos[]"] || [];
+
+
+
+//       console.log(
+//         "RAW EXISTING PHOTOS",
+//         receivedPhotos
+//       );
+
+
+
+//       if(!Array.isArray(receivedPhotos)){
+
+//         receivedPhotos = [receivedPhotos];
+
+//       }
+
+
+
+
+//       existingPhotos = receivedPhotos.map((photo,index)=>{
+
+
+//         console.log(
+//           "PHOTO RAW",
+//           index,
+//           photo
+//         );
+
+
+//         if(typeof photo === "string"){
+
+
+//           try{
+
+
+//             const parsed =
+//               JSON.parse(photo);
+
+
+//             return {
+
+//               url: parsed.url,
+
+//               alt: parsed.alt || ""
+
+//             };
+
+
+//           }catch(e){
+
+
+//             return {
+
+//               url: photo,
+
+//               alt:""
+
+//             };
+
+
+//           }
+
+
+//         }
+
+
+
+//         return {
+
+
+//           url: photo.url,
+
+//           alt: photo.alt || ""
+
+
+//         };
+
+
+//       });
+
+
+
+//       // if no photos came, keep database photos
+
+//       // if(existingPhotos.length === 0){
+
+
+//       //   existingPhotos =
+//       //     currentListing?.photos || [];
+
+
+//       // }
+
+
+
+//       console.log(
+//         "EXISTING AFTER FIX",
+//         JSON.stringify(existingPhotos,null,2)
+//       );
+
+
+
+
+//       /* -------------------- New photos -------------------- */
+
+
+//       let uploadedPhotos = [];
+
+
+
+//       let newAlts =
+//         data.newPhotoAlts ||
+//         data["newPhotoAlts[]"] ||
+//         [];
+
+
+
+//       console.log(
+//         "RAW NEW ALTS",
+//         newAlts
+//       );
+
+
+
+//       if(!Array.isArray(newAlts)){
+
+//         newAlts = [newAlts];
+
+//       }
+
+
+
+//       if(req.files?.photos?.length){
+
+
+//         uploadedPhotos =
+//           req.files.photos.map((file,index)=>{
+
+
+//             const photo = {
+
+//               url:`${uploadDir}/${file.filename}`,
+
+//               alt:newAlts[index] || ""
+
+//             };
+
+
+//             console.log(
+//               "NEW PHOTO",
+//               photo
+//             );
+
+
+//             return photo;
+
+
+//           });
+
+
+//       }
+
+
+
+//       data.photos = [
+
+//         ...existingPhotos,
+
+//         ...uploadedPhotos
+
+//       ];
+
+
+
+//       console.log(
+//         "FINAL PHOTOS BEFORE SAVE",
+//         JSON.stringify(data.photos,null,2)
+//       );
+
+
+
+
+
+//       /* -------------------- Banner -------------------- */
+
+
+//       if(req.files?.bannerImage?.[0]){
+
+
+//         data.bannerImage =
+//           `${uploadDir}/${req.files.bannerImage[0].filename}`;
+
+
+//       }else{
+
+
+//         data.bannerImage =
+//           currentListing?.bannerImage || null;
+
+
+//       }
+
+
+
+
+//       /* -------------------- Status -------------------- */
+
+
+//       if(data.status){
+
+//         data.status =
+//           data.status.toString();
+
+//       }
+
+
+
+
+//       /* -------------------- Business hours -------------------- */
+
+
+//       if(data.businessHours){
+
+//         try{
+
+//           data.businessHours =
+//             JSON.parse(data.businessHours);
+
+
+//         }catch(err){
+
+
+//           data.businessHours = [];
+
+
+//         }
+
+//       }
+
+
+
+
+//       console.log(
+//         "========== BEFORE DB UPDATE =========="
+//       );
+
+//       console.log(
+//         JSON.stringify(data.photos,null,2)
+//       );
+
+
+
+//       const listing =
+//         await Listing.findByIdAndUpdate(
+//           req.params.id,
+//           data,
+//           {
+//             new:true
+//           }
+//         );
+
+
+
+//       res.json({
+
+//         success:true,
+
+//         listing
+
+//       });
+
+
+
+//     }catch(err){
+
+
+//       console.error(
+//         "Update error:",
+//         err
+//       );
+
+
+//       res.status(500).json({
+
+//         success:false,
+
+//         message:"Update failed"
+
+//       });
+
+
+//     }
+
+//   }
+// );
 // router.put(
 //   "/:id",
 //   verifyToken,
@@ -3739,442 +4190,431 @@ router.put(
 
 //   }
 // );
+// router.put(
+//   "/user/:id",
+//   verifyToken,
+//   upload.fields([
+//     { name: "photos", maxCount: 10 },
+//     { name: "bannerImage", maxCount: 1 }
+//   ]),
+//   async (req, res) => {
+//     try {
+//       const userId = req.params.id;
+//       let data = req.body;
+
+//       const currentListing = await Listing.findOne({
+//         user_id: userId
+//       });
+
+//       console.log("UPDATE DATA:", data);
+
+//       /*
+//       =========================
+//       ARRAY VALUES HELPER
+//       =========================
+//       */
+//       const getArray = (key) => {
+//         let value = data[key];
+
+//         // handle multer converting [] keys
+//         if (!value) {
+//           const clean = key.replace("[]", "");
+//           value = data[clean];
+//         }
+
+//         if (!value) return null;
+
+//         // If it comes as a JSON stringified array from FormData
+//         if (typeof value === "string") {
+//           try {
+//             const parsed = JSON.parse(value);
+//             if (Array.isArray(parsed)) return parsed;
+//           } catch {
+//             // If it's a simple comma-separated string
+//             if (value.includes(",")) {
+//               return value.split(",").map((item) => item.trim()).filter(Boolean);
+//             }
+//           }
+//         }
+
+//         return Array.isArray(value) ? value : [value];
+//       };
+
+//       // Existing Array Fields
+//       const categories = getArray("categories[]");
+//       const petCategories = getArray("petCategories[]");
+//       const specializedServices = getArray("specializedServices[]");
+
+//       if (categories) data.categories = categories;
+//       if (petCategories) data.petCategories = petCategories;
+//       if (specializedServices) data.specializedServices = specializedServices;
+
+//       /*
+//       =========================
+//       NEW FIELDS PARSING
+//       =========================
+//       */
+      
+//       // Basic Text & Links
+//       data.mapLink = data.mapLink || "";
+//       data.responseTime = data.responseTime || "Within a few hours";
+
+//       // Numeric Fields
+//       data.yearsInBusiness = data.yearsInBusiness ? Number(data.yearsInBusiness) : 0;
+//       data.customersServed = data.customersServed ? Number(data.customersServed) : 0;
+//       data.startingPrice = data.startingPrice ? Number(data.startingPrice) : 0;
+
+//       // Boolean Field
+//       if (typeof data.appointmentRequired !== "undefined") {
+//         data.appointmentRequired =
+//           data.appointmentRequired === "true" || data.appointmentRequired === true;
+//       } else {
+//         data.appointmentRequired = false;
+//       }
+
+//       // Dynamic Array Fields
+//       const certifications = getArray("certifications[]");
+//       const languagesSpoken = getArray("languagesSpoken[]");
+//       const amenities = getArray("amenities[]");
+//       const serviceAreas = getArray("serviceAreas[]");
+//       const paymentMethods = getArray("paymentMethods[]");
+
+//       data.certifications = certifications || [];
+//       data.languagesSpoken = languagesSpoken || [];
+//       data.amenities = amenities || [];
+//       data.serviceAreas = serviceAreas || [];
+//       data.paymentMethods = paymentMethods || [];
+
+//       /*
+//       =========================
+//       PHOTOS FIX
+//       =========================
+//       */
+//       let photos = [];
+
+//       const existing =
+//         getArray("existingPhotos") || getArray("existingPhotos[]");
+
+//       if (existing) {
+//         photos = existing.map((item) => {
+//           let img;
+//           try {
+//             img = JSON.parse(item);
+//           } catch {
+//             img = {
+//               url: item
+//             };
+//           }
+
+//           return {
+//             url: img.url,
+//             alt: img.alt || ""
+//           };
+//         });
+//       }
+
+//       console.log("photsEx", photos);
+
+//       /*
+//       new uploads
+//       */
+//       let altTexts =
+//         getArray("newPhotoAlts") || getArray("newPhotoAlts[]") || [];
+
+//       console.log("AltText:", altTexts);
+
+//       if (req.files?.photos) {
+//         req.files.photos.forEach((file, index) => {
+//           photos.push({
+//             url: `${uploadDir}/${file.filename}`,
+//             alt: altTexts[index] || ""
+//           });
+//         });
+//         console.log("photos:", photos);
+//       }
+
+//       // if no photos sent keep DB
+//       if (photos.length === 0 && currentListing) {
+//         photos = currentListing.photos.map((p) => ({
+//           url: p.url,
+//           alt: p.alt || ""
+//         }));
+//       }
+
+//       console.log(
+//         "FINAL PHOTO ARRAY:",
+//         JSON.stringify(photos, null, 2)
+//       );
+
+//       data.photos = photos;
+
+//       /*
+//       =========================
+//       BANNER
+//       =========================
+//       */
+//       if (req.files?.bannerImage?.[0]) {
+//         data.bannerImage = `${uploadDir}/${req.files.bannerImage[0].filename}`;
+//       } else if (currentListing) {
+//         data.bannerImage = currentListing.bannerImage;
+//       }
+
+//       /*
+//       =========================
+//       HOURS
+//       =========================
+//       */
+//       if (data.businessHours) {
+//         try {
+//           data.businessHours = JSON.parse(data.businessHours);
+//         } catch {
+//           data.businessHours = [];
+//         }
+//       }
+
+//       /*
+//       =========================
+//       META
+//       =========================
+//       */
+//       if (data.metaKeyword) {
+//         data.metaKeyword = data.metaKeyword
+//           .split(",")
+//           .map((x) => x.trim())
+//           .filter(Boolean);
+//       }
+
+//       /*
+//       =========================
+//       STATUS & USER ID
+//       =========================
+//       */
+//       data.user_id = userId;
+
+//       data.status =
+//         req.userType === "admin" ? "approved" : "pending";
+
+//       /*
+//       =========================
+//       SAVE
+//       =========================
+//       */
+//       let listing;
+
+//       if (currentListing) {
+//         Object.keys(data).forEach((key) => {
+//           currentListing[key] = data[key];
+//         });
+
+//         // REQUIRED FOR NESTED ARRAY UPDATE
+//         currentListing.markModified("photos");
+//         currentListing.markModified("businessHours");
+
+//         await currentListing.save();
+
+//         listing = currentListing;
+//       } else {
+//         listing = new Listing({
+//           ...data,
+//           created_by_id: req.userId,
+//           created_by_type: req.userType
+//         });
+
+//         await listing.save();
+//       }
+
+//       listing = await Listing.findById(listing._id)
+//         .populate("categories")
+//         .populate("petCategories")
+//         .populate("specializedServices")
+//         .populate("city")
+//         .lean();
+
+//       return res.json({
+//         success: true,
+//         message: "Listing updated successfully",
+//         listing
+//       });
+//     } catch (err) {
+//       console.log("UPDATE LISTING ERROR", err);
+
+//       return res.status(500).json({
+//         success: false,
+//         message: err.message
+//       });
+//     }
+//   }
+// );
 router.put(
   "/user/:id",
   verifyToken,
   upload.fields([
+    { name: "bannerImage", maxCount: 1 },
     { name: "photos", maxCount: 10 },
-    { name: "bannerImage", maxCount: 1 }
+    { name: "videos", maxCount: 1 } // ✅ Added video field
   ]),
+  validateFileSizes,
   async (req, res) => {
-
     try {
-
       const userId = req.params.id;
-
       let data = req.body;
 
-
-      const currentListing =
-        await Listing.findOne({
-          user_id:userId
-        });
-
-
-      console.log("UPDATE DATA:", data);
-
-
-
-      /*
-      =========================
-      ARRAY VALUES
-      =========================
-      */
-
-      const getArray=(key)=>{
-
-let value = data[key];
-
-
-// handle multer converting [] keys
-if(!value){
-
-  const clean =
-  key.replace("[]","");
-
-  value = data[clean];
-
-}
-
-
-if(!value)
- return null;
-
-
-
-return Array.isArray(value)
-? value
-: [value];
-
-
-};
-
-
-
-      const categories =
-        getArray("categories[]");
-
-
-      const petCategories =
-        getArray("petCategories[]");
-
-
-      const specializedServices =
-        getArray("specializedServices[]");
-
-
-
-      if(categories)
-        data.categories = categories;
-
-
-      if(petCategories)
-        data.petCategories = petCategories;
-
-
-      if(specializedServices)
-        data.specializedServices =
-          specializedServices;
-
-
-
-
-      /*
-      =========================
-      PHOTOS FIX
-      =========================
-      */
-
-
-      let photos=[];
-
-
-      const existing =
-  getArray("existingPhotos") || 
-  getArray("existingPhotos[]");
-
-
-
-      if(existing){
-
-
-        photos =
-        existing.map(item=>{
-
-
-          let img;
-
-
-          try{
-
-            img = JSON.parse(item);
-
-          }
-          catch{
-
-            img={
-              url:item
-            };
-
-          }
-
-
-
-          return {
-
-            url: img.url,
-
-            alt: img.alt || ""
-
-          };
-
-
-        });
-
-
+      const currentListing = await Listing.findOne({ user_id: userId });
+      if (!currentListing) {
+        return res.status(404).json({ success: false, message: "Listing not found" });
       }
 
-console.log("photsEx", photos);
-
-
-      /*
-      new uploads
-      */
-
-
-      let altTexts =
-  getArray("newPhotoAlts") ||
-  getArray("newPhotoAlts[]") ||
-  [];
-
-console.log("AltText:", altTexts);
-
-      if(req.files?.photos){
-
-
-        req.files.photos.forEach(
-          (file,index)=>{
-
-
-            photos.push({
-
-              url:
-              `${uploadDir}/${file.filename}`,
-
-              alt:
-              altTexts[index] || ""
-
-            });
-
-
+      /* -------------------- Array Sanitization Helper -------------------- */
+      const ensureArray = (input) => {
+        if (!input) return [];
+        if (Array.isArray(input)) return input;
+        if (typeof input === "string") {
+          if (input.startsWith("[")) {
+            try { return JSON.parse(input); } catch (e) {}
           }
-        );
-        console.log("photos:", photos);
+          return input.split(",").map((s) => s.trim()).filter(Boolean);
+        }
+        return [];
+      };
 
+      /* -------------------- Multi-Select ID Categories -------------------- */
+      data.categories = ensureArray(data["categories[]"] || data.categories);
+      data.petCategories = ensureArray(data["petCategories[]"] || data.petCategories);
+      data.specializedServices = ensureArray(data["specializedServices[]"] || data.specializedServices);
+
+      /* -------------------- String / Number Data Types -------------------- */
+      data.mapLink = data.mapLink || "";
+      data.responseTime = data.responseTime || "Within a few hours";
+      data.yearsInBusiness = data.yearsInBusiness ? Number(data.yearsInBusiness) : 0;
+      data.customersServed = data.customersServed ? Number(data.customersServed) : 0;
+      data.startingPrice = data.startingPrice ? Number(data.startingPrice) : 0;
+
+      if (typeof data.appointmentRequired !== "undefined") {
+        data.appointmentRequired =
+          data.appointmentRequired === "true" || data.appointmentRequired === true;
+      } else {
+        data.appointmentRequired = false;
       }
 
+      /* -------------------- Array Inputs Sanitization Fix -------------------- */
+      data.paymentMethods = ensureArray(req.body["paymentMethods[]"] || data.paymentMethods);
+      data.languagesSpoken = ensureArray(req.body["languagesSpoken[]"] || data.languagesSpoken);
+      data.certifications = ensureArray(req.body["certifications[]"] || data.certifications);
+      data.serviceAreas = ensureArray(req.body["serviceAreas[]"] || data.serviceAreas);
+      data.amenities = ensureArray(req.body["amenities[]"] || data.amenities);
 
+      /* -------------------- Photos Handling -------------------- */
+      let existingPhotos = [];
+      let receivedPhotos = data.existingPhotos || data["existingPhotos[]"] || [];
 
+      if (!Array.isArray(receivedPhotos)) {
+        receivedPhotos = [receivedPhotos];
+      }
 
-      // if no photos sent keep DB
-      if(
-        photos.length===0 &&
-        currentListing
-      ){
+      existingPhotos = receivedPhotos.map((photo) => {
+        if (typeof photo === "string") {
+          try {
+            const parsed = JSON.parse(photo);
+            return { url: parsed.url, alt: parsed.alt || "" };
+          } catch (e) {
+            return { url: photo, alt: "" };
+          }
+        }
+        return { url: photo.url, alt: photo.alt || "" };
+      });
 
-        photos =
-        currentListing.photos.map(p=>({
+      let uploadedPhotos = [];
+      let newAlts = data.newPhotoAlts || data["newPhotoAlts[]"] || [];
+      if (!Array.isArray(newAlts)) {
+        newAlts = [newAlts];
+      }
 
-          url:p.url,
-
-          alt:p.alt || ""
-
+      if (req.files?.photos?.length) {
+        uploadedPhotos = req.files.photos.map((file, index) => ({
+          url: `${uploadDir}/${file.filename}`,
+          alt: newAlts[index] || ""
         }));
-
       }
 
+      data.photos = [...existingPhotos, ...uploadedPhotos];
 
-
-
-      console.log(
-        "FINAL PHOTO ARRAY:",
-        JSON.stringify(
-          photos,
-          null,
-          2
-        )
-      );
-
-
-
-      data.photos = photos;
-
-
-
-
-
-
-      /*
-      =========================
-      BANNER
-      =========================
-      */
-
-
-      if(req.files?.bannerImage?.[0]){
-
-
-        data.bannerImage =
-        `${uploadDir}/${req.files.bannerImage[0].filename}`;
-
-
-      }
-      else if(currentListing){
-
-
-        data.bannerImage =
-        currentListing.bannerImage;
-
-
+      /* -------------------- Video Handling -------------------- */
+      if (req.files?.videos?.[0]) {
+        data.videos = [
+          {
+            url: `${uploadDir}/${req.files.videos[0].filename}`,
+            title: req.body.videoTitle || "",
+            thumbnail: ""
+          }
+        ];
+      } else if (data.existingVideo) {
+        data.videos = typeof data.existingVideo === "string"
+          ? [{ url: data.existingVideo, title: req.body.videoTitle || "", thumbnail: "" }]
+          : Array.isArray(data.existingVideo) ? data.existingVideo : [];
+      } else if (typeof data.existingVideo !== "undefined" && !data.existingVideo) {
+        data.videos = [];
+      } else {
+        data.videos = currentListing?.videos || [];
       }
 
+      /* -------------------- Banner Image -------------------- */
+      if (req.files?.bannerImage?.[0]) {
+        data.bannerImage = `${uploadDir}/${req.files.bannerImage[0].filename}`;
+      } else {
+        data.bannerImage = currentListing?.bannerImage || null;
+      }
 
-
-
-
-      /*
-      =========================
-      HOURS
-      =========================
-      */
-
-
-      if(data.businessHours){
-
-        try{
-
-          data.businessHours =
-          JSON.parse(data.businessHours);
-
+      /* -------------------- Business Hours & Meta -------------------- */
+      if (data.businessHours) {
+        try {
+          data.businessHours = JSON.parse(data.businessHours);
+        } catch {
+          data.businessHours = [];
         }
-        catch{
-
-          data.businessHours=[];
-
-        }
-
       }
 
+      data.metaKeyword = ensureArray(data.metaKeyword || req.body["metaKeyword"]);
 
+      /* -------------------- Save Execution -------------------- */
+      data.user_id = userId;
+      data.status = req.userType === "admin" ? "approved" : "pending";
 
+      Object.keys(data).forEach((key) => {
+        currentListing[key] = data[key];
+      });
 
+      currentListing.markModified("photos");
+      currentListing.markModified("videos");
+      currentListing.markModified("businessHours");
+      currentListing.markModified("languagesSpoken");
+      currentListing.markModified("certifications");
+      currentListing.markModified("amenities");
+      currentListing.markModified("serviceAreas");
+      currentListing.markModified("paymentMethods");
 
-      /*
-      =========================
-      META
-      =========================
-      */
+      await currentListing.save();
 
-
-      if(data.metaKeyword){
-
-
-        data.metaKeyword =
-        data.metaKeyword
-        .split(",")
-        .map(x=>x.trim())
-        .filter(Boolean);
-
-
-      }
-
-
-
-
-
-
-      /*
-      =========================
-      STATUS
-      =========================
-      */
-
-
-      data.user_id=userId;
-
-
-      data.status =
-      req.userType==="admin"
-      ? "approved"
-      : "pending";
-
-
-
-
-
-
-      /*
-      =========================
-      SAVE
-      =========================
-      */
-
-
-      let listing;
-
-
-
-      if(currentListing){
-
-
-        Object.keys(data)
-        .forEach(key=>{
-
-
-          currentListing[key]=data[key];
-
-
-        });
-
-
-
-        // REQUIRED FOR NESTED ARRAY UPDATE
-        currentListing.markModified(
-          "photos"
-        );
-
-
-        await currentListing.save();
-
-
-        listing=currentListing;
-
-
-      }
-      else{
-
-
-        listing =
-        new Listing({
-
-          ...data,
-
-          created_by_id:req.userId,
-
-          created_by_type:req.userType
-
-        });
-
-
-        await listing.save();
-
-      }
-
-
-
-
-
-      listing =
-      await Listing.findById(
-        listing._id
-      )
-      .populate("categories")
-      .populate("petCategories")
-      .populate("specializedServices")
-      .populate("city")
-      .lean();
-
-
-
+      const listing = await Listing.findById(currentListing._id)
+        .populate("categories")
+        .populate("petCategories")
+        .populate("specializedServices")
+        .populate("city")
+        .lean();
 
       return res.json({
-
-        success:true,
-
-        message:
-        "Listing updated successfully",
-
+        success: true,
+        message: "Listing updated successfully",
         listing
-
       });
-
-
-
-    }
-    catch(err){
-
-
-      console.log(
-        "UPDATE LISTING ERROR",
-        err
-      );
-
-
+    } catch (err) {
+      console.error("UPDATE LISTING ERROR", err);
       return res.status(500).json({
-
-        success:false,
-
-        message:err.message
-
+        success: false,
+        message: err.message
       });
-
-
     }
-
-
   }
 );
-
 
 // DELETE
 router.delete("/:id", async (req, res) => {

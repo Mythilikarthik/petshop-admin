@@ -37,10 +37,19 @@ const [businessHours, setBusinessHours] = useState(
     closed: false
   }))
 );
+// ------------------
+// Input states for string arrays
+  const [newCertification, setNewCertification] = useState("");
+  
+  const [newServiceArea, setNewServiceArea] = useState("");
+// -----------------------
+
+
   const [formData, setFormData] = useState({
     shopName: listing?.shopName || "",
     email: listing?.email || "",
     phone: listing?.phone || "",
+    whatsapp: listing?.whatsapp || "",
     address: listing?.address || "",
     city: listing?.city || "",
     country: listing?.country || "India",
@@ -52,8 +61,55 @@ const [businessHours, setBusinessHours] = useState(
     photos: [],
     metaTitle: listing?.metaTitle || "",
     metaKeyword: listing?.metaKeyword || [],
-    metaDescription: listing?.metaDescription || ""
+    metaDescription: listing?.metaDescription || "",
+
+
+    // ------------
+    
+    mapUrl: listing?.mapUrl || "",
+    yearsInBusiness: listing?.yearsInBusiness || 0,
+    customersServed: listing?.customersServed || 0,
+    certifications: listing?.certifications || [],
+    languagesSpoken: listing?.languagesSpoken || [],
+    amenities: listing?.amenities || [],
+    serviceAreas: listing?.serviceAreas || [],
+    appointmentRequired: listing?.appointmentRequired || false,
+    responseTime: listing?.responseTime || "Within a few hours",
+
+    // Pricing & Payments
+    startingPrice: listing?.startingPrice || 0,
+    paymentMethods: listing?.paymentMethods || [],
+    // ------------
   });
+
+  // ---------
+  const [video, setVideo] = useState(null);
+const [videoPreview, setVideoPreview] = useState(null);
+  const amenityOptions = [
+    { value: "all", label: "All" },
+    { value: "WiFi", label: "WiFi" },
+    { value: "Parking", label: "Parking" },
+    { value: "Air Conditioning", label: "Air Conditioning" },
+    { value: "Pet Friendly", label: "Pet Friendly" },
+    { value: "Wheelchair Accessible", label: "Wheelchair Accessible" },
+    { value: "Waiting Area", label: "Waiting Area" }
+  ];
+  const languageOptions = [
+  { value: "all", label: "All" },
+  { value: "English", label: "English" },
+  { value: "Tamil", label: "Tamil" },
+  { value: "Hindi", label: "Hindi" }
+];
+  const paymentOptions = [
+    { value: "all", label: "All" }, // ✅ Added "Select All"
+    { value: "Cash", label: "Cash" },
+    { value: "Credit Card", label: "Credit Card" },
+    { value: "Debit Card", label: "Debit Card" },
+    { value: "UPI", label: "UPI" },
+    { value: "Net Banking", label: "Net Banking" },
+    { value: "Digital Wallet", label: "Digital Wallet" }
+  ];
+  // ---------
 
   // const [previewUrls, setPreviewUrls] = useState([]);
   const [galleryImages, setGalleryImages] = useState([]);
@@ -63,6 +119,20 @@ const { shouldBlockNavigation, confirmLeave, markAsSaved } =
     const [banner, setBanner] = useState(null);
 const [bannerPreview, setBannerPreview] = useState(null);
 
+
+const handleVideoChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (file.size > 50 * 1024 * 1024) {
+    alert("Video size must be less than 50MB.");
+    e.target.value = "";
+    return;
+  }
+
+  setVideo(file);
+  setVideoPreview(URL.createObjectURL(file));
+};
 const handleBannerChange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -84,13 +154,67 @@ const handleBannerChange = (e) => {
 
 
   // handle normal input change
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [name]: value
+  //   }));
+  // };
+  // ------
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    if (type === "checkbox") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  const handleAddCertification = (e) => {
+    e.preventDefault();
+    if (newCertification.trim() && !formData.certifications.includes(newCertification.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        certifications: [...prev.certifications, newCertification.trim()]
+      }));
+      setNewCertification("");
+    }
+  };
+
+  const handleRemoveCertification = (itemToRemove) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      certifications: prev.certifications.filter((item) => item !== itemToRemove)
     }));
   };
+
+  
+
+  const handleAddServiceArea = (e) => {
+    e.preventDefault();
+    if (newServiceArea.trim() && !formData.serviceAreas.includes(newServiceArea.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        serviceAreas: [...prev.serviceAreas, newServiceArea.trim()]
+      }));
+      setNewServiceArea("");
+    }
+  };
+
+  const handleRemoveServiceArea = (itemToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      serviceAreas: prev.serviceAreas.filter((item) => item !== itemToRemove)
+    }));
+  };
+  // -----------
 
   // handle photo selection
   // const handlePhotoChange = (e) => {
@@ -146,7 +270,7 @@ const handleBannerChange = (e) => {
       } else {
         setServiceList([]);
       }
-console.log("ss", serviceList);
+//console.log("ss", serviceList);
     } catch (err) {
       console.error("Service fetch error", err);
     }
@@ -247,6 +371,7 @@ const getTypes = async () => {
       formDataToSend.append("shopName", formData.shopName);
       formDataToSend.append("email", formData.email);
       formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("whatsapp", formData.whatsapp);
       formDataToSend.append("address", formData.address);
       // formDataToSend.append("city", formData.city);
       formDataToSend.append("country", formData.country);
@@ -256,8 +381,31 @@ const getTypes = async () => {
       formDataToSend.append("metaKeyword", formData.metaKeyword);
       formDataToSend.append("metaDescription", formData.metaDescription);
       formDataToSend.append("businessHours", JSON.stringify(businessHours));
+      // ----------
+      if (video) {
+  formDataToSend.append("videos", video);
+}
+      formDataToSend.append("mapLink", formData.mapLink);
+      formDataToSend.append("yearsInBusiness", formData.yearsInBusiness);
+      formDataToSend.append("customersServed", formData.customersServed);
+      formDataToSend.append("certifications", JSON.stringify(formData.certifications));
+      formDataToSend.append("languagesSpoken", JSON.stringify(formData.languagesSpoken));
+      formDataToSend.append("amenities", JSON.stringify(formData.amenities));
+      formDataToSend.append("serviceAreas", JSON.stringify(formData.serviceAreas));
+      formDataToSend.append("appointmentRequired", formData.appointmentRequired);
+      formDataToSend.append("responseTime", formData.responseTime);
+      formDataToSend.append("startingPrice", formData.startingPrice);
+      // formDataToSend.append("paymentMethods", formData.paymentMethods);
+      // ✅ CORRECT
+if (Array.isArray(formData.paymentMethods)) {
+  formData.paymentMethods.forEach((method) => {
+    formDataToSend.append("paymentMethods[]", method);
+  });
+}
+      // ----------
+      
 
-      console.log(formData.categories);
+      //console.log(formData.categories);
       // append selected categories
       formData.categories.forEach((catId) => {
         formDataToSend.append("categories[]", catId);
@@ -270,7 +418,7 @@ const getTypes = async () => {
       });
       formDataToSend.append("city", formData.city);
 
-console.log(formDataToSend.getAll("categories[]"));
+//console.log(formDataToSend.getAll("categories[]"));
       // append image files
       // formData.photos.forEach((photo) => {
       //   formDataToSend.append("photos", photo);
@@ -287,6 +435,8 @@ formDataToSend.append(
 if (banner) {
   formDataToSend.append("bannerImage", banner);
 }
+
+console.log("Data:", formData);
       const response = await fetch(`${API_BASE}/api/listing`, {
         method: "POST",
         headers: {
@@ -345,7 +495,7 @@ useEffect(() => {
         body: JSON.stringify({ petCategories: formData.petCategories }),
       });
       const data = await res.json();
-      console.log(data);
+      //console.log(data);
       if (data.success && Array.isArray(data.categories)) {
         setCategoryList(data.categories);
       } else {
@@ -356,7 +506,7 @@ useEffect(() => {
       setCategoryList([]);
     }
   };
-  console.log(categoryList);
+  //console.log(categoryList);
 
   fetchCategories();
 }, [formData.petCategories]);
@@ -543,6 +693,16 @@ useEffect(() => {
                 required
               />
             </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Whatsapp <span className="text-danger">*</span></Form.Label>
+              <Form.Control
+                type="number"
+                name="whatsapp"
+                value={formData.whatsapp}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
             <Form.Group className="mb-4">
   <Form.Label className="fw-bold">Business Hours</Form.Label>
 
@@ -658,11 +818,296 @@ useEffect(() => {
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
+                  title="Website Url"
+                ></iframe>
+              </div>
+            )}
+{/* Newly added Fields */}
+            {/* Map Link */}
+            <Form.Group className="mb-3">
+              <Form.Label>Map Link</Form.Label>
+              <Form.Control
+                type="url"
+                name="mapLink"
+                value={formData.mapLink}
+                onChange={handleChange}
+              />
+            </Form.Group>
+
+            {formData.mapLink && (
+              <div className="mb-3">
+                <iframe
+                  src={formData.mapLink}
+                  width="100%"
+                  height="250"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
                   title="Location Map"
                 ></iframe>
               </div>
             )}
 
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Years in Business</Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    name="yearsInBusiness"
+                    value={formData.yearsInBusiness}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Customers Served</Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    name="customersServed"
+                    value={formData.customersServed}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            {/* Certifications Array */}
+            <Form.Group className="mb-3">
+              <Form.Label>Certifications</Form.Label>
+              <div className="d-flex flex-wrap gap-2 mb-2">
+                {formData.certifications.map((item, idx) => (
+                  <span key={idx} className="badge bg-secondary d-flex align-items-center">
+                    {item}
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="text-white ms-1 p-0"
+                      onClick={() => handleRemoveCertification(item)}
+                      style={{ lineHeight: "1" }}
+                    >
+                      ✕
+                    </Button>
+                  </span>
+                ))}
+              </div>
+              <div className="d-flex">
+                <Form.Control
+                  type="text"
+                  placeholder="Add certification..."
+                  value={newCertification}
+                  onChange={(e) => setNewCertification(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddCertification(e)}
+                />
+                <Button variant="outline-primary" onClick={handleAddCertification} className="ms-2">
+                  Add
+                </Button>
+              </div>
+            </Form.Group>
+
+            {/* Languages Spoken Array */}
+            <Form.Group className="mb-3">
+  <Form.Label>Languages Spoken</Form.Label>
+  <Select
+    isMulti
+    options={languageOptions}
+    value={languageOptions.filter(
+      (opt) => opt.value !== "all" && formData.languagesSpoken.includes(opt.value)
+    )}
+    onChange={(selected) => {
+      if (!selected || selected.length === 0) {
+        setFormData((prev) => ({ ...prev, languagesSpoken: [] }));
+        return;
+      }
+
+      // Filter real options (excluding 'all')
+      const realLanguages = languageOptions
+        .filter((opt) => opt.value !== "all")
+        .map((opt) => opt.value);
+
+      // If "Select All" was clicked
+      if (selected.some((s) => s.value === "all")) {
+        setFormData((prev) => ({
+          ...prev,
+          languagesSpoken: realLanguages
+        }));
+      } else {
+        // Normal selection
+        const selectedValues = selected
+          .map((s) => s.value)
+          .filter((v) => v !== "all");
+
+        setFormData((prev) => ({
+          ...prev,
+          languagesSpoken: selectedValues
+        }));
+      }
+    }}
+  />
+</Form.Group>
+{/* Amenities Field */}
+<Form.Group className="mb-3">
+  <Form.Label>Amenities</Form.Label>
+  <Select
+    isMulti
+    options={amenityOptions}
+    value={amenityOptions.filter(
+      (opt) => opt.value !== "all" && formData.amenities?.includes(opt.value)
+    )}
+    onChange={(selected) => {
+      if (!selected || selected.length === 0) {
+        setFormData((prev) => ({ ...prev, amenities: [] }));
+        return;
+      }
+
+      // Filter real amenity values (excluding 'all')
+      const realAmenities = amenityOptions
+        .filter((opt) => opt.value !== "all")
+        .map((opt) => opt.value);
+
+      // If "Select All" was clicked
+      if (selected.some((s) => s.value === "all")) {
+        setFormData((prev) => ({
+          ...prev,
+          amenities: realAmenities
+        }));
+      } else {
+        // Normal selection
+        const selectedValues = selected
+          .map((s) => s.value)
+          .filter((v) => v !== "all");
+
+        setFormData((prev) => ({
+          ...prev,
+          amenities: selectedValues
+        }));
+      }
+    }}
+  />
+</Form.Group>
+            {/* Service Areas Array */}
+            <Form.Group className="mb-3">
+              <Form.Label>Service Areas</Form.Label>
+              <div className="d-flex flex-wrap gap-2 mb-2">
+                {formData.serviceAreas.map((item, idx) => (
+                  <span key={idx} className="badge bg-secondary d-flex align-items-center">
+                    {item}
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="text-white ms-1 p-0"
+                      onClick={() => handleRemoveServiceArea(item)}
+                      style={{ lineHeight: "1" }}
+                    >
+                      ✕
+                    </Button>
+                  </span>
+                ))}
+              </div>
+              <div className="d-flex">
+                <Form.Control
+                  type="text"
+                  placeholder="e.g. Downtown, South City..."
+                  value={newServiceArea}
+                  onChange={(e) => setNewServiceArea(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddServiceArea(e)}
+                />
+                <Button variant="outline-primary" onClick={handleAddServiceArea} className="ms-2">
+                  Add
+                </Button>
+              </div>
+            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Check
+                    type="checkbox"
+                    label="Appointment Required"
+                    name="appointmentRequired"
+                    checked={formData.appointmentRequired}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Response Time</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="responseTime"
+                    placeholder="e.g. Within a few hours"
+                    value={formData.responseTime}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            {/* Pricing & Payments */}
+            <h4 className="mt-4 mb-3 text-primary">Pricing & Payment Methods</h4>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Starting Price (₹)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    min="0"
+                    name="startingPrice"
+                    value={formData.startingPrice}
+                    onChange={handleChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Payment Methods Accepted</Form.Label>
+                  {/* ✅ NEW SELECT CODE WITH "ALL" OPTION */}
+                    <Select
+  isMulti
+  options={paymentOptions}
+  value={paymentOptions.filter(
+    (opt) => opt.value !== "all" && formData.paymentMethods.includes(opt.value)
+  )}
+  onChange={(selected) => {
+    if (!selected || selected.length === 0) {
+      setFormData((prev) => ({ ...prev, paymentMethods: [] }));
+      return;
+    }
+
+    // List of real payment values (excluding 'all')
+    const realOptions = paymentOptions
+      .filter((opt) => opt.value !== "all")
+      .map((opt) => opt.value);
+
+    // If 'all' was selected from the dropdown
+    if (selected.some((s) => s.value === "all")) {
+      setFormData((prev) => ({
+        ...prev,
+        paymentMethods: realOptions // Save only real payment options!
+      }));
+    } else {
+      // Filter out 'all' explicitly just in case
+      const selectedValues = selected
+        .map((s) => s.value)
+        .filter((v) => v !== "all");
+
+      setFormData((prev) => ({
+        ...prev,
+        paymentMethods: selectedValues
+      }));
+    }
+  }}
+/>
+                </Form.Group>
+              </Col>
+            </Row>
+            
+
+
+            {/* End Newly added Fields */}
             {/* Description */}
             <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>
@@ -744,7 +1189,19 @@ useEffect(() => {
     ))}
   </Row>
 )}
-
+<Form.Group className="mb-4">
+  <Form.Label className="fw-bold">Upload Listing Video</Form.Label>
+  <Form.Control
+    type="file"
+    accept="video/mp4,video/webm,video/ogg"
+    onChange={handleVideoChange}
+  />
+  {videoPreview && (
+    <div className="mt-3" style={{ maxWidth: "400px" }}>
+      <video controls src={videoPreview} style={{ width: "100%", borderRadius: "8px" }} />
+    </div>
+  )}
+</Form.Group>
             {/* Meta Fields */}
             <Form.Group className="mb-4">
               <Form.Label>Page Title (Meta Title)</Form.Label>
