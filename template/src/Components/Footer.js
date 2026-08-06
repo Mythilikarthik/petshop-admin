@@ -15,6 +15,9 @@ const Footer = ({home, categoryPage}) => {
     const directoryCategory = [{
         categoryName: "Pet Grooming",
         categorySlug: "pet-grooming"
+    }, {
+        categoryName: "Pet Boarding",
+        categorySlug: "pet-boarding"
     }]
   return (
     <div className='footer'>

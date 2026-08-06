@@ -33,6 +33,8 @@ import Offers from './Pages/Offers';
 import TrialMock from "./Pages/TrailMock";
 import DocumentViewer from "./Pages/DocumentViewer";
 import PetGroomingCityPage from './Pages/PetGroomingDirectoryPage';
+import PetBoarding from "./Pages/PetBoarding";
+import PetBoardingCityPage from './Pages/PetBoardingDirectoryPage';
 
 
 const API_BASE =
@@ -180,6 +182,8 @@ function AppContent() {
         
         <Route path="/pet-grooming" element={<PetGroomingCityPage />} />
         <Route path="/pet-grooming/:cityName" element={<DocumentViewer />} />
+        <Route path="/pet-boarding" element={<PetBoardingCityPage />} />
+        <Route path="/pet-boarding/:cityName" element={<PetBoarding />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />
       <a 
