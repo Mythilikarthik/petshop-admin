@@ -293,7 +293,7 @@ const renderFormattedContent = (content) => {
                 Home
               </Breadcrumb.Item>
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: '/pet-boarding' }}>
-                Pet Grooming
+                Pet Boarding
               </Breadcrumb.Item>
               <Breadcrumb.Item active>
                 {currentCityData.City || cityName}
