@@ -62,7 +62,14 @@ const [businessHours, setBusinessHours] = useState(
     metaTitle: listing?.metaTitle || "",
     metaKeyword: listing?.metaKeyword || [],
     metaDescription: listing?.metaDescription || "",
-
+    // Social Links state
+    socialLinks: {
+      facebook: listing?.socialLinks?.facebook || "",
+      instagram: listing?.socialLinks?.instagram || "",
+      youtube: listing?.socialLinks?.youtube || "",
+      twitter: listing?.socialLinks?.twitter || "",
+      linkedin: listing?.socialLinks?.linkedin || "",
+    },
 
     // ------------
     
@@ -119,7 +126,16 @@ const { shouldBlockNavigation, confirmLeave, markAsSaved } =
     const [banner, setBanner] = useState(null);
 const [bannerPreview, setBannerPreview] = useState(null);
 
-
+const handleSocialChange = (e) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({
+    ...prev,
+    socialLinks: {
+      ...prev.socialLinks,
+      [name]: value,
+    },
+  }));
+};
 const handleVideoChange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -381,6 +397,7 @@ const getTypes = async () => {
       formDataToSend.append("metaKeyword", formData.metaKeyword);
       formDataToSend.append("metaDescription", formData.metaDescription);
       formDataToSend.append("businessHours", JSON.stringify(businessHours));
+      formDataToSend.append("socialLinks", JSON.stringify(formData.socialLinks));
       // ----------
       if (video) {
   formDataToSend.append("videos", video);
@@ -1202,6 +1219,76 @@ useEffect(() => {
     </div>
   )}
 </Form.Group>
+
+
+<h5 className="mt-4 mb-3 fw-bold">Social Links</h5>
+<Row>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>Instagram URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="instagram"
+        placeholder="https://instagram.com/yourhandle"
+        value={formData.socialLinks.instagram}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>Facebook URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="facebook"
+        placeholder="https://facebook.com/yourpage"
+        value={formData.socialLinks.facebook}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>YouTube URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="youtube"
+        placeholder="https://youtube.com/@yourchannel"
+        value={formData.socialLinks.youtube}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>Twitter / X URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="twitter"
+        placeholder="https://x.com/yourhandle"
+        value={formData.socialLinks.twitter}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>LinkedIn URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="linkedin"
+        placeholder="https://linkedin.com/company/yourpage"
+        value={formData.socialLinks.linkedin}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+  
+</Row>
+
+
+
+
             {/* Meta Fields */}
             <Form.Group className="mb-4">
               <Form.Label>Page Title (Meta Title)</Form.Label>

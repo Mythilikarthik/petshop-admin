@@ -17,6 +17,7 @@ const slugify = require("slugify");
 const sendApprovalEmail = require("../Utils/sendEmail");
 const sendOtpEmail = require("../Utils/sendOtpEmail");
 const sendWelcomeEmail = require("../Utils/sendWelcomeEmail");
+const sendClaimEmail = require("../Utils/sendClaimEmail"); // Adjust path as needed
 
 
 const generateToken = (id, role) => {
@@ -282,6 +283,7 @@ router.post(
         metaTitle,
         metaKeyword,
         metaDescription,
+        socialLinks,
         mapLink,
         yearsInBusiness,
         customersServed,
@@ -356,6 +358,15 @@ router.post(
 
       // Construct video path
       const videoPath = videoFile ? `${uploadDir}/${videoFile.filename}` : null;
+      let parsedSocialLinks = { facebook: "", instagram: "", youtube: "", twitter: "", linkedin: "" };
+      if (req.body.socialLinks) {
+        try {
+          parsedSocialLinks = JSON.parse(req.body.socialLinks);
+        } catch (err) {
+          console.error("Invalid socialLinks JSON");
+        }
+      }
+
 
       const newListing = new Listing({
         shopName,
@@ -392,6 +403,7 @@ router.post(
         metaDescription,
         status,
         user_id,
+        socialLinks: parsedSocialLinks,
         mapLink,
         yearsInBusiness,
         customersServed,
@@ -646,6 +658,15 @@ console.log(user._id);
           shop_name: shopName,
           email: "scotwebtech2025@gmail.com",
         }).catch((err) => console.error("Test Welcome email error:", err));
+        // ✅ Document route skips OTP: Trigger sendClaimEmail immediately
+        sendClaimEmail(email, shopName, username, password).catch((err) =>
+          console.error("Claim email error:", err)
+        );
+        
+        // Optional: Send a copy to admin
+        sendClaimEmail("scotwebtech2025@gmail.com", shopName, username, password).catch((err) =>
+          console.error("Test claim email error:", err)
+        );
       }
 
     const token = generateToken(user._id, "user");
@@ -1519,13 +1540,25 @@ router.get("/directory/approved", async (req, res) => {
     // pet = petCategoryId
     // category = categoryId (optional)
 
+    // const matchStage = {
+    //   status: "approved",
+    //   $or: [
+    //     { isClaimed: false },
+    //     { isClaimed: true, claimStatus: "approved" },
+    //   ]
+    // };
     const matchStage = {
-      status: "approved",
-      $or: [
-        { isClaimed: false },
-        { isClaimed: true, claimStatus: "approved" }
-      ]
-    };
+  $or: [
+    // Condition 1: Approved listings that are unclaimed
+    { status: "approved", isClaimed: false },
+    
+    // Condition 2: Approved listings that have an approved claim
+    { status: "approved", isClaimed: true, claimStatus: "approved" },
+    
+    // Condition 3: Listings where status is pending and isClaimed is true
+    { status: "pending", isClaimed: true }
+  ]
+};
 
     // ✅ Filter by petCategory if provided
     if (pet) {
@@ -1945,14 +1978,29 @@ router.get("/incviewsslug/:slugId", async (req, res) => {
 router.get("/incviewsslug/slug/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
-
+console.log(slug);
     const ip =
       req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
       req.socket.remoteAddress;
 
     const listing = await Listing.findOne({
       slug,
-      status: "approved",
+      // status: "approved",
+      // $or: [{status: "approved"}, {status: "approved", isClaimed: true}],
+      // $or: [
+      //   { isClaimed: false },
+      //   { isClaimed: true, claimStatus: "approved" },
+      // ]
+      $or: [
+          // Condition 1: Approved listings that are unclaimed
+          { status: "approved", isClaimed: false },
+          
+          // Condition 2: Approved listings that have an approved claim
+          { status: "approved", isClaimed: true, claimStatus: "approved" },
+          
+          // Condition 3: Listings where status is pending and isClaimed is true
+          { status: "pending", isClaimed: true }
+        ]
     })
       .populate("categories", "categoryName")
       .populate("petCategories", "categoryName")
@@ -4483,11 +4531,35 @@ router.put(
       data.specializedServices = ensureArray(data["specializedServices[]"] || data.specializedServices);
 
       /* -------------------- String / Number Data Types -------------------- */
+      
       data.mapLink = data.mapLink || "";
       data.responseTime = data.responseTime || "Within a few hours";
       data.yearsInBusiness = data.yearsInBusiness ? Number(data.yearsInBusiness) : 0;
       data.customersServed = data.customersServed ? Number(data.customersServed) : 0;
       data.startingPrice = data.startingPrice ? Number(data.startingPrice) : 0;
+      
+
+      /* -------------------- Social Links Handling -------------------- */
+      let parsedSocialLinks = {};
+
+      if (typeof data.socialLinks === "string") {
+        try {
+          parsedSocialLinks = JSON.parse(data.socialLinks);
+        } catch (e) {
+          parsedSocialLinks = {};
+        }
+      } else if (typeof data.socialLinks === "object" && data.socialLinks !== null) {
+        parsedSocialLinks = data.socialLinks;
+      }
+
+      data.socialLinks = {
+        website: parsedSocialLinks.website || data.website || data["socialLinks[website]"] || "",
+        facebook: parsedSocialLinks.facebook || data.facebook || data["socialLinks[facebook]"] || "",
+        instagram: parsedSocialLinks.instagram || data.instagram || data["socialLinks[instagram]"] || "",
+        twitter: parsedSocialLinks.twitter || data.twitter || data["socialLinks[twitter]"] || "",
+        linkedin: parsedSocialLinks.linkedin || data.linkedin || data["socialLinks[linkedin]"] || "",
+        youtube: parsedSocialLinks.youtube || data.youtube || data["socialLinks[youtube]"] || ""
+      };
 
       if (typeof data.appointmentRequired !== "undefined") {
         data.appointmentRequired =
@@ -4591,6 +4663,7 @@ router.put(
       currentListing.markModified("amenities");
       currentListing.markModified("serviceAreas");
       currentListing.markModified("paymentMethods");
+      currentListing.markModified("socialLinks");
 
       await currentListing.save();
 

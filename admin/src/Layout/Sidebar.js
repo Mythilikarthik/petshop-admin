@@ -177,7 +177,15 @@ const menuItems = [
   },
 
   { name: "User Management", path: "/user-management", icon: <MdPeople />, badgeKey: "users" },
-  { name: "Offers Management", path: "/offers-management", icon: <MdLocalOffer />, badgeKey: "offers" },
+  // { name: "Offers Management", path: "/offers-management", icon: <MdLocalOffer />, badgeKey: "offers" },
+  {
+    name: "Offers",
+    icon: <MdLocalOffer />,
+    children: [
+      { name: "Offers Management", path: "/offers-management", icon: <MdLocalOffer /> },
+      { name: "Offers Analytics", path: "/offers-analytics", icon: <MdCampaign /> },
+    ],
+  },
 
   {
     name: "Page Management",

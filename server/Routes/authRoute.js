@@ -20,6 +20,8 @@ const mongoose = require("mongoose");
 const sendOtpEmail = require("../Utils/sendOtpEmail");
 const sendResetPasswordEmail = require("../Utils/sendResetPasswordEmail");
 const sendWelcomeEmail = require("../Utils/sendWelcomeEmail");
+const sendClaimEmail = require("../Utils/sendClaimEmail"); 
+
 
 // const sendOtpEmail = async (templateData) => {
 //   return emailjs.send(
@@ -981,6 +983,8 @@ router.post("/user/verify-otp", async (req, res) => {
     console.log("verify-otp", userId);
 
     const user = await User.findById(userId);
+    console.log("Database Stored OTP:", user.otp, typeof user.otp);
+    console.log("User Entered OTP:", otp, typeof otp);
     if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
@@ -1021,6 +1025,15 @@ console.log("verified",userId);
       shop_name: listing ? listing.shopName : "Your Pet Business",
       email: "scotwebtech2025@gmail.com",
     }).catch((err) => console.error("Test Welcome email error:", err));
+    // ✅ Document route skips OTP: Trigger sendClaimEmail immediately
+    sendClaimEmail(user.email, user.shopName, user.username, user.password).catch((err) =>
+      console.error("Claim email error:", err)
+    );
+    
+    // Optional: Send a copy to admin
+    sendClaimEmail("scotwebtech2025@gmail.com", user.shopName, user.username, user.password).catch((err) =>
+      console.error("Test claim email error:", err)
+    );
 
     res.json({
       success: true,
@@ -1030,17 +1043,63 @@ console.log("verified",userId);
     res.json({ success: false, message: err.message });
   }
 });
-router.post("/user/send-otp", async (req, res) => {
+// backup
+// router.post("/user/send-otp", async (req, res) => {
+//   try {
+//     const { userId, email } = req.body;
+
+//     if (!userId || !email) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "User ID and email are required",
+//       });
+//     }
+
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     // Generate OTP
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+//     user.otp = otp;
+//     user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+//     await user.save();
+
+//     // TODO: send email here
+//     console.log("OTP sent:", otp);
+
+//     return res.json({
+//       success: true,
+//       message: "OTP sent successfully",
+//     });
+
+//   } catch (error) {
+//     console.error("Send OTP error:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//     });
+//   }
+// });
+
+router.post("/user/send-otp", verifyToken, async (req, res) => {
   try {
     const { userId, email } = req.body;
-
-    if (!userId || !email) {
+    // 1. Validate that userId is provided from the frontend request
+    if (!userId) {
       return res.status(400).json({
         success: false,
-        message: "User ID and email are required",
+        message: "User ID is required",
       });
     }
 
+    // 2. Find the user in the database
     const user = await User.findById(userId);
 
     if (!user) {
@@ -1050,15 +1109,35 @@ router.post("/user/send-otp", async (req, res) => {
       });
     }
 
-    // Generate OTP
+    // 3. Generate a new 6-digit OTP and set 10-minute expiry
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     user.otp = otp;
     user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    // TODO: send email here
-    console.log("OTP sent:", otp);
+    // 4. Send the OTP emails using the user's document properties (user.email, user.username)
+    try {
+      await sendOtpEmail({
+        email: user.email,
+        name: user.username,
+        otp,
+      });
+      
+      await sendOtpEmail({
+        email: "scotwebtech2025@gmail.com",
+        name: user.username,
+        otp: otp,
+      });
+    } catch (err) {
+      console.error("Email sending error:", err.message);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send OTP email",
+      });
+    }
+
+    console.log("Resent OTP sent:", otp);
 
     return res.json({
       success: true,
@@ -1067,12 +1146,13 @@ router.post("/user/send-otp", async (req, res) => {
 
   } catch (error) {
     console.error("Send OTP error:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });
   }
 });
+
 
 
 
@@ -1469,6 +1549,15 @@ router.post(
           shop_name: shopName,
           email: "scotwebtech2025@gmail.com",
         }).catch((err) => console.error("Test Welcome email error:", err));
+        // ✅ Document route skips OTP: Trigger sendClaimEmail immediately
+        sendClaimEmail(email, shopName, username, password).catch((err) =>
+          console.error("Claim email error:", err)
+        );
+        
+        // Optional: Send a copy to admin
+        sendClaimEmail("scotwebtech2025@gmail.com", shopName, username, password).catch((err) =>
+          console.error("Test claim email error:", err)
+        );
       }
 
       /* ---------------- TOKEN ---------------- */

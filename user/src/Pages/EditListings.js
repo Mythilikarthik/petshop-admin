@@ -125,6 +125,14 @@ const EditListing = () => {
     startingPrice: 0,
     customersServed: 0,
     responseTime: 'Within a few hours',
+    socialLinks: {
+      facebook: "",
+      instagram: "",
+      youtube: "",
+      twitter: "",
+      linkedin: "",
+      website: "",
+    },
   });
 
   const { confirmLeave, markAsSaved, resetInitialSnapshot } =
@@ -225,6 +233,17 @@ const EditListing = () => {
           setExistingBanner(data.listing.bannerImage || null);
           setExistingVideo(data.listing.videos || null);
 
+          let parsedSocialLinks = {};
+          if (typeof data.listing.socialLinks === 'string') {
+            try {
+              parsedSocialLinks = JSON.parse(data.listing.socialLinks);
+            } catch (err) {
+              console.error("Error parsing socialLinks JSON", err);
+            }
+          } else if (typeof data.listing.socialLinks === 'object' && data.listing.socialLinks !== null) {
+            parsedSocialLinks = data.listing.socialLinks;
+          }
+
           setFormData({
             u_name: data.listing.user_id?.name || '',
             shopName: data.listing.shopName || '',
@@ -270,6 +289,14 @@ const EditListing = () => {
             startingPrice: data.listing.startingPrice || 0,
             customersServed: data.listing.customersServed || 0,
             responseTime: data.listing.responseTime || 'Within a few hours',
+            socialLinks: {
+              facebook: parsedSocialLinks?.facebook || "",
+              instagram: parsedSocialLinks?.instagram || "",
+              youtube: parsedSocialLinks?.youtube || "",
+              twitter: parsedSocialLinks?.twitter || "",
+              linkedin: parsedSocialLinks?.linkedin || "",
+              website: parsedSocialLinks?.website || "",
+            },
           });
 
           if (data.listing.businessHours && data.listing.businessHours.length > 0) {
@@ -296,12 +323,22 @@ const EditListing = () => {
       resetInitialSnapshot();
     }
   }, [loading, listing]);
-
+const handleSocialChange = (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        socialLinks: {
+          ...prev.socialLinks,
+          [name]: value,
+        },
+      }));
+    };
   useEffect(() => {
     if (!formData.petCategories || formData.petCategories.length === 0) {
       setCategoryList([]);
       return;
     }
+    
 
     const fetchCategories = async () => {
       try {
@@ -544,6 +581,7 @@ const EditListing = () => {
       formData.serviceAreas.forEach(area => formDataToSend.append("serviceAreas[]", area));
       formData.paymentMethods.forEach(method => formDataToSend.append("paymentMethods[]", method));
       formData.metaKeyword.forEach(kw => formDataToSend.append("metaKeyword[]", kw));
+      formDataToSend.append("socialLinks", JSON.stringify(formData.socialLinks));
 
       // Photos Handling
       formData.existingPhotos.forEach(photo => {
@@ -565,6 +603,8 @@ const EditListing = () => {
       } else if (existingVideo) {
         formDataToSend.append("existingVideo", typeof existingVideo === 'string' ? existingVideo : JSON.stringify(existingVideo));
       }
+
+      console.log("userList", formDataToSend);
 
       const res = await fetch(`${API_BASE}/api/listing/user/${id}`, {
         method: "PUT",
@@ -1158,6 +1198,75 @@ const EditListing = () => {
                 ))}
               </Row>
             )}
+
+
+
+            <h5 className="mt-4 mb-3 fw-bold">Social Links</h5>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Instagram URL</Form.Label>
+                  <Form.Control
+                    type="url"
+                    name="instagram"
+                    placeholder="https://instagram.com/yourhandle"
+                    value={formData.socialLinks?.instagram || ""}
+                    onChange={handleSocialChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Facebook URL</Form.Label>
+                  <Form.Control
+                    type="url"
+                    name="facebook"
+                    placeholder="https://facebook.com/yourpage"
+                    value={formData.socialLinks?.facebook || ""}
+                    onChange={handleSocialChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>YouTube URL</Form.Label>
+                  <Form.Control
+                    type="url"
+                    name="youtube"
+                    placeholder="https://youtube.com/@yourchannel"
+                    value={formData.socialLinks?.youtube || ""}
+                    onChange={handleSocialChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Twitter / X URL</Form.Label>
+                  <Form.Control
+                    type="url"
+                    name="twitter"
+                    placeholder="https://x.com/yourhandle"
+                    value={formData.socialLinks?.twitter || ""}
+                    onChange={handleSocialChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>LinkedIn URL</Form.Label>
+                  <Form.Control
+                    type="url"
+                    name="linkedin"
+                    placeholder="https://linkedin.com/company/yourpage"
+                    value={formData.socialLinks?.linkedin || ""}
+                    onChange={handleSocialChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+
+
 
             {/* Meta Title & Tags */}
             <Form.Group className="mb-3">

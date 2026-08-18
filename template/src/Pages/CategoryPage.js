@@ -250,7 +250,7 @@ const formattedCategoryName = categoryName
   }}
 >
   <Container>
-    <Row className="align-items-center min-vh-50">
+    <Row className="align-items-center">
       <Col lg={8}>
         <div
           className="category-hero-icon mb-3"

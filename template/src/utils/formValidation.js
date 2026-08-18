@@ -48,7 +48,7 @@ export const validateField = (name, value, additionalData = {}) => {
       break;
 
     case "confirmPassword":
-      if (!value) return "Please confirm your password.";
+      if (!value) return "Please enter confirm password.";
       if (value !== additionalData.passwordMatch) return "Passwords do not match.";
       break;
 

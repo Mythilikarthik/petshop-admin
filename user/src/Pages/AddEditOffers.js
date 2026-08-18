@@ -168,6 +168,11 @@ const AddEditOffers = () => {
   const handleMediaUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (formData.media.length >= 5) {
+      alert("You can upload a maximum of 5 media items.");
+      e.target.value = "";
+      return;
+    }
 
     if (file.type.startsWith("video/")) {
       const videoElement = document.createElement("video");
@@ -393,7 +398,7 @@ const AddEditOffers = () => {
 
           <Form.Group className="mb-4">
             <Form.Label className="fw-semibold">Media</Form.Label>
-            <Form.Text className="text-muted d-block mb-2">Upload multiple images or a short marketing video clip <strong> <br /> (Maximum limit: 12 Seconds)</strong>.</Form.Text>
+            <Form.Text className="text-muted d-block mb-2">Upload multiple images or a short marketing video clip <strong> <br /> (Maximum limit: 5 Images , Video Clip limit: 12 Seconds)</strong>.</Form.Text>
             <Form.Control type="file" accept="image/*,video/*" onChange={handleMediaUpload} disabled={uploadingMedia} />
             
             {uploadingMedia && (

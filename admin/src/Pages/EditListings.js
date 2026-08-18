@@ -77,7 +77,17 @@ const [businessHours, setBusinessHours] = useState(
     isClaimed: false,
     isSignup: false,
     signupStatus: "pending",
+
+    socialLinks: {
+      facebook: "",
+      instagram: "",
+      youtube: "",
+      twitter: "",
+      linkedin: "",
+      website: "",
+    },
     // ------------
+    
     
     mapLink:  "",
     yearsInBusiness:  0,
@@ -264,7 +274,7 @@ const extractVideoUrl = (val) => {
         const data = await res.json();
         // Inside fetchListing (useEffect) in EditListing.js:
 
-        
+        console.log(data.listing);
         if (res.ok && data.success) {
           setListing(data.listing);
           setExistingBanner(data.listing.bannerImage || null);
@@ -276,6 +286,18 @@ const extractVideoUrl = (val) => {
   setExistingVideo(videoUrl);
 } else {
   setExistingVideo(null);
+}
+
+// Safely parse socialLinks if stored as a stringified JSON object
+let parsedSocialLinks = {};
+if (typeof data.listing.socialLinks === 'string') {
+  try {
+    parsedSocialLinks = JSON.parse(data.listing.socialLinks);
+  } catch (err) {
+    console.error("Error parsing socialLinks JSON", err);
+  }
+} else if (typeof data.listing.socialLinks === 'object' && data.listing.socialLinks !== null) {
+  parsedSocialLinks = data.listing.socialLinks;
 }
           setFormData({
             u_name: data.listing.user_id?.name || '',
@@ -321,6 +343,14 @@ const extractVideoUrl = (val) => {
             verificationDocs: data.listing.verificationDocs || [],
             isClaimed: data.listing.isClaimed || false,
             isSignup: data.listing.isSignup || false,
+            socialLinks: {
+              facebook: parsedSocialLinks?.facebook || "",
+              instagram: parsedSocialLinks?.instagram || "",
+              youtube: parsedSocialLinks?.youtube || "",
+              twitter: parsedSocialLinks?.twitter || "",
+              linkedin: parsedSocialLinks?.linkedin || "",
+              website: parsedSocialLinks?.website || "",
+            },
 
             // ------------
     
@@ -365,6 +395,18 @@ paymentMethods: safeParseArray(data.listing.paymentMethods),
 
     fetchListing();
   }, [id, navigate]);
+  console.log("check",formData);
+
+  const handleSocialChange = (e) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({
+    ...prev,
+    socialLinks: {
+      ...prev.socialLinks,
+      [name]: value,
+    },
+  }));
+};
   const handleVideoChange = (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -639,6 +681,7 @@ formDataToSend.append("businessHours", JSON.stringify(businessHours));
 
 
 // ----------
+formDataToSend.append("socialLinks", JSON.stringify(formData.socialLinks));
       formDataToSend.append("mapLink", formData.mapLink);
       formDataToSend.append("yearsInBusiness", formData.yearsInBusiness);
       formDataToSend.append("customersServed", formData.customersServed);
@@ -1410,74 +1453,68 @@ onChange={(e)=>
 </Row>
 )} */}
 {formData.existingPhotos.length > 0 && (
-<Row className="mb-3">
+  <Row className="mb-3">
+    {formData.existingPhotos.map((photo, idx) => {
+      // 1. Safely extract a string URL regardless of how photo data is structured
+      let rawUrl = "";
+      if (typeof photo.url === "string") {
+        rawUrl = photo.url;
+      } else if (typeof photo === "string") {
+        rawUrl = photo;
+      } else if (photo?.url && typeof photo.url === "object" && photo.url.url) {
+        rawUrl = photo.url.url; // Handles nested objects if any
+      }
 
-{formData.existingPhotos.map((photo, idx)=>{
+      // 2. Build the full image URL safely
+      const imageUrl = rawUrl.startsWith("http")
+        ? rawUrl
+        : `${API_BASE}/${rawUrl.replace(/^\/+/, "")}`;
 
-const imageUrl =
-photo.url?.startsWith("http")
-? photo.url
-: `${API_BASE}/${photo.url.replace(/^\/+/,"")}`;
+      return (
+        <Col 
+          key={idx} 
+          xs={6} 
+          md={4} 
+          lg={3} 
+          className="mb-3 position-relative"
+        >
+          {/* DELETE BUTTON */}
+          <Button
+            variant="danger"
+            size="sm"
+            className="position-absolute"
+            style={{
+              right: "15px",
+              top: "5px",
+              borderRadius: "50%",
+              width: "30px",
+              height: "30px",
+              zIndex: 10
+            }}
+            onClick={() => handleDeleteExistingPhoto(idx)}
+          >
+            ✕
+          </Button>
 
+          <Image 
+            src={imageUrl}
+            thumbnail
+            fluid
+          />
 
-return (
-
-<Col 
-key={idx} 
-xs={6} 
-md={4} 
-lg={3} 
-className="mb-3 position-relative"
->
-
-
-{/* DELETE BUTTON */}
-<Button
-  variant="danger"
-  size="sm"
-  className="position-absolute"
-  style={{
-    right:"15px",
-    top:"5px",
-    borderRadius:"50%",
-    width:"30px",
-    height:"30px",
-    zIndex:10
-  }}
-  onClick={() => handleDeleteExistingPhoto(idx)}
->
-  ✕
-</Button>
-
-
-<Image 
-src={imageUrl}
-thumbnail
-fluid
-/>
-
-
-<Form.Control
-className="mt-2"
-type="text"
-placeholder="Image Alt Text"
-value={photo.alt || ""}
-onChange={(e)=>
- handleExistingPhotoAltChange(
- idx,
- e.target.value
- )
-}
-/>
-
-
-</Col>
-
-)
-
-})}
-
-</Row>
+          <Form.Control
+            className="mt-2"
+            type="text"
+            placeholder="Image Alt Text"
+            value={photo.alt || ""}
+            onChange={(e) =>
+              handleExistingPhotoAltChange(idx, e.target.value)
+            }
+          />
+        </Col>
+      );
+    })}
+  </Row>
 )}
 
             {/* New Photo Previews */}
@@ -1564,6 +1601,72 @@ onChange={(e)=>
   </div>
 )}
 </Form.Group>
+
+
+
+<h5 className="mt-4 mb-3 fw-bold">Social Links</h5>
+<Row>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>Instagram URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="instagram"
+        placeholder="https://instagram.com/yourhandle"
+        value={formData.socialLinks?.instagram || ""}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>Facebook URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="facebook"
+        placeholder="https://facebook.com/yourpage"
+        value={formData.socialLinks?.facebook || ""}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>YouTube URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="youtube"
+        placeholder="https://youtube.com/@yourchannel"
+        value={formData.socialLinks?.youtube || ""}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>Twitter / X URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="twitter"
+        placeholder="https://x.com/yourhandle"
+        value={formData.socialLinks?.twitter || ""}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+  <Col md={6}>
+    <Form.Group className="mb-3">
+      <Form.Label>LinkedIn URL</Form.Label>
+      <Form.Control
+        type="url"
+        name="linkedin"
+        placeholder="https://linkedin.com/company/yourpage"
+        value={formData.socialLinks?.linkedin || ""}
+        onChange={handleSocialChange}
+      />
+    </Form.Group>
+  </Col>
+</Row>
 
             {/* Meta Fields */}
             <Form.Group className="mb-3">

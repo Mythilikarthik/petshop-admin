@@ -28,6 +28,7 @@ import care247Img from "../assets/dummies/care-247.jpg";
 import vetHospitalImg from "../assets/dummies/veterinary-hospital.jpg";
 import groomingImg from "../assets/dummies/grooming.jpg";
 import petRelocationImg from "../assets/dummies/pet-relocation.jpg";
+import dogTrainingImg from "../assets/dummies/dog-training.jpg";
 import defaultImg from "../dummy.jpg";
 import Loader from '../Components/Loader';
 
@@ -52,6 +53,7 @@ const categoryDummyImages = {
   "veterinary hospital": vetHospitalImg,
   "grooming": groomingImg,
   "pet relocation": petRelocationImg,
+  "dog training" : dogTrainingImg,
 };
 
 // const normalize = (str = "") =>
@@ -178,7 +180,7 @@ useEffect(() => {
   }, []);
 
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 21;
 
   // Filtered listings
 //   const filteredListings = useMemo(() => {
@@ -1074,8 +1076,8 @@ middleHomeAds.length > 0 &&
         )}
       </div> */}
       <Row>
-        <Col md={3} className='bg-grey'>
-          <div className="directory-filters sticky-top shadow-sm  rounded p-3" style={{"top": "70px", "zIndex" : "99"}}>
+        <Col md={3} className='gx-5'>
+          <div className="bg-grey  directory-filters sticky-top shadow-sm  rounded p-3" style={{"top": "70px", "zIndex" : "99"}}>
             <Row className=" shadow-sm m-4 rounded  mb-0  ">
             <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Apply Filter</h5>
             
@@ -1257,7 +1259,7 @@ middleHomeAds.length > 0 &&
 
 
         </Col>
-        <Col md={9}>
+        <Col md={9} className=' gx-5'>
             <Row className="justify-content-center">
   {/* {paginatedListings.length === 0 ? (
     <div className="no-results mt-5 d-flex align-items-center justify-content-center">
@@ -1324,7 +1326,7 @@ middleHomeAds.length > 0 &&
           <div className='verified-identification'>
             <Badge pill bg="success" className='gap-1 d-flex'>
               <MdVerified />
-              Verified
+              {/* Verified */}
             </Badge>
           </div>
           
@@ -1333,7 +1335,7 @@ middleHomeAds.length > 0 &&
           <div className='top-rated-identification'>
             <Badge pill bg="success" className='gap-1 d-flex'>
               <GiTrophy  />
-              Top Rated
+              {/* Top Rated */}
             </Badge>
           </div>
         )}

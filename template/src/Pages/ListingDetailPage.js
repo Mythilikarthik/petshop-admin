@@ -1158,8 +1158,11 @@ import {
   FaStar, FaWhatsapp, FaFacebook, FaInstagram, FaTwitter, FaMapMarkerAlt, 
   FaShieldAlt, FaEnvelope, FaClock, FaTags, FaAngleLeft, 
   FaAngleRight, FaBookmark, FaPhoneAlt, FaDirections, FaGlobe, FaAward, 
-  FaCheck, FaVideo, FaCar, FaSnowflake, FaTruck, 
-  FaWheelchair, FaCouch, FaPlay, FaInfoCircle, FaConciergeBell, FaImages, FaComments, FaBullhorn
+  FaCheck, FaVideo, FaCar, FaSnowflake, FaTruck, FaWifi, FaCheckCircle,
+  FaWheelchair, FaCouch, FaPlay, FaInfoCircle, FaConciergeBell, FaImages, FaComments, FaBullhorn,
+  FaHourglassHalf,
+  FaYoutube,
+  FaLinkedin
 } from "react-icons/fa";
 import { Form, Container, Row, Col, Modal, Badge, Nav, Tab, Alert, Button } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
@@ -1495,6 +1498,16 @@ const STYLES = `
 `;
 
 const ListingDetailPage = () => {
+  const AMENITY_ICONS = {
+    "Parking": <FaCar />,
+    "Air Conditioning": <FaSnowflake />,
+    "Home Pickup & Drop": <FaTruck />,
+    "Online Consultations": <FaVideo />,
+    "Wheelchair Accessible": <FaWheelchair />,
+    "Pet Friendly": <FaCouch />,
+    "WiFi": <FaWifi />,
+    "Waiting Area" : <FaHourglassHalf />,
+  };
   const alertRef = useRef(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -1575,18 +1588,38 @@ const ListingDetailPage = () => {
       try {
         const res = await fetch(`${API_BASE}/api/listing/incviewsslug/slug/${slug}`);
         const data = await res.json();
-        if (data.success) {
-          setListing(data.listing);
+
+        if (data.success && data.listing) {
+          let parsedSocials = {};
+
+          if (typeof data.listing.socialLinks === "string") {
+            try {
+              parsedSocials = JSON.parse(data.listing.socialLinks);
+            } catch (e) {
+              parsedSocials = {};
+            }
+          } else if (
+            typeof data.listing.socialLinks === "object" &&
+            data.listing.socialLinks !== null
+          ) {
+            parsedSocials = data.listing.socialLinks;
+          }
+
+          setListing({
+            ...data.listing,
+            socialLinks: parsedSocials,
+          });
         }
       } catch (err) {
         console.error("Error fetching listing:", err.message);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    };
+      };
 
     fetchListing();
   }, [slug]);
-
+console.log(listing);
   // Fetch Listing Offers
   useEffect(() => {
     if (!listing?._id) return;
@@ -2044,22 +2077,26 @@ const { text, colorClass, dotClass } = getBusinessStatus(listing.businessHours);
                     <p className="mb-4 text-justify" style={{ lineHeight: '1.7' }}>{listing.description}</p>
 
                     <Row className="g-3 mb-4">
-                      {listing.yearsInBusiness && (
+                      
                         <Col sm={6}>
                           <div className="stat-card">
                             <span className="d-block text-muted small">Experience</span>
-                            <strong className="fs-5 text-dark">{listing.yearsInBusiness}</strong>
+                            <strong className="fs-5 text-dark">
+                              {listing.yearsInBusiness || "--"}
+                              </strong>
                           </div>
                         </Col>
-                      )}
-                      {listing.customersServed && (
+                      
+                      
                         <Col sm={6}>
                           <div className="stat-card">
                             <span className="d-block text-muted small">Customers Served</span>
-                            <strong className="fs-5 text-dark">{listing.customersServed}</strong>
+                            <strong className="fs-5 text-dark">
+                            {listing.customersServed || "--"}
+                            </strong>
                           </div>
                         </Col>
-                      )}
+                      
                     </Row>
 
                     {/* CERTIFICATIONS & LANGUAGES */}
@@ -2123,40 +2160,17 @@ const { text, colorClass, dotClass } = getBusinessStatus(listing.businessHours);
                     </Row>
 
                     {/* AMENITIES */}
-                    {listing.amenities && (
+                    {Array.isArray(listing.amenities) && listing.amenities.length > 0 && (
                       <div className="mt-4 pt-4 border-top border-light">
                         <span className="clean-accent-label">Amenities</span>
                         <Row className="g-2">
-                          <Col md={4} sm={6}>
-                            <div className={`amenity-chip ${listing.amenities?.parking ? 'available' : ''}`}>
-                              <FaCar /> Parking {listing.amenities?.parking ? 'Available' : 'N/A'}
-                            </div>
-                          </Col>
-                          <Col md={4} sm={6}>
-                            <div className={`amenity-chip ${listing.amenities?.acFacility ? 'available' : ''}`}>
-                              <FaSnowflake /> Climate Controlled / AC
-                            </div>
-                          </Col>
-                          <Col md={4} sm={6}>
-                            <div className={`amenity-chip ${listing.amenities?.homePickup ? 'available' : ''}`}>
-                              <FaTruck /> Home Pickup & Drop
-                            </div>
-                          </Col>
-                          <Col md={4} sm={6}>
-                            <div className={`amenity-chip ${listing.amenities?.onlineConsultation ? 'available' : ''}`}>
-                              <FaVideo /> Online Consultations
-                            </div>
-                          </Col>
-                          <Col md={4} sm={6}>
-                            <div className={`amenity-chip ${listing.amenities?.wheelchairAccess ? 'available' : ''}`}>
-                              <FaWheelchair /> Wheelchair Accessible
-                            </div>
-                          </Col>
-                          <Col md={4} sm={6}>
-                            <div className={`amenity-chip ${listing.amenities?.petFriendlySeating ? 'available' : ''}`}>
-                              <FaCouch /> Pet-Friendly Seating
-                            </div>
-                          </Col>
+                          {listing.amenities.map((amenity, index) => (
+                            <Col key={index} md={4} sm={6}>
+                              <div className="amenity-chip available">
+                                {AMENITY_ICONS[amenity] || <FaCheckCircle />} {amenity}
+                              </div>
+                            </Col>
+                          ))}
                         </Row>
                       </div>
                     )}
@@ -2628,23 +2642,33 @@ const { text, colorClass, dotClass } = getBusinessStatus(listing.businessHours);
                 )}
 
                 {/* SOCIAL MEDIA */}
-                {listing.socialAnchors && (
+                {listing.socialLinks && (
                   <div className="mt-4 pt-4 border-top border-light">
                     <span className="clean-accent-label">Social Media</span>
                     <div className="d-flex gap-2 mt-2">
-                      {listing.socialAnchors.facebook && (
-                        <a href={listing.socialAnchors.facebook} target="_blank" rel="noreferrer" className="social-clean-btn">
+                      {listing.socialLinks.facebook && (
+                        <a href={listing.socialLinks.facebook} target="_blank" rel="noreferrer" className="social-clean-btn">
                           <FaFacebook size={18} />
                         </a>
                       )}
-                      {listing.socialAnchors.instagram && (
-                        <a href={listing.socialAnchors.instagram} target="_blank" rel="noreferrer" className="social-clean-btn">
+                      {listing.socialLinks.instagram && (
+                        <a href={listing.socialLinks.instagram} target="_blank" rel="noreferrer" className="social-clean-btn">
                           <FaInstagram size={18} />
                         </a>
                       )}
-                      {listing.socialAnchors.twitter && (
-                        <a href={listing.socialAnchors.twitter} target="_blank" rel="noreferrer" className="social-clean-btn">
+                      {listing.socialLinks.youtube && (
+                        <a href={listing.socialLinks.youtube} target="_blank" rel="noreferrer" className="social-clean-btn">
+                          <FaYoutube size={18} />
+                        </a>
+                      )}
+                      {listing.socialLinks.twitter && (
+                        <a href={listing.socialLinks.twitter} target="_blank" rel="noreferrer" className="social-clean-btn">
                           <FaTwitter size={16} />
+                        </a>
+                      )}
+                      {listing.socialLinks.linkedin && (
+                        <a href={listing.socialLinks.linkedin} target="_blank" rel="noreferrer" className="social-clean-btn">
+                          <FaLinkedin size={16} />
                         </a>
                       )}
                     </div>

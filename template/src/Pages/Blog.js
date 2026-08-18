@@ -331,7 +331,7 @@ const Blog = () => {
 
           <Row>
             {/* SIDEBAR */}
-            <Col md={3} className="bg-grey mb-4">
+            <Col md={3} className="bg-grey mb-4 gx-5">
             <div className="directory-filters sticky-top shadow-sm  rounded ">
               <Row className=" shadow-sm m-4 rounded  mb-4  ">
                 <h5 style={{background: "#eaeaea", padding: "14px", textAlign: "center"}}>Categories</h5>
@@ -369,7 +369,7 @@ const Blog = () => {
             </Col>
 
             {/* BLOG LIST */}
-            <Col md={9}>
+            <Col md={9} className=" gx-5">
               <Row>
                 {currentBlogs.length > 0 ? (
                   currentBlogs.map((item) => (

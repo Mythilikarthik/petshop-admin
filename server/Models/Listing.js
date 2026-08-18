@@ -10,7 +10,8 @@ const ListingSchema = new mongoose.Schema({
 
   // Newly Added Fields
   savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  whatsapp: { type: String, required: true },
+  // whatsapp: { type: String, required: true },
+  whatsapp: { type: String, required: true, default: function() { return this.phone || ""; } },
   mapLink: String,
   yearsInBusiness: Number,
   customersServed: Number,
@@ -20,6 +21,14 @@ const ListingSchema = new mongoose.Schema({
   serviceAreas: [{ type: String }],
   appointmentRequired: { type: Boolean, default: false },
   responseTime: { type: String, default: "Within a few hours" }, // e.g., "2 Hours"
+  // Social Media Anchors
+  socialLinks: {
+    facebook: { type: String, default: "" },
+    instagram: { type: String, default: "" },
+    youtube: { type: String, default: "" },
+    twitter: { type: String, default: "" },
+    linkedin: { type: String, default: "" },
+  },
 
   // Pricing & Payments
   startingPrice: { type: Number, default: 0 },

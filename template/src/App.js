@@ -35,7 +35,8 @@ import DocumentViewer from "./Pages/DocumentViewer";
 import PetGroomingCityPage from './Pages/PetGroomingDirectoryPage';
 import PetBoarding from "./Pages/PetBoarding";
 import PetBoardingCityPage from './Pages/PetBoardingDirectoryPage';
-
+import PetShopsAreaPage from './Pages/PetShopsDirectoryPage';
+import PetShops from "./Pages/PetShops";
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -184,6 +185,8 @@ function AppContent() {
         <Route path="/pet-grooming/:cityName" element={<DocumentViewer />} />
         <Route path="/pet-boarding" element={<PetBoardingCityPage />} />
         <Route path="/pet-boarding/:cityName" element={<PetBoarding />} />
+        <Route path="/pet-shops" element={<PetShopsAreaPage />} />
+        <Route path="/pet-shops/:areaName" element={<PetShops />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />
       <a 
