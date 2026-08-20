@@ -86,6 +86,9 @@ router.get('/sitemap.xml', async (req, res) => {
     // 1. Core static structural pages
     const links = [
       { url: '/', changefreq: 'daily', priority: 1.0 },
+      { url: '/pet-grooming', changefreq: 'daily', priority: 0.9 },
+      { url: '/pet-boarding', changefreq: 'daily', priority: 0.9 },
+      { url: '/pet-shops', changefreq: 'daily', priority: 0.9 },
       { url: '/blog', changefreq: 'daily', priority: 0.8 },
       { url: '/contact-us', changefreq: 'monthly', priority: 0.4 },
     ];
