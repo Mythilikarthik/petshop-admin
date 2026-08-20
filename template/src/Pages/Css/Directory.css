@@ -188,3 +188,12 @@
   background: #f97316;
   color: #fff;
 }
+/* Add to your CSS / SCSS file */
+.icon-badge-hover {
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.icon-badge-hover:hover {
+  transform: scale(1.2); /* Zoom in by 20% */
+}

@@ -205,8 +205,14 @@ const menuItems = [
       { name: "Ad Listing", path: "/ad-listing", icon: <GiNestBirds  /> },
     ]
    },
+   { name: "Payment Management",  icon: <MdAttachMoney />, 
+    children : [
+      { name: "Payment Settings", path: "/payment-settings", icon: <MdCampaign /> },
+      { name: "Revenue Tracking", path: "/revenue-tracking", icon: <MdAttachMoney /> },
+    ]
+   },
 
-  { name: "Revenue Tracking", path: "/revenue-tracking", icon: <MdAttachMoney /> },
+  
   { name: "Logout", path: "/logout", icon: <MdLogout /> },
 ];
 

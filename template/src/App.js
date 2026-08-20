@@ -37,6 +37,8 @@ import PetBoarding from "./Pages/PetBoarding";
 import PetBoardingCityPage from './Pages/PetBoardingDirectoryPage';
 import PetShopsAreaPage from './Pages/PetShopsDirectoryPage';
 import PetShops from "./Pages/PetShops";
+import SavedListings from './Pages/SavedListings';
+import SavedOffers from './Pages/SavedOffers';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -187,6 +189,8 @@ function AppContent() {
         <Route path="/pet-boarding/:cityName" element={<PetBoarding />} />
         <Route path="/pet-shops" element={<PetShopsAreaPage />} />
         <Route path="/pet-shops/:areaName" element={<PetShops />} />
+        <Route path="/saved-listings" element={<SavedListings />} />
+        <Route path="/saved-offers" element={<SavedOffers />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />
       <a 

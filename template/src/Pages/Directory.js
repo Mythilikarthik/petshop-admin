@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Css/Directory.css';
-import { Row, Col, Card, Button, Container, Image, Badge, Modal, Carousel } from "react-bootstrap";
-import { BsClock, BsClockFill, BsClockHistory, BsCloudCheckFill, BsGeoAltFill, BsStarFill } from "react-icons/bs";
+import { Row, Col, Card, Button, Container, Image, Badge, Modal, Carousel, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { BsClock, BsClockFill, BsClockHistory, BsCloudCheckFill, BsGeoAltFill, BsStarFill, BsBookmarkFill, BsBookmark } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 // import dummyImage from '../dummy.jpg';
 import AdSlider from '../Components/AdSlider';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaCar, FaSnowflake, FaTruck, FaVideo, FaWheelchair, FaCouch, FaWifi, FaHourglassHalf } from 'react-icons/fa';
 import { TiTick } from "react-icons/ti";
 import { MdVerified } from "react-icons/md";
 import { GiLaurelsTrophy, GiTrophy } from "react-icons/gi";
@@ -55,6 +55,16 @@ const categoryDummyImages = {
   "pet relocation": petRelocationImg,
   "dog training" : dogTrainingImg,
 };
+const AMENITY_ICONS = {
+  "Parking": <FaCar />,
+  "Air Conditioning": <FaSnowflake />,
+  // "Home Pickup & Drop": <FaTruck />,
+  // "Online Consultations": <FaVideo />,
+  "Wheelchair Accessible": <FaWheelchair />,
+  "Pet Friendly": <FaCouch />,
+  "WiFi": <FaWifi />,
+  "Waiting Area" : <FaHourglassHalf />,
+};
 
 // const normalize = (str = "") =>
 //   str
@@ -73,6 +83,8 @@ const normalize = (str = "") =>
     .replace(/[^a-z0-9\/\s]/g, "") // ✅ allow "/" here
     .replace(/\s+/g, " ")
     .trim();
+
+    const stripSpaces = (str = "") => str.toLowerCase().replace(/[^a-z0-9]/g, "");
 const Directory = () => {
     const [loading, setLoading] = useState(true);
   const { user, authLoading  } = useAuth();
@@ -104,6 +116,7 @@ const routePet =
 
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(routeCategory || '');
+  const [selectedAmenity, setSelectedAmenity] = useState(''); // ✅ NEW: Amenity Filter State
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [topHomeAds, setTopHomeAds] = useState([]);
@@ -120,6 +133,9 @@ const [quickFilter, setQuickFilter] = useState(""); // topRated | verified
 const [sortBy, setSortBy] = useState("relevance");  // relevance | rating | popular | distance
 const [minRating, setMinRating] = useState(0);      // 0 | 3.5 | 4 | 4.5 | 5
 const [selectedService, setSelectedService] = useState("");
+const [savedListingIds, setSavedListingIds] = useState([]);
+  const [savingId, setSavingId] = useState(null);
+
 const petCategoriesList = async () => {
   try {
     const res = await fetch(`${API_BASE}/api/pet-category/show`);
@@ -134,6 +150,8 @@ const petCategoriesList = async () => {
 };
 
   // console.log("routeCity:",routeCity);
+
+  
 
 
   const [allListings, setAllListings] = useState([]);
@@ -239,6 +257,7 @@ const PAGE_SIZE = 21;
 
 const filteredListings = useMemo(() => {
   const searchLower = search.toLowerCase();
+  const searchStripped = stripSpaces(search); 
 
   let result = allListings.filter(l => {
     // const category = (l.categories?.[0]?.categoryName || "").toLowerCase();
@@ -249,6 +268,7 @@ const filteredListings = useMemo(() => {
 );
 const city = normalize(l.city?.city);
     const shop = (l.shopName || "").toLowerCase();
+    const address = (l.address || l.location || "").toLowerCase(); // Listing address/location
     const rating = Number(l.rating || 0);
 
     const petNames = (l.petCategories || []).map(p =>
@@ -299,12 +319,26 @@ const city = normalize(l.city?.city);
   (l.specializedServices || []).some(s =>
     normalize(s.serviceName).includes(normalize(selectedService))
   );
+  const amenityMatch =
+        !selectedAmenity ||
+        (l.amenities || []).some(a => a.toLowerCase() === selectedAmenity.toLowerCase());
 
+    // const searchMatch =
+    //   shop.includes(searchLower) ||
+    //   category.includes(searchLower) ||
+    //   city.includes(searchLower) ||
+    //   petNames.some(p => p.includes(searchLower));
     const searchMatch =
-      shop.includes(searchLower) ||
-      category.includes(searchLower) ||
-      city.includes(searchLower) ||
-      petNames.some(p => p.includes(searchLower));
+        !search ||
+        shop.includes(searchLower) ||
+        category.some(c => c.includes(searchLower)) ||
+        city.includes(searchLower) ||
+        address.includes(searchLower) ||
+        petNames.some(p => p.includes(searchLower)) ||
+        // Space-insensitive matching logic for addresses/locations (e.g. "anna naga" matches "annanagar")
+        stripSpaces(address).includes(searchStripped) ||
+        stripSpaces(shop).includes(searchStripped) ||
+        stripSpaces(city).includes(searchStripped);
 
     const ratingMatch = rating >= minRating;
 
@@ -320,7 +354,8 @@ const city = normalize(l.city?.city);
       searchMatch &&
       ratingMatch &&
       quickFilterMatch &&
-      serviceMatch
+      serviceMatch && 
+      amenityMatch
     );
   });
 
@@ -345,6 +380,7 @@ const city = normalize(l.city?.city);
   selectedCategory,
   selectedCity,
   selectedPets,
+  selectedAmenity,
   search,
   quickFilter,
   sortBy,
@@ -615,6 +651,118 @@ useEffect(() => {
     fetchBottomHomeAds();
     fetchMiddleHomeAds();
   }, [])
+
+  // New
+  useEffect(() => {
+    if (user && allListings.length > 0) {
+      const saved = allListings
+        .filter((listing) =>
+          listing.savedBy?.some(
+            (id) => id.toString() === user.id.toString() || id === user.id
+          )
+        )
+        .map((listing) => listing._id);
+      setSavedListingIds(saved);
+    } else {
+      setSavedListingIds([]);
+    }
+  }, [user, allListings]);
+
+  useEffect(() => {
+    if (user && allListings.length > 0) {
+      const saved = allListings
+        .filter((listing) =>
+          listing.savedBy?.some(
+            (id) => id.toString() === user.id.toString() || id === user.id
+          )
+        )
+        .map((listing) => listing._id);
+      setSavedListingIds(saved);
+    } else {
+      setSavedListingIds([]);
+    }
+  }, [user, allListings]);
+
+  // Handle Save / Bookmark listing directly from the directory grid
+  const handleSaveListing = async (e, listingId) => {
+    e.stopPropagation();
+
+    if (!user) {
+      setShowAuthGate(true);
+      return;
+    }
+
+    setSavingId(listingId);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/listing/${listingId}/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          userName: user.name,
+          userEmail: user.email,
+          action: "save_listing",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setSavedListingIds((prev) =>
+          data.isSaved
+            ? [...prev, listingId]
+            : prev.filter((id) => id !== listingId)
+        );
+      }
+    } catch (err) {
+      console.error("Error toggling saved state:", err);
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  // Business Open / Closed status evaluator
+  const getBusinessStatus = (businessHours) => {
+    if (!businessHours || !Array.isArray(businessHours) || businessHours.length === 0) {
+      return { status: "UNAVAILABLE", text: "N/A", colorClass: "text-muted", dotClass: "bg-secondary" };
+    }
+
+    const now = new Date();
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const currentDay = daysOfWeek[now.getDay()];
+
+    const todaySchedule = businessHours.find(
+      (b) => b.day?.toLowerCase() === currentDay.toLowerCase()
+    );
+
+    if (!todaySchedule || (!todaySchedule.closed && (!todaySchedule.open || !todaySchedule.close))) {
+      return { status: "UNAVAILABLE", text: "N/A", colorClass: "text-muted", dotClass: "bg-secondary" };
+    }
+
+    if (todaySchedule.closed) {
+      return { status: "CLOSED", text: "Closed", colorClass: "text-danger", dotClass: "bg-danger" };
+    }
+
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const currentTime = `${hours}:${minutes}`;
+
+    const { open, close } = todaySchedule;
+
+    let isOpen = false;
+    if (close < open) {
+      isOpen = currentTime >= open || currentTime < close;
+    } else {
+      isOpen = currentTime >= open && currentTime < close;
+    }
+
+    if (isOpen) {
+      return { status: "OPEN", text: "Open Now", colorClass: "text-success", dotClass: "bg-success" };
+    } else {
+      return { status: "CLOSED", text: "Closed", colorClass: "text-danger", dotClass: "bg-danger" };
+    }
+  };
 //   useEffect(() => {
 //   if (routeCity) setSelectedCity(routeCity);
 //   if (routeCategory) setSelectedCategory(routeCategory);
@@ -831,6 +979,7 @@ const showServiceFilter =
   setSelectedPets([]);
   setSelectedCategory("");
   setSelectedService("");
+  setSelectedAmenity(""); 
   setSelectedCity("");
   setQuickFilter("");
   setSortBy("relevance");
@@ -1088,16 +1237,7 @@ middleHomeAds.length > 0 &&
               value={search}
               onChange={handleSearchChange}
             />
-             {!routeCity && (
-              <select value={selectedCity} onChange={handleCityChange}>
-  <option value="">All Cities</option>
-  {filteredCities.map(c => (
-    <option value={c.city} key={c._id}>
-      {c.city}
-    </option>
-  ))}
-</select>
-            )}
+             
             {/* <select value={selectedPet} onChange={e => {
               setSelectedPet(e.target.value);
               setPage(1);
@@ -1164,7 +1304,7 @@ middleHomeAds.length > 0 &&
     </option>
   ))}
 </select>
-          {showServiceFilter && (
+{showServiceFilter && (
   <select
     value={selectedService}
     onChange={e => {
@@ -1181,6 +1321,32 @@ middleHomeAds.length > 0 &&
     ))}
   </select>
 )}
+{!routeCity && (
+              <select value={selectedCity} onChange={handleCityChange}>
+  <option value="">All Cities</option>
+  {filteredCities.map(c => (
+    <option value={c.city} key={c._id}>
+      {c.city}
+    </option>
+  ))}
+</select>
+            )}
+{/* ✅ NEW: Amenities Filter Dropdown */}
+                    <select
+                      value={selectedAmenity}
+                      onChange={e => {
+                        setSelectedAmenity(e.target.value);
+                        setPage(1);
+                      }}
+                    >
+                      <option value="">All Amenities</option>
+                      {Object.keys(AMENITY_ICONS).map(amenity => (
+                        <option key={amenity} value={amenity}>
+                          {amenity}
+                        </option>
+                      ))}
+                    </select>
+          
            
 
             {hasActiveFilters && (
@@ -1288,6 +1454,8 @@ middleHomeAds.length > 0 &&
   </div>
 ) : (
     paginatedListings.map(listing => {
+      const { text: statusText, colorClass: statusColor } = getBusinessStatus(listing.businessHours);
+      const isListingSaved = savedListingIds.includes(listing._id);
       const safeSlug = listing.slug && listing.slug !== "undefined"
         ? listing.slug
         : listing.shopName
@@ -1302,7 +1470,7 @@ middleHomeAds.length > 0 &&
         <Col key={listing._id} md={4} className="mb-4 d-flex">
   <Card className="provider-card w-100 h-100 d-flex flex-column">
 
-    <Card.Header className="card-top-rated p-0">
+    <Card.Header className="card-top-rated p-0 pos-rel">
       
       <Card.Img
         variant="top"
@@ -1318,29 +1486,66 @@ middleHomeAds.length > 0 &&
   }
         alt={listing.shopName}
       />
+{/* Save / Bookmark Button Indicator */}
+                  <Button
+                    variant="light"
+                    size="sm"
+                    className="position-absolute top-0 end-0 m-2 rounded-circle shadow-sm border-0 d-flex align-items-center justify-content-center"
+                    style={{ width: "36px", height: "36px", zIndex: 5 }}
+                    onClick={(e) => handleSaveListing(e, listing._id)}
+                    disabled={savingId === listing._id}
+                  >
+                    {isListingSaved ? (
+                      <BsBookmarkFill style={{ color: "#ff4e00" }} />
+                    ) : (
+                      <BsBookmark className="text-dark" />
+                    )}
+                  </Button>
+
+                  {/* Business Open / Closed Status Badge */}
+                  <Badge
+                    bg="light"
+                    className={`position-absolute bottom-0 start-0 m-2 border shadow-sm ${statusColor} font-monospace px-2 py-1`}
+                  >
+                    ● {statusText}
+                  </Badge>
+
     </Card.Header>
 
     <Card.Body className="pos-rel d-flex flex-column flex-grow-1">
-      <div className='status-updates mt-5 mb-2 d-flex gap-2'>
-        {listing.isVerified && (
-          <div className='verified-identification'>
-            <Badge pill bg="success" className='gap-1 d-flex'>
-              <MdVerified />
-              {/* Verified */}
-            </Badge>
-          </div>
-          
-        )}
-        {listing.rating >=4 && (
-          <div className='top-rated-identification'>
-            <Badge pill bg="success" className='gap-1 d-flex'>
-              <GiTrophy  />
-              {/* Top Rated */}
-            </Badge>
-          </div>
-        )}
-        
-      </div>
+      <div className='status-updates mt-5 mb-2 d-flex gap-2 align-items-center'>
+  {listing.isVerified && (
+    <div className='verified-identification'>
+      <OverlayTrigger
+        placement="top" 
+        overlay={<Tooltip id="verified-tooltip">Verified</Tooltip>}
+      >
+        <span 
+          tabIndex="0" 
+          className="d-inline-flex align-items-center text-primary icon-badge-hover"
+        >
+          <MdVerified size={24} />
+        </span>
+      </OverlayTrigger>
+    </div>
+  )}
+
+  {listing.rating >= 4 && (
+    <div className='top-rated-identification'>
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id="top-rated-tooltip">Top Rated</Tooltip>}
+      >
+        <span 
+          tabIndex="0" 
+          className="d-inline-flex align-items-center text-warning icon-badge-hover"
+        >
+          <GiTrophy size={22} />
+        </span>
+      </OverlayTrigger>
+    </div>
+  )}
+</div>
       {/* <Card.Title title={listing.shopName || ""}>{listing.shopName && listing.shopName.length >10 ? listing.shopName.slice(0,10) + "..." : listing.shopName}</Card.Title> */}
       <Card.Title
   title={listing.shopName}
@@ -1355,7 +1560,7 @@ middleHomeAds.length > 0 &&
 >
   {listing.shopName}
 </Card.Title>
-      <div className="service-tags mt-2">
+      {/* <div className="service-tags mt-2">
         
      {listing.petCategories?.length > 0 && (
         listing.petCategories.map((cat, index) => (
@@ -1365,7 +1570,40 @@ middleHomeAds.length > 0 &&
         ))
       )}
 
+      </div> */}
+      {/* Amenities */}
+      <div className='amenities-updates mt-2 mb-2 d-flex gap-2 align-items-center'>
+  {listing.amenities?.map((amenityName, index) => {
+    const icon = AMENITY_ICONS[amenityName];
+    if (!icon) return null; // Skip if no matching icon
+
+    return (
+      <div key={index} className='amenity-identification'>
+        <OverlayTrigger
+          placement="top"
+          overlay={
+            <Tooltip id={`amenity-tooltip-${index}`}>
+              {amenityName}
+            </Tooltip>
+          }
+        >
+          <span
+            tabIndex="0"
+            className="d-inline-flex align-items-center icon-badge-hover"
+            style={{ 
+              cursor: 'pointer', 
+              fontSize: '0.9rem',
+              color: '#ff4e00' // Custom orange brand color
+            }}
+          >
+            {icon}
+          </span>
+        </OverlayTrigger>
       </div>
+    );
+  })}
+</div>
+
       {/* CATEGORY */}
       <div className="service-tags mt-2">
 {listing.categories?.map((cat, index) => (

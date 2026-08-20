@@ -56,6 +56,7 @@ mongoose.connect(process.env.MONGO_URI, {
 .catch(err => console.error('MongoDB error:', err));
 const paymentRoutes = require("./Routes/paymentRoutes");
 const ListingEnquiry = require('./Routes/ListingEnquiry');
+const PaymentSettings = require('./Models/PaymentSettings');
 app.use("/api/", AdminRoutes);
 
 app.use("/api/user", UserRoutes);
@@ -83,6 +84,7 @@ app.use("/api/admin/notifications", AdminNotification);
 app.use("/api/specialized-service", SpecializedServiceRoutes);
 app.use("/api/upload/editor-images", UploadRoutes);
 app.use("/api/offers", OfferRoutes);
+app.use("/api/payment-settings", PaymentSettings);
 
 
 

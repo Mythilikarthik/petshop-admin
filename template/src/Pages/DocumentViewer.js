@@ -1,170 +1,9 @@
-// import React, { useState, useEffect } from 'react';
-// import * as XLSX from 'xlsx';
-// import excelFile from '../assets/content.xlsx';
-
-// export default function ExcelReader() {
-//   const [pages, setPages] = useState([]);
-//   const [currentPage, setCurrentPage] = useState(0);
-
-//   useEffect(() => {
-//     // Fetch the file directly from the public directory
-//     fetch(excelFile)
-//       .then((res) => res.arrayBuffer())
-//       .then((buffer) => {
-//         const workbook = XLSX.read(buffer, { type: 'buffer' });
-        
-//         // Option A: If each sheet in Excel is a page
-//         // Option B: If sheet 1 contains 50 rows (where each row is a page)
-//         const firstSheetName = workbook.SheetNames[0];
-//         const sheet = workbook.Sheets[firstSheetName];
-//         const rows = XLSX.utils.sheet_to_json(sheet);
-        
-//         setPages(rows);
-//       });
-//   }, []);
-
-//   if (pages.length === 0) return <div>Loading Excel file...</div>;
-
-//   return (
-//     <div style={{ maxWidth: '600px', margin: '20px auto', fontFamily: 'sans-serif' }}>
-//       {/* Page Content */}
-//       <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px' }}>
-//         <h2>{pages[currentPage].Title || `Page ${currentPage + 1}`}</h2>
-//         <p>{pages[currentPage].Content}</p>
-//       </div>
-
-//       {/* Navigation Controls */}
-//       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-//         <button 
-//           disabled={currentPage === 0} 
-//           onClick={() => setCurrentPage((p) => p - 1)}
-//         >
-//           Previous
-//         </button>
-
-//         <span>Page {currentPage + 1} of {pages.length}</span>
-
-//         <button 
-//           disabled={currentPage === pages.length - 1} 
-//           onClick={() => setCurrentPage((p) => p + 1)}
-//         >
-//           Next
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-// import React, { useState, useEffect } from 'react';
-// import { useParams, useNavigate } from 'react-router-dom';
-// import * as XLSX from 'xlsx';
-// import excelFile from '../assets/content.xlsx'; // Make sure your file path is correct
-
-// export default function ExcelReader() {
-//   const [pages, setPages] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   const { pageSlug } = useParams(); // Reads "page-1", "page-2", etc.
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     fetch(excelFile)
-//       .then((res) => res.arrayBuffer())
-//       .then((buffer) => {
-//         const workbook = XLSX.read(buffer, { type: 'buffer' });
-//         const firstSheetName = workbook.SheetNames[0];
-//         const sheet = workbook.Sheets[firstSheetName];
-        
-//         // Parse rows as raw arrays: [['Page 1'], ['Page 2'], ...]
-//         const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        
-//         // Flatten and clean row data
-//         const extractedPages = rawRows
-//           .flat()
-//           .filter(Boolean)
-//           .map((item) => String(item).trim());
-
-//         setPages(extractedPages);
-//         setLoading(false);
-//       })
-//       .catch((err) => {
-//         console.error('Error loading Excel file:', err);
-//         setLoading(false);
-//       });
-//   }, []);
-
-//   if (loading) return <div style={{ padding: '20px' }}>Loading Excel document...</div>;
-//   if (pages.length === 0) return <div style={{ padding: '20px' }}>No content found.</div>;
-
-//   // Helper to turn page names into URL slugs (e.g. "Page 1" -> "page-1")
-//   const createSlug = (text) => text.toLowerCase().replace(/\s+/g, '-');
-
-//   // Find index of current page matching the URL slug
-//   const currentIndex = pages.findIndex((page) => createSlug(page) === pageSlug?.toLowerCase());
-
-//   // Default to first page if URL doesn't match
-//   const activeIndex = currentIndex !== -1 ? currentIndex : 0;
-//   const currentPageContent = pages[activeIndex];
-
-//   // Navigate function for dropdown / buttons
-//   const handlePageChange = (targetIndex) => {
-//     const slug = createSlug(pages[targetIndex]);
-//     navigate(`/document-viewer/${slug}`);
-//   };
-
-//   return (
-//     <div style={{ maxWidth: '800px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
-      
-//       {/* Page Content Display */}
-//       <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '30px', minHeight: '300px' }}>
-//         <h1 style={{ marginTop: 0 }}>{currentPageContent}</h1>
-//         <p>This is the content for {currentPageContent}.</p>
-//       </div>
-
-//       {/* Navigation Controls */}
-//       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        
-//         {/* Previous Button */}
-//         <button
-//           disabled={activeIndex === 0}
-//           onClick={() => handlePageChange(activeIndex - 1)}
-//           style={{ padding: '8px 16px', cursor: activeIndex === 0 ? 'not-allowed' : 'pointer' }}
-//         >
-//           Previous
-//         </button>
-
-//         {/* Page Dropdown List */}
-//         <select
-//           value={createSlug(pages[activeIndex])}
-//           onChange={(e) => navigate(`/document-viewer/${e.target.value}`)}
-//           style={{ padding: '8px 12px', borderRadius: '4px' }}
-//         >
-//           {pages.map((pageTitle) => {
-//             const slug = createSlug(pageTitle);
-//             return (
-//               <option key={slug} value={slug}>
-//                 {pageTitle}
-//               </option>
-//             );
-//           })}
-//         </select>
-
-//         {/* Next Button */}
-//         <button
-//           disabled={activeIndex === pages.length - 1}
-//           onClick={() => handlePageChange(activeIndex + 1)}
-//           style={{ padding: '8px 16px', cursor: activeIndex === pages.length - 1 ? 'not-allowed' : 'pointer' }}
-//         >
-//           Next
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Badge, Spinner, Breadcrumb } from 'react-bootstrap';
 import excelFile from '../assets/content.xlsx';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetGroomingCityPage() {
   const [data, setData] = useState([]);
@@ -198,23 +37,23 @@ export default function PetGroomingCityPage() {
   );
 
   // Dynamic Meta Title & Meta Description Setup
-  useEffect(() => {
-    if (currentCityData) {
-      if (currentCityData.Meta_title) {
-        document.title = currentCityData.Meta_title;
-      }
+  // useEffect(() => {
+  //   if (currentCityData) {
+  //     if (currentCityData.Meta_title) {
+  //       document.title = currentCityData.Meta_title;
+  //     }
 
-      if (currentCityData.Meta_desc) {
-        let metaDescription = document.querySelector('meta[name="description"]');
-        if (!metaDescription) {
-          metaDescription = document.createElement('meta');
-          metaDescription.setAttribute('name', 'description');
-          document.head.appendChild(metaDescription);
-        }
-        metaDescription.setAttribute('content', currentCityData.Meta_desc);
-      }
-    }
-  }, [currentCityData]);
+  //     if (currentCityData.Meta_desc) {
+  //       let metaDescription = document.querySelector('meta[name="description"]');
+  //       if (!metaDescription) {
+  //         metaDescription = document.createElement('meta');
+  //         metaDescription.setAttribute('name', 'description');
+  //         document.head.appendChild(metaDescription);
+  //       }
+  //       metaDescription.setAttribute('content', currentCityData.Meta_desc);
+  //     }
+  //   }
+  // }, [currentCityData]);
 
   if (loading) {
     return (
@@ -298,6 +137,20 @@ const renderFormattedContent = (content) => {
 };
 
   return (
+    <>
+    <Helmet>
+      <title>
+        {currentCityData?.Meta_title ||
+          "Pet Shops Chennai"}
+      </title>
+      <meta
+        name="description"
+        content={
+          currentCityData?.Meta_desc ||
+          "Pet Shops Chennai"
+        }
+      />
+    </Helmet>
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       {/* Modern Custom Scoped Styles */}
       <style>{`
@@ -581,6 +434,7 @@ const renderFormattedContent = (content) => {
           )}
         </Row>
       </Container>
-    </div>
+    </div>    
+    </>
   );
 }

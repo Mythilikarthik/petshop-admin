@@ -1973,7 +1973,17 @@ router.get("/incviewsslug/:slugId", async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
-
+router.get('/user/:userId/saved-listings', async (req, res) => {
+  try {
+    const listings = await Listing.find({ savedBy: req.params.userId })
+    .populate("categories", "categoryName")
+      .populate("petCategories", "categoryName")
+      .populate("city", "city");
+    res.json({ success: true, listings });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error fetching saved listings" });
+  }
+});
 
 router.get("/incviewsslug/slug/:slug", async (req, res) => {
   try {

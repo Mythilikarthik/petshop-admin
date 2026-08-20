@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Badge, Spinner, Breadcrumb } from 'react-bootstrap';
 import excelFile from '../assets/pet-shop.xlsx';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetShops() {
   const [data, setData] = useState([]);
@@ -37,23 +38,23 @@ console.log(area);
   );
 
   // Dynamic Meta Title & Meta Description Setup
-  useEffect(() => {
-    if (currentAreaData) {
-      if (currentAreaData.Meta_title) {
-        document.title = currentAreaData.Meta_title;
-      }
+  // useEffect(() => {
+  //   if (currentAreaData) {
+  //     if (currentAreaData.Meta_title) {
+  //       document.title = currentAreaData.Meta_title;
+  //     }
 
-      if (currentAreaData.Meta_desc) {
-        let metaDescription = document.querySelector('meta[name="description"]');
-        if (!metaDescription) {
-          metaDescription = document.createElement('meta');
-          metaDescription.setAttribute('name', 'description');
-          document.head.appendChild(metaDescription);
-        }
-        metaDescription.setAttribute('content', currentAreaData.Meta_desc);
-      }
-    }
-  }, [currentAreaData]);
+  //     if (currentAreaData.Meta_desc) {
+  //       let metaDescription = document.querySelector('meta[name="description"]');
+  //       if (!metaDescription) {
+  //         metaDescription = document.createElement('meta');
+  //         metaDescription.setAttribute('name', 'description');
+  //         document.head.appendChild(metaDescription);
+  //       }
+  //       metaDescription.setAttribute('content', currentAreaData.Meta_desc);
+  //     }
+  //   }
+  // }, [currentAreaData]);
 
   if (loading) {
     return (
@@ -137,6 +138,21 @@ const renderFormattedContent = (content) => {
 };
 
   return (
+    <>
+    {/* {console.log(currentAreaData?.Meta_title)} */}
+    <Helmet>
+      <title>
+        {currentAreaData?.Meta_title ||
+          "Pet Shops Chennai"}
+      </title>
+      <meta
+        name="description"
+        content={
+          currentAreaData?.Meta_desc ||
+          "Pet Shops Chennai"
+        }
+      />
+    </Helmet>
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       {/* Modern Custom Scoped Styles */}
       <style>{`
@@ -439,5 +455,7 @@ const renderFormattedContent = (content) => {
         </Row>
       </Container>
     </div>
+    
+    </>
   );
 }

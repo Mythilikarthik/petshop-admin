@@ -65,6 +65,7 @@ import AddEditSpecializedService from './Pages/AddEditSpecializedService';
 import OfferListings from './Pages/OffersManagement';
 import OffersAnalytics from './Pages/OffersAnalytics';
 import AddEditOffers from './Pages/AddEditOffers';
+import PaymentSettings from './Pages/PaymentSettings';
 
 function App() {
   
@@ -153,6 +154,7 @@ function App() {
           <Route path='/offers-management' element={<OfferListings />} />
           <Route path='/add-edit-offers' element={<AddEditOffers />} />
           <Route path='/offers-analytics' element={<OffersAnalytics />} />
+          <Route path='/payment-settings' element={<PaymentSettings/>} />
           
 
         </Route>

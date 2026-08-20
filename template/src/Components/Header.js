@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Nav, Navbar, Modal, NavDropdown  } from "react-bootstrap";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import "./Css/Header.css";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../contexts/AuthContext";
@@ -8,6 +8,8 @@ import { FaUser } from "react-icons/fa";
 import { HeadProvider, Meta, Title } from "react-head";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import AuthGateModal from "../hooks/AuthGateModel";
+import { BsBookmarkDashFill } from "react-icons/bs";
+import { BiSolidHeart } from "react-icons/bi";
 
 
 const LOGIM_URI =
@@ -559,6 +561,18 @@ const getPageTitle = () => {
     id="user-dropdown"
     className="user-dropdown d-flex align-items-center"
   >
+    {/* Saved Listings Route Option */}
+    <NavDropdown.Item as={Link} to="/saved-listings">
+      <BsBookmarkDashFill className="me-2 text-warning" />
+      Saved Listings
+    </NavDropdown.Item>
+    {/* Saved Listings Route Option */}
+    <NavDropdown.Item as={Link} to="/saved-offers">
+      <BiSolidHeart className="me-2 text-warning" />
+      Saved Offers
+    </NavDropdown.Item>
+
+    <NavDropdown.Divider />
     {user.hasPassword ? (
       <NavDropdown.Item onClick={openChangePassword}>
         Change Password

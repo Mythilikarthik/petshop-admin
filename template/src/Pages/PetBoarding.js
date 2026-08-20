@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Badge, Spinner, Breadcrumb } from 'react-bootstrap';
 import excelFile from '../assets/pet-boarding.xlsx';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetGroomingCityPage() {
   const [data, setData] = useState([]);
@@ -136,6 +137,21 @@ const renderFormattedContent = (content) => {
 };
 
   return (
+    <>
+    <Helmet>
+      <title>
+        {currentCityData?.Meta_title ||
+          "Pet Shops Chennai"}
+      </title>
+      <meta
+        name="description"
+        content={
+          currentCityData?.Meta_desc ||
+          "Pet Shops Chennai"
+        }
+      />
+    </Helmet>
+    
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       {/* Modern Custom Scoped Styles */}
       <style>{`
@@ -430,5 +446,6 @@ const renderFormattedContent = (content) => {
         </Row>
       </Container>
     </div>
+    </>
   );
 }
