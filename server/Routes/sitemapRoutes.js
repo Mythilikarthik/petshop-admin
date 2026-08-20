@@ -71,6 +71,8 @@ const express = require('express');
 const router = express.Router();
 const { SitemapStream, streamToPromise } = require('sitemap');
 const { Readable } = require('stream');
+const path = require('path');
+const XLSX = require('xlsx'); // 💡 Import xlsx
 
 // --- Import your existing Mongoose Models here ---
 const Blog = require('../Models/Blog'); 
@@ -78,6 +80,7 @@ const Listing = require('../Models/Listing');
 const City = require('../Models/City');
 const Category = require('../Models/Category');
 const CustomPage = require('../Models/CustomPage');
+
 
 router.get('/sitemap.xml', async (req, res) => {
   try {
@@ -92,6 +95,72 @@ router.get('/sitemap.xml', async (req, res) => {
       { url: '/blog', changefreq: 'daily', priority: 0.8 },
       { url: '/contact-us', changefreq: 'monthly', priority: 0.4 },
     ];
+    // Helper slugify function matching your frontend logic
+    const createSlug = (text) => (text ? String(text).toLowerCase().trim().replace(/\s+/g, '-') : '');
+
+    // 2. Read the Excel file dynamically to get all area subpages
+    try {
+      // Adjust the relative path to point to your actual Excel file location on the server
+      const excelPath = path.join(__dirname, '../assets/pet-shop.xlsx'); 
+      console.log("Path", excelPath);
+      const workbook = XLSX.readFile(excelPath);
+      const firstSheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[firstSheetName];
+      const parsedRows = XLSX.utils.sheet_to_json(sheet);
+
+      // Loop through each row and create the subpage URL pattern
+      parsedRows.forEach(row => {
+        if (row && row.Areas) {
+          const areaSlug = createSlug(row.Areas);
+          // This matches your frontend route: /pet-shop/:areaName
+          links.push({
+            url: `/pet-shop/${areaSlug}-chennai`, 
+            changefreq: 'weekly',
+            priority: 0.7
+          });
+        }
+      });
+    } catch (excelError) {
+      console.error('Error reading Excel file for sitemap:', excelError);
+    }
+    try {
+      const petBoardingExcelPath = path.join(__dirname, '../assets/pet-boarding.xlsx'); 
+      const workbook = XLSX.readFile(petBoardingExcelPath);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const parsedRows = XLSX.utils.sheet_to_json(sheet);
+
+      parsedRows.forEach(row => {
+        if (row && row.City) {
+          const citySlug = createSlug(row.City);
+          links.push({
+            url: `/pet-boarding/${citySlug}`, 
+            changefreq: 'weekly',
+            priority: 0.7
+          });
+        }
+      });
+    } catch (err) {
+      console.error('Error reading pet-boarding.xlsx for sitemap:', err);
+    }
+    try {
+      const petGroomingExcelPath = path.join(__dirname, '../assets/content.xlsx'); 
+      const workbook = XLSX.readFile(petGroomingExcelPath);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const parsedRows = XLSX.utils.sheet_to_json(sheet);
+
+      parsedRows.forEach(row => {
+        if (row && row.City) {
+          const citySlug = createSlug(row.City);
+          links.push({
+            url: `/pet-grooming/${citySlug}`, 
+            changefreq: 'weekly',
+            priority: 0.7
+          });
+        }
+      });
+    } catch (err) {
+      console.error('Error reading pet-boarding.xlsx for sitemap:', err);
+    }
 
     // 2. Fetch Dynamic Data concurrently
     const [blogs, listings, cities, categories, customPages] = await Promise.all([
