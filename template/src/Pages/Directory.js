@@ -6,7 +6,15 @@ import { BsClock, BsClockFill, BsClockHistory, BsCloudCheckFill, BsGeoAltFill, B
 import { useNavigate } from 'react-router-dom';
 // import dummyImage from '../dummy.jpg';
 import AdSlider from '../Components/AdSlider';
-import { FaStar, FaCar, FaSnowflake, FaTruck, FaVideo, FaWheelchair, FaCouch, FaWifi, FaHourglassHalf } from 'react-icons/fa';
+import { FaStar, FaCar, FaSnowflake, FaTruck, FaVideo, FaWheelchair, FaCouch, FaWifi, FaHourglassHalf,
+  FaAmbulance, FaCalendarAlt, 
+  FaVideoSlash, FaShoppingBag, FaLaptop, FaHospital, FaLightbulb, 
+  FaUsers, FaTree, FaBed, FaSwimmingPool, FaHandsHelping, FaTrash, 
+  FaUtensils, FaLeaf, FaWater, FaDonate, FaMoon, FaFirstAid, 
+  FaNotesMedical, FaPills, FaHandHoldingMedical, FaRunning, FaBabyCarriage, 
+  FaBookOpen, FaBuilding, FaVial, FaPhone, FaTools, FaHeart,
+  FaYoutube,FaHandSparkles ,FaShieldAlt,FaMapMarkerAlt,
+ } from 'react-icons/fa';
 import { TiTick } from "react-icons/ti";
 import { MdVerified } from "react-icons/md";
 import { GiLaurelsTrophy, GiTrophy } from "react-icons/gi";
@@ -56,14 +64,77 @@ const categoryDummyImages = {
   "dog training" : dogTrainingImg,
 };
 const AMENITY_ICONS = {
+  // Existing & Mapped Icons
   "Parking": <FaCar />,
+  "Parking Available": <FaCar />,
   "Air Conditioning": <FaSnowflake />,
-  // "Home Pickup & Drop": <FaTruck />,
-  // "Online Consultations": <FaVideo />,
+  "Air-Conditioned Facility": <FaSnowflake />,
+  "Air-Conditioned Rooms": <FaSnowflake />,
+  "Air-Conditioned Vehicle": <FaSnowflake />,
+  "Pickup & Drop Available": <FaTruck />,
+  "Home Pickup & Drop": <FaTruck />,
+  "Home Delivery": <FaTruck />,
+  "Same-Day Delivery": <FaTruck />,
+  "Online Consultations": <FaVideo />,
+  "Online Consultation Available": <FaVideo />,
   "Wheelchair Accessible": <FaWheelchair />,
   "Pet Friendly": <FaCouch />,
+  "Pets Allowed Indoors": <FaCouch />,
+  "Pets Allowed Outdoors": <FaTree />,
   "WiFi": <FaWifi />,
-  "Waiting Area" : <FaHourglassHalf />,
+  "Wifi accessible": <FaWifi />,
+  "Waiting Area": <FaHourglassHalf />,
+
+  // New Amenities Icon Mapping
+  "24x7 Emergency Care": <FaAmbulance />,
+  "24x7 Staff Supervision": <FaShieldAlt />,
+  "24x7 Transit Support": <FaMapMarkerAlt />,
+  "Ambulance Available": <FaAmbulance />,
+  "Appointment Required": <FaCalendarAlt />,
+  "CCTV Monitoring": <FaShieldAlt />,
+  "Donation Facility": <FaDonate />,
+  "Drinking Water for Pets": <FaWater />,
+  "Emergency Vet Contact Support": <FaPhone />,
+  "Flexible Scheduling": <FaCalendarAlt />,
+  "Food & Water Bowls Provided": <FaUtensils />,
+  "Foster Network": <FaHandsHelping />,
+  "GPS Tracking": <FaMapMarkerAlt />,
+  "Group Classes": <FaUsers />,
+  "Home Training Available": <FaRunning />,
+  "Home Visit Available": <FaCar />,
+  "Hydrotherapy Equipment": <FaWater />,
+  "Hygienic Sanitized Equipment": <FaTools />,
+  "Hypoallergenic Products": <FaLeaf />,
+  "ICU Facility": <FaHospital />,
+  "In-house Laboratory": <FaVial />,
+  "In-house Pharmacy": <FaPills />,
+  "Indoor Play Area": <FaCouch />,
+  "Indoor Training Area": <FaRunning />,
+  "Leash-Friendly Seating": <FaCouch />,
+  "Lighting for Evening Visits": <FaLightbulb />,
+  "One-on-One Sessions": <FaUsers />,
+  "Online Ordering": <FaShoppingBag />,
+  "Online Training Available": <FaLaptop />,
+  "Operation Theatre": <FaHospital />,
+  "Organic / Natural Products": <FaLeaf />,
+  "Outdoor Garden Seating": <FaTree />,
+  "Outdoor Play Area": <FaTree />,
+  "Outdoor Training Area": <FaTree />,
+  "Overnight Stay Available": <FaMoon />,
+  "Pet Beds Provided": <FaBed />,
+  "Pet Play Area": <FaCouch />,
+  "Pet Play Area (Indoor)": <FaCouch />,
+  "Pet Play Area (Outdoor)": <FaTree />,
+  "Premium Grooming Products": <FaHandSparkles  />, // Or FaStar if sparkles isn't imported
+  "Private Spa Rooms": <FaBuilding />,
+  "Rescue Shelter": <FaHeart />,
+  "Shaded Seating": <FaTree />,
+  "Swimming Pool": <FaSwimmingPool />,
+  "Therapy Room": <FaNotesMedical />,
+  "Travel Insurance Assistance": <FaShieldAlt />,
+  "Treats Available": <FaUtensils />,
+  "Volunteer Registration": <FaHandsHelping />,
+  "Waste Disposal Bins": <FaTrash />
 };
 
 // const normalize = (str = "") =>
@@ -1573,7 +1644,7 @@ middleHomeAds.length > 0 &&
       </div> */}
       {/* Amenities */}
       <div className='amenities-updates mt-2 mb-2 d-flex gap-2 align-items-center'>
-  {listing.amenities?.map((amenityName, index) => {
+  {listing.amenities?.slice(0, 10).map((amenityName, index) => {
     const icon = AMENITY_ICONS[amenityName];
     if (!icon) return null; // Skip if no matching icon
 
