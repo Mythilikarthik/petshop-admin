@@ -140,7 +140,7 @@ router.get('/sitemap.xml', async (req, res) => {
           const areaSlug = createSlug(row.Areas);
           // This matches your frontend route: /pet-shop/:areaName
           links.push({
-            url: `/pet-shop/${areaSlug}`, 
+            url: `/pet-shops-south-india/${areaSlug}`, 
             changefreq: 'weekly',
             priority: 0.7
           });
