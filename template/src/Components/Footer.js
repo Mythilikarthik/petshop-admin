@@ -21,6 +21,9 @@ const Footer = ({home, categoryPage}) => {
     }, {
         categoryName: "Pet Shops",
         categorySlug: "pet-shops"
+    }, {
+        categoryName: "Pet Shops South India",
+        categorySlug: "pet-shops-south-india"
     }]
   return (
     <div className='footer'>

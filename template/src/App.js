@@ -37,6 +37,8 @@ import PetBoarding from "./Pages/PetBoarding";
 import PetBoardingCityPage from './Pages/PetBoardingDirectoryPage';
 import PetShopsAreaPage from './Pages/PetShopsDirectoryPage';
 import PetShops from "./Pages/PetShops";
+import PetShopsSouthIndiaDirectory from './Pages/PetShopsSouthIndiaDirectoryPage';
+import PetShopsSouthIndia from "./Pages/PetShopsSouthIndia";
 import SavedListings from './Pages/SavedListings';
 import SavedOffers from './Pages/SavedOffers';
 
@@ -189,6 +191,8 @@ function AppContent() {
         <Route path="/pet-boarding/:cityName" element={<PetBoarding />} />
         <Route path="/pet-shops" element={<PetShopsAreaPage />} />
         <Route path="/pet-shops/:areaName" element={<PetShops />} />
+        <Route path="/pet-shops-south-india" element={<PetShopsSouthIndiaDirectory />} />
+        <Route path="/pet-shops-south-india/:areaName" element={<PetShopsSouthIndia />} />
         <Route path="/saved-listings" element={<SavedListings />} />
         <Route path="/saved-offers" element={<SavedOffers />} />
       </Routes>        
