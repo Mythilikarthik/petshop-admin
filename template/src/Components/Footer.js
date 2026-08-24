@@ -19,7 +19,7 @@ const Footer = ({home, categoryPage}) => {
         categoryName: "Pet Boarding",
         categorySlug: "pet-boarding"
     }, {
-        categoryName: "Pet Shops",
+        categoryName: "Pet Shops Chennai",
         categorySlug: "pet-shops"
     }, {
         categoryName: "Pet Shops South India",
