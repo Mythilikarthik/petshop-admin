@@ -41,6 +41,8 @@ import PetShopsSouthIndiaDirectory from './Pages/PetShopsSouthIndiaDirectoryPage
 import PetShopsSouthIndia from "./Pages/PetShopsSouthIndia";
 import SavedListings from './Pages/SavedListings';
 import SavedOffers from './Pages/SavedOffers';
+import PetGrroomingSouthIndia from './Pages/PetGrroomingSouthIndia';
+import PetGrroomingSouthIndiaDirectory from './Pages/PetGrroomingSouthIndiaDirectoryPage';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -195,6 +197,8 @@ function AppContent() {
         <Route path="/pet-shops-south-india/:areaName" element={<PetShopsSouthIndia />} />
         <Route path="/saved-listings" element={<SavedListings />} />
         <Route path="/saved-offers" element={<SavedOffers />} />
+        <Route path="/pet-grooming-south-india" element={<PetGrroomingSouthIndiaDirectory />} />
+        <Route path="/pet-grooming-south-india/:cityName" element={<PetGrroomingSouthIndia />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />
       <a 

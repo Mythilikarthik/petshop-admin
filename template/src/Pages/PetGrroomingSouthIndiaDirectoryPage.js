@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
-import excelFile from '../assets/pet-shops-south-india.xlsx';
+import excelFile from '../assets/pet-grooming-south-india.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
 
-export default function PetShopsDirectoryPage() {
+export default function PetGroomingDirectoryPage() {
   const [cities, setCities] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -21,10 +21,10 @@ export default function PetShopsDirectoryPage() {
 
         // Filter valid city rows and extract unique cities
         const cityList = parsedRows
-          .filter((row) => row.Areas)
+          .filter((row) => row.City)
           .map((row) => ({
-            name: row.Areas,
-            slug: String(row.Areas).toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-'),
+            name: row.City,
+            slug: String(row.City).toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-'),
             intro: row.Intro || 'Professional pet boarding services and pricing details.',
           }));
 
@@ -50,6 +50,13 @@ export default function PetShopsDirectoryPage() {
       </Container>
     );
   }
+  // 1. Helper function to extract text from the first <p> tag
+const getParagraphText = (htmlString) => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, 'text/html');
+  const pTag = doc.querySelector('p');
+  return pTag ? pTag.textContent : '';
+};
 
   return (
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
@@ -85,9 +92,9 @@ export default function PetShopsDirectoryPage() {
               className="badge px-3 py-2 text-uppercase mb-3 rounded-pill fw-bold"
               style={{ backgroundColor: '#fff5f0', color: '#ff4e00', border: '1px solid #ffe8df' }}
             >
-              Pet Shop Directory
+              Pet Grooming Directory
             </span>
-            <h1 className="fw-bold text-dark mb-3">Find Pet Shop Near You</h1>
+            <h1 className="fw-bold text-dark mb-3">Find Pet Grooming Near You</h1>
             {/* <p className="text-muted mb-4">
               Select your city to explore top-rated local groomers, service packages, and estimated pricing.
             </p> */}
@@ -110,7 +117,7 @@ export default function PetShopsDirectoryPage() {
           {filteredCities.length > 0 ? (
             filteredCities.map((city) => (
               <Col key={city.slug} sm={6} md={4} lg={3}>
-                <Link to={`/pet-shops-south-india/${city.slug}`} className="text-decoration-none">
+                <Link to={`/pet-grooming-south-india/${city.slug}`} className="text-decoration-none">
                   <Card className="city-card h-100 p-3">
                     <Card.Body className="d-flex flex-column justify-content-between p-2">
                       <div>
@@ -120,13 +127,24 @@ export default function PetShopsDirectoryPage() {
                             <HiOutlineArrowLongRight />
                           </span>
                         </div>
-                        <p className="text-muted small mb-0 line-clamp-2" style={{
+                        {/* <p className="text-muted small mb-0 line-clamp-2" style={{
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden'
                         }}>
                           {city.intro}
+                        </p> */}
+                        <p 
+                        className="text-muted small mb-0 line-clamp-2" 
+                        style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                        }}
+                        >
+                        {getParagraphText(city.intro)}
                         </p>
                       </div>
                     </Card.Body>
