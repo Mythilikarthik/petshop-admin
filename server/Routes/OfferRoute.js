@@ -510,6 +510,18 @@ router.get('/admin/offers/:id/analytics', async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+// GET a single offer by ID (Required for reliable editing)
+router.get('/:id', async (req, res) => {
+  try {
+    const offer = await Offer.findById(req.params.id);
+    if (!offer) {
+      return res.status(404).json({ success: false, message: 'Offer not found' });
+    }
+    res.status(200).json({ success: true, offer });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 
 // 3. ❤️ TRACK SAVE: Handles authenticated save/unsave toggles reliably
 router.put('/:id/track-save', verifyToken, async (req, res) => {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaPaw } from "react-icons/fa";
+import { FaPaw, FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
+import { Spinner, Alert } from "react-bootstrap";
 import "./GoPremium.css";
 
 const API_BASE =
@@ -8,77 +9,122 @@ const API_BASE =
     : "http://localhost:5000";
 
 const GoPremium = () => {
-  const [billingCycle, setBillingCycle] = useState("monthly");
-
-  // Aligned currency values to represent standard INR amounts matching backend
-  const pricing = {
-    monthly: { price: 999, description: "Billed every month" },
-    yearly: { price: 9999, description: "Save 20% when billed yearly" },
-    lifelong: { price: 99999, description: "Save 40% when billed Lifelong" },
-  };
+  const [settings, setSettings] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState({ show: false, type: "", message: "" });
 
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
+
+    fetchData();
   }, []);
 
-  const handlePayment = async () => {
-    const token = localStorage.getItem("token");
-    const plan = billingCycle;
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-    // 1. Fetch Key Configuration dynamically from Backend
-    const configRes = await fetch(`${API_BASE}/api/payments/config`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const configData = await configRes.json();
-    
-    // 2. Create Order
-    const res = await fetch(`${API_BASE}/api/payments/create-order`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ plan }),
-    });
+      // 1. Fetch Payment Settings
+      const settingsRes = await fetch(`${API_BASE}/api/payments`);
+      const settingsData = await settingsRes.json();
+      if (settingsData.success && settingsData.settings) {
+        setSettings(settingsData.settings);
+      }
 
-    const data = await res.json();
-    if (!data.success) return alert("Order creation failed");
-
-    const { order } = data;
-
-    const options = {
-      key: configData.keyId, // ✅ Injected dynamically (Accepts either live or test keys)
-      amount: order.amount,
-      currency: order.currency,
-      name: "PetShop Premium",
-      description: `Premium Plan - ${plan}`,
-      order_id: order.id,
-      handler: async (response) => {
-        const verifyRes = await fetch(`${API_BASE}/api/payments/verify`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            ...response,
-            plan,
-            amount: order.amount / 100,
-          }),
+      // 2. Fetch User Profile to check existing subscription status
+      if (token) {
+        const userRes = await fetch(`${API_BASE}/api/users/profile`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-
-        const verifyData = await verifyRes.json();
-        if (verifyData.success) {
-          alert("Payment Successful! 🎉");
-        } else {
-          alert("Payment verification failed.");
+        const userData = await userRes.json();
+        if (userData.success || userData._id) {
+          setUserProfile(userData.user || userData);
         }
-      },
-      theme: { color: "#4CAF50" },
-    };
+      }
+    } catch (err) {
+      console.error("Error loading data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+  const showAlert = (type, message) => {
+    setAlert({ show: true, type, message });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      setAlert({ show: false, type: "", message: "" });
+    }, 6000);
+  };
+
+  const handlePayment = async (planKey) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      showAlert("danger", "Please login first to purchase a plan.");
+      return;
+    }
+
+    try {
+      const configRes = await fetch(`${API_BASE}/api/payments/config`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const configData = await configRes.json();
+      
+      if (!configData.enabled) {
+        throw new Error("Payment gateway is currently disabled by admin.");
+      }
+
+      const res = await fetch(`${API_BASE}/api/payments/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ plan: planKey }),
+      });
+
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Order creation failed");
+
+      const { order, planDetails } = data;
+
+      const options = {
+        key: configData.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: "PetShop Platform",
+        description: `${planDetails.name}`,
+        order_id: order.id,
+        handler: async (response) => {
+          const verifyRes = await fetch(`${API_BASE}/api/payments/verify`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              ...response,
+              plan: planKey,
+              amount: planDetails.amount,
+            }),
+          });
+
+          const verifyData = await verifyRes.json();
+          if (verifyData.success) {
+            showAlert("success", "Payment Successful! Plan activated 🎉");
+            // Refresh user profile after successful subscription
+            fetchData();
+          } else {
+            showAlert("danger", verifyData.message || "Payment verification failed.");
+          }
+        },
+        theme: { color: "#4CAF50" },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      showAlert("danger", err.message || "Something went wrong during payment.");
+    }
   };
 
   const intlFormat = new Intl.NumberFormat("en-IN", {
@@ -88,47 +134,94 @@ const GoPremium = () => {
     maximumFractionDigits: 0,
   });
 
+  if (loading) {
+    return (
+      <div className="container py-5 text-center">
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-2 text-muted">Loading premium plans...</p>
+      </div>
+    );
+  }
+
+  const isGatewayEnabled = settings?.razorpay?.enabled ?? false;
+
+  // Check if user already has an active subscription
+  const hasActivePlan = 
+    userProfile?.isPremium && 
+    userProfile?.premiumEndDate && 
+    new Date() < new Date(userProfile.premiumEndDate);
+
+  const plansToDisplay = [
+    { key: "featuredCityPlan", data: settings?.featuredCityPlan },
+    { key: "premiumVerifiedPlan", data: settings?.premiumVerifiedPlan },
+  ].filter((p) => p.data && p.data.enabled);
+
   return (
     <div className="container py-5">
       <h1 className="text-center mb-4">Go Premium</h1>
 
-      {/* Toggle Billing Cycle */}
-      <div className="d-flex justify-content-center gap-3 mb-4">
-        {Object.keys(pricing).map((type) => (
-          <button
-            key={type}
-            className={`btn ${billingCycle === type ? "btn-primary" : "btn-outline-primary"} text-capitalize`}
-            onClick={() => setBillingCycle(type)}
-          >
-            {type}
-          </button>
-        ))}
-      </div>
+      {alert.show && (
+        <Alert variant={alert.type} className="text-center mb-4 fw-bold shadow-sm">
+          {alert.message}
+        </Alert>
+      )}
 
-      {/* Pricing Card */}
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card shadow-lg">
-            <div className="card-body text-center p-5">
-              <h3 className="card-title mb-3 text-capitalize">{billingCycle} Premium Plan</h3>
-              <h2 className="text-primary">{intlFormat.format(pricing[billingCycle].price)}</h2>
-              <p className="text-muted">{pricing[billingCycle].description}</p>
+      {hasActivePlan && (
+        <Alert variant="success" className="text-center mb-4 shadow-sm">
+          <FaCheckCircle className="me-2" /> You currently have an active subscription: <strong>{userProfile.premiumPlan}</strong> (Valid until {new Date(userProfile.premiumEndDate).toDateString()})
+        </Alert>
+      )}
 
-              <ul className="list-unstyled my-4 text-start">
-                <li><FaPaw /> Unlimited Directory Access</li>
-                <li><FaPaw /> Priority Support</li>
-                <li><FaPaw /> Advanced Platform Features</li>
-              </ul>
+      {!isGatewayEnabled && (
+        <Alert variant="warning" className="text-center mb-4">
+          <FaExclamationTriangle /> Online payments are currently offline. Please check back later.
+        </Alert>
+      )}
 
-              <div className="d-flex justify-content-center gap-2">
-                <button className="btn btn-primary lg w-100" onClick={handlePayment}>
-                  Pay with Razorpay
-                </button>
+      {plansToDisplay.length === 0 ? (
+        <div className="text-center py-5 text-muted">
+          <h4>No subscription plans are currently available.</h4>
+        </div>
+      ) : (
+        <div className="row justify-content-center g-4">
+          {plansToDisplay.map(({ key, data }) => (
+            <div key={key} className="col-md-5">
+              <div className="card shadow-lg h-100 border-0 rounded-4">
+                <div className="card-body text-center p-5 d-flex flex-column justify-content-between">
+                  <div>
+                    <h3 className="card-title mb-3 fw-bold">{data.name}</h3>
+                    <h2 className="text-primary mb-1">{intlFormat.format(data.amount)}</h2>
+                    <p className="text-muted text-capitalize mb-4">Billed {data.billingCycle}</p>
+
+                    <ul className="list-unstyled my-4 text-start">
+                      {data.features && data.features.length > 0 ? (
+                        data.features.map((feature, idx) => (
+                          <li key={idx} className="mb-2 d-flex align-items-center gap-2">
+                            <FaPaw className="text-success" /> {feature}
+                          </li>
+                        ))
+                      ) : (
+                        <>
+                          <li className="mb-2 d-flex align-items-center gap-2"><FaPaw className="text-success" /> Standard Features</li>
+                          <li className="mb-2 d-flex align-items-center gap-2"><FaPaw className="text-success" /> Priority Support</li>
+                        </>
+                      )}
+                    </ul>
+                  </div>
+
+                  <button
+                    className={`btn btn-lg w-100 mt-3 ${hasActivePlan ? "btn-secondary" : "btn-primary"}`}
+                    onClick={() => handlePayment(key)}
+                    disabled={!isGatewayEnabled || hasActivePlan}
+                  >
+                    {hasActivePlan ? "Already Subscribed" : isGatewayEnabled ? "Pay with Razorpay" : "Payments Disabled"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 };

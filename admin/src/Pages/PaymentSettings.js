@@ -98,7 +98,7 @@ const PaymentSettings = () => {
     setSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API_BASE}/api/payment-settings`, {
+      const res = await fetch(`${API_BASE}/api/payment-settings/get-settings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -361,7 +361,7 @@ const PaymentSettings = () => {
                     />
                   </Form.Group>
                 </Col>
-                <Col md={6} className="d-flex align-items-center">
+                {/* <Col md={6} className="d-flex align-items-center">
                   <Form.Check 
                     type="checkbox"
                     id="allow-multiple"
@@ -372,7 +372,7 @@ const PaymentSettings = () => {
                       purchaseSettings: { ...prev.purchaseSettings, allowMultipleSubscriptions: e.target.checked }
                     }))}
                   />
-                </Col>
+                </Col> */}
               </Row>
             </Card.Body>
           </Card>

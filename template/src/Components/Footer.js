@@ -27,6 +27,9 @@ const Footer = ({home, categoryPage}) => {
     }, {
         categoryName: "Pet Grooming South India",
         categorySlug: "pet-grooming-south-india"
+    }, {
+        categoryName: "Pet Boarding Chennai",
+        categorySlug: "pet-boarding-chennai"
     }]
   return (
     <div className='footer'>
@@ -116,7 +119,7 @@ const Footer = ({home, categoryPage}) => {
                         </Col>
                         <Col>
                             <h5 className="mb-3">Contact Us</h5>
-                            <p className="d-flex align-items-center gap-3 text-gray-400"> <HiOutlineLocationMarker size={20} className='text-orange flex-shrink-0' /> <span>{home.footerAddress} {home.footerLocation}</span></p>
+                            {/* <p className="d-flex align-items-center gap-3 text-gray-400"> <HiOutlineLocationMarker size={20} className='text-orange flex-shrink-0' /> <span>{home.footerAddress} {home.footerLocation}</span></p> */}
                             <p className="d-flex align-items-center gap-3 text-gray-400"> <HiOutlineMail  size={20} className='text-orange flex-shrink-0' /> <span>{home.footerEmail}</span></p>
                             <p className="d-flex align-items-center gap-3 text-gray-400"> <HiOutlinePhone size={20} className='text-orange flex-shrink-0' /> <span>{home.footerContact}</span></p>
                             <p className="d-flex align-items-center gap-3 text-gray-400"> <HiOutlineClock size={20} className='text-orange flex-shrink-0' /> <span>{home.footerWorkingHours}</span></p>

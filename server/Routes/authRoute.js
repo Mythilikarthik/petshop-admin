@@ -532,7 +532,7 @@ router.get("/user/profile/:id", async (req, res) => {
     });
   } catch (err) {
     console.error("Fetch profile error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: err.message || "Server error" });
   }
 });
 

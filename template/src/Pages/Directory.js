@@ -468,10 +468,29 @@ const city = normalize(l.city?.city);
     setSelectedCategory(e.target.value);
     setPage(1);
   };
-  const handleCityChange = e => {
-    setSelectedCity(e.target.value);
-    setPage(1);
+  // const handleCityChange = e => {
+  //   setSelectedCity(e.target.value);
+  //   setPage(1);
+  // };
+  const handleCityChange = (e) => {
+    const cityName = e.target.value;
+    
+    if (cityName === "") {
+      // Handle "All Cities" selection (e.g., go back to base directory)
+      navigate('/directory');
+    } else {
+      // Redirect to the slugified city route
+      const slug = slugify(cityName);
+      navigate(`/directory/${slug}`);
+    }
   };
+  const slugify = (text = "") =>
+  text
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9\s]/g, "") // remove (), / , etc
+    .trim()
+    .replace(/\s+/g, "-");
   const handleSearchChange = e => {
     setSearch(e.target.value);
     setPage(1);
@@ -1095,6 +1114,7 @@ const getFallbackImage = (listing) => {
 
   return categoryDummyImages[firstCategory] || defaultImg;
 };
+
   return (
     <>
     {/* <Helmet>
@@ -1392,7 +1412,7 @@ middleHomeAds.length > 0 &&
     ))}
   </select>
 )}
-{!routeCity && (
+{/* {!routeCity && (
               <select value={selectedCity} onChange={handleCityChange}>
   <option value="">All Cities</option>
   {filteredCities.map(c => (
@@ -1401,7 +1421,17 @@ middleHomeAds.length > 0 &&
     </option>
   ))}
 </select>
-            )}
+            )} */}
+            
+              <select value={selectedCity} onChange={handleCityChange}>
+      <option value="">All Cities</option>
+      {filteredCities.map(c => (
+        <option value={c.city} key={c._id}>
+          {c.city}
+        </option>
+      ))}
+    </select>
+            
 {/* ✅ NEW: Amenities Filter Dropdown */}
                     <select
                       value={selectedAmenity}

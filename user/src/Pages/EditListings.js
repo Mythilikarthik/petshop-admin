@@ -211,6 +211,43 @@ const EditListing = () => {
       console.error("Service fetch error", err);
     }
   };
+  const [planFeatures, setPlanFeatures] = useState({
+  imageLimit: 0,
+  keywordLimit: 0,
+  hasWhatsAppApi: false,
+});
+
+// Add a useEffect to fetch the user's plan features
+useEffect(() => {
+  console.log("useEffect triggered!"); // 1. Check if the effect even runs
+
+  const fetchUserPlan = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Token found:", !!token); // 2. Check if token exists
+      if (!token) return;
+
+      console.log("Fetching profile from:", `${API_BASE}/api/auth/user/profile`);
+      
+      const res = await fetch(`${API_BASE}/api/auth/user/profile/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      console.log("Response received:", res.status); // 3. Check if server replied
+      
+      const data = await res.json();
+      console.log("testing:", data);
+      
+      if (data.success && data.user?.planFeatures) {
+        setPlanFeatures(data.user.planFeatures);
+      }
+    } catch (err) {
+      console.error("Catch block error:", err); // 4. Check if it failed here
+    }
+  };
+
+  fetchUserPlan();
+}, []);
 
   useEffect(() => {
     if (formData.categories.length > 0) {
@@ -536,18 +573,47 @@ const handleSocialChange = (e) => {
     }));
   };
 
-  const handlePhotoChange = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData(prev => ({
-      ...prev,
-      photos: files,
-      photoAlts: files.reduce((acc, _, index) => {
-        acc[index] = "";
-        return acc;
-      }, {})
-    }));
-    setPreviewUrls(files.map(file => URL.createObjectURL(file)));
-  };
+  // const handlePhotoChange = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     photos: files,
+  //     photoAlts: files.reduce((acc, _, index) => {
+  //       acc[index] = "";
+  //       return acc;
+  //     }, {})
+  //   }));
+  //   setPreviewUrls(files.map(file => URL.createObjectURL(file)));
+  // };
+ const handlePhotoChange = (e) => {
+  const files = Array.from(e.target.files);
+  const totalImages = formData.existingPhotos.length + files.length;
+  
+  // Use a fallback limit (e.g., 5) if planFeatures hasn't loaded or is 0
+  const maxImages = (planFeatures.imageLimit !== undefined && planFeatures.imageLimit !== null) 
+    ? planFeatures.imageLimit 
+    : 5; 
+
+  console.log("Total Images:", totalImages);
+  console.log("Image Limit:", maxImages);
+
+  // Check against plan limit
+  if (totalImages > maxImages) {
+    alert(`Your current subscription plan allows a maximum of ${maxImages} images. Please remove some images or upgrade your plan.`);
+    e.target.value = ""; // Reset file input
+    return;
+  }
+
+  setFormData(prev => ({
+    ...prev,
+    photos: files,
+    photoAlts: files.reduce((acc, _, index) => {
+      acc[index] = "";
+      return acc;
+    }, {})
+  }));
+  setPreviewUrls(files.map(file => URL.createObjectURL(file)));
+};
 
   const handleBannerChange = (e) => {
     const file = e.target.files[0];
@@ -577,16 +643,34 @@ const handleSocialChange = (e) => {
     }
   };
 
+  // const handleAddKeyword = (e) => {
+  //   e.preventDefault();
+  //   if (newKeyword.trim() && !formData.metaKeyword.includes(newKeyword.trim())) {
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       metaKeyword: [...prev.metaKeyword, newKeyword.trim()]
+  //     }));
+  //     setNewKeyword("");
+  //   }
+  // };
+
   const handleAddKeyword = (e) => {
-    e.preventDefault();
-    if (newKeyword.trim() && !formData.metaKeyword.includes(newKeyword.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        metaKeyword: [...prev.metaKeyword, newKeyword.trim()]
-      }));
-      setNewKeyword("");
-    }
-  };
+  e.preventDefault();
+  
+  // Check against keyword limit
+  if (planFeatures.keywordLimit && formData.metaKeyword.length >= planFeatures.keywordLimit) {
+    alert(`Your current subscription plan allows a maximum of ${planFeatures.keywordLimit} meta keywords.`);
+    return;
+  }
+
+  if (newKeyword.trim() && !formData.metaKeyword.includes(newKeyword.trim())) {
+    setFormData(prev => ({
+      ...prev,
+      metaKeyword: [...prev.metaKeyword, newKeyword.trim()]
+    }));
+    setNewKeyword("");
+  }
+};
 
   const handleRemoveKeyword = (keyword) => {
     setFormData(prev => ({
@@ -819,7 +903,7 @@ const handleSocialChange = (e) => {
                   <Form.Control type="number" name="phone" value={formData.phone} onChange={handleChange} required />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+              {/* <Col md={6}>
                 <Form.Group>
                   <Form.Label>WhatsApp Number</Form.Label>
                   <Form.Control 
@@ -830,7 +914,22 @@ const handleSocialChange = (e) => {
                     onChange={handleChange} 
                   />
                 </Form.Group>
-              </Col>
+              </Col> */}
+              <Col md={6}>
+  <Form.Group>
+    <Form.Label>
+      WhatsApp Number {!planFeatures.hasWhatsAppApi && <span className="text-danger">(Locked: Premium Feature)</span>}
+    </Form.Label>
+    <Form.Control 
+      type="text" 
+      name="whatsapp" 
+      placeholder={planFeatures.hasWhatsAppApi ? "e.g. +1234567890" : "Upgrade to unlock WhatsApp API"}
+      value={formData.whatsapp} 
+      onChange={handleChange} 
+      disabled={!planFeatures.hasWhatsAppApi} 
+    />
+  </Form.Group>
+</Col>
             </Row>
 
             {/* Business Hours */}

@@ -91,6 +91,7 @@ router.get('/sitemap.xml', async (req, res) => {
       { url: '/', changefreq: 'daily', priority: 1.0 },
       { url: '/pet-grooming', changefreq: 'daily', priority: 0.9 },
       { url: '/pet-boarding', changefreq: 'daily', priority: 0.9 },
+      { url: '/pet-boarding-chennai', changefreq: 'daily', priority: 0.9 },
       { url: '/pet-shops', changefreq: 'daily', priority: 0.9 },
       { url: '/pet-shops-south-india', changefreq: 'daily', priority: 0.9 },
       { url: '/pet-grooming-south-india', changefreq: 'daily', priority: 0.9 },
@@ -193,6 +194,26 @@ router.get('/sitemap.xml', async (req, res) => {
       });
     } catch (err) {
       console.error('Error reading pet-boarding.xlsx for sitemap:', err);
+    }
+
+    try {
+      const petBoardingExcelPath = path.join(__dirname, '../assets/pet-boarding-chennai.xlsx'); 
+      const workbook = XLSX.readFile(petBoardingExcelPath);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const parsedRows = XLSX.utils.sheet_to_json(sheet);
+
+      parsedRows.forEach(row => {
+        if (row && row.City) {
+          const citySlug = createSlug(row.City);
+          links.push({
+            url: `/pet-boarding-chennai/${citySlug}`, 
+            changefreq: 'weekly',
+            priority: 0.7
+          });
+        }
+      });
+    } catch (err) {
+      console.error('Error reading pet-boarding-chennai.xlsx for sitemap:', err);
     }
     try {
       const petGroomingExcelPath = path.join(__dirname, '../assets/content.xlsx'); 

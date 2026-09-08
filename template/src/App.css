@@ -27,7 +27,7 @@ body {
 .scroll-to-top {
   position: fixed;
   bottom: 25px;
-  right: 25px;
+  right: 75px;
   background: #007bff;
   color: white;
   
@@ -78,10 +78,10 @@ body {
 /* Floating WhatsApp Button */
 .whatsapp-float {
   position: fixed;
-  width: 60px;
-  height: 60px;
-  bottom: 40px;
-  left: 40px; /* Kept on the left side to avoid overlapping your scroll-to-top button */
+  width: 40px;
+  height: 40px;
+  bottom: 25px;
+  right: 25px; /* Kept on the left side to avoid overlapping your scroll-to-top button */
   background-color: #25d366;
   color: #fff;
   border-radius: 50px;

@@ -11,6 +11,14 @@ const UserSchema = new mongoose.Schema({
   premiumStartDate: { type: Date, default: null },
   premiumEndDate: { type: Date, default: null },
   paymentId: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
+  planFeatures: {
+    imageLimit: { type: Number, default: 0 },
+    keywordLimit: { type: Number, default: 0 },
+    hasAnalytics: { type: Boolean, default: false },
+    hasWhatsAppApi: { type: Boolean, default: false },
+    serviceCoverage: { type: String, default: "" }, // e.g., "5 km radius"
+    badges: [{ type: String }] // e.g., ["Featured", "Verified", "Shield"]
+  },
   resetPasswordToken: String,
 resetPasswordExpires: Date,
 authProvider: {

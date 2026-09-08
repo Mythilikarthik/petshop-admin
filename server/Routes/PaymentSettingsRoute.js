@@ -54,7 +54,7 @@ const getRazorpayInstance = async () => {
 };
 
 // GET: Retrieve Payment Settings (For Admin UI and Public Pricing Cards)
-router.get("/settings", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const settings = await getSettings();
     res.json({ success: true, settings });
@@ -64,7 +64,7 @@ router.get("/settings", async (req, res) => {
 });
 
 // POST: Save/Update Payment Settings (Admin endpoint)
-router.post("/settings", verifyToken, async (req, res) => {
+router.post("/get-settings", verifyToken, async (req, res) => {
   try {
     let settings = await PaymentSettings.findOne();
     if (settings) {
@@ -124,53 +124,63 @@ router.post("/create-order", verifyToken, async (req, res) => {
 });
 
 // POST: Verify Payment Signature
+// ✅ Verify Payment & Activate Plan
 router.post("/verify", verifyToken, async (req, res) => {
   try {
-    const crypto = require("crypto");
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planKey, amount } = req.body;
+    // 1. Destructure razorpay_order_id from req.body
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan } = req.body;
     const userId = req.userId;
+    const settings = await getPaymentSettings();
 
-    const { keySecret } = await getRazorpayInstance();
-
+    // Verify signature using the DB-stored secret
     const expectedSignature = crypto
-      .createHmac("sha256", keySecret)
-      .update(razorpay_order_id + "|" + razorpay_payment_id)
+      .createHmac("sha256", settings.razorpay.keySecret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    if (expectedSignature === razorpay_signature) {
-      const settings = await getSettings();
-      const planInfo = settings[planKey] || {};
-
-      const payment = await Payment.create({
-        userId,
-        amount: amount || planInfo.amount,
-        plan: planInfo.name || planKey,
-        paymentMethod: "razorpay",
-        paymentStatus: "success",
-        transactionId: razorpay_payment_id
-      });
-
-      let endDate = new Date();
-      if (planInfo.billingCycle === "yearly") {
-        endDate.setFullYear(endDate.getFullYear() + 1);
-      } else {
-        endDate.setMonth(endDate.getMonth() + 1);
-      }
-
-      await User.findByIdAndUpdate(userId, {
-        isPremium: true,
-        premiumPlan: planInfo.name || planKey,
-        premiumStartDate: new Date(),
-        premiumEndDate: endDate,
-        paymentId: payment._id
-      });
-
-      res.json({ success: true, message: "Payment verified & plan activated." });
-    } else {
-      res.status(400).json({ success: false, message: "Invalid payment signature" });
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Invalid payment signature" });
     }
+
+    const planDetails = getPlanDetails(settings, plan);
+    if (!planDetails) {
+      return res.status(400).json({ success: false, message: "Invalid plan configuration." });
+    }
+
+    // 2. Record transaction including orderId
+    const payment = await Payment.create({
+      userId,
+      amount: planDetails.amount,
+      plan: planDetails.name,
+      paymentMethod: "razorpay",
+      paymentStatus: "success",
+      transactionId: razorpay_payment_id,
+      orderId: razorpay_order_id, // ✅ Saved here successfully
+    });
+
+    // Calculate plan duration dynamically based on billing cycle
+    const startDate = new Date();
+    let endDate = new Date(startDate);
+
+    if (planDetails.billingCycle === "yearly") {
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    } else {
+      endDate.setMonth(endDate.getMonth() + 1);
+    }
+
+    // Update User Profile
+    await User.findByIdAndUpdate(userId, {
+      isPremium: true,
+      premiumPlan: planDetails.name,
+      premiumStartDate: startDate,
+      premiumEndDate: endDate,
+      paymentId: payment._id,
+    });
+
+    return res.json({ success: true, message: "Payment verified & plan activated successfully." });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("❌ Razorpay Verification Error:", err);
+    return res.status(500).json({ success: false, message: "Payment verification failed", error: err.message });
   }
 });
 

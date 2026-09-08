@@ -5,18 +5,20 @@ const router = express.Router();
 const User = require("../Models/User");
 const Payment = require("../Models/Payment");
 const PaymentSettings = require("../Models/PaymentSettings");
+const Notification = require("../Models/Notification");
+const sendInvoiceMail = require("../Utils/sendInvoiceMail");
 const { verifyToken } = require("../middleware/authMiddleware");
+const Admin = require("../Models/Admin");
 
-// Helper to fetch current payment settings from DB
+// Helper to fetch current payment settings
 const getPaymentSettings = async () => {
-  const settings = await PaymentSettings.findOne();
+  let settings = await PaymentSettings.findOne();
   if (!settings || !settings.razorpay || !settings.razorpay.keyId || !settings.razorpay.keySecret) {
     throw new Error("Razorpay credentials are not configured in Payment Settings.");
   }
   return settings;
 };
 
-// Helper to initialize Razorpay instance dynamically from DB keys
 const getRazorpayInstance = (settings) => {
   return new Razorpay({
     key_id: settings.razorpay.keyId,
@@ -24,7 +26,29 @@ const getRazorpayInstance = (settings) => {
   });
 };
 
-// Serve active Key ID to frontend from DB settings
+const getPlanDetails = (settings, plan) => {
+  if (settings[plan] && typeof settings[plan] === "object" && settings[plan].amount !== undefined) {
+    return {
+      key: plan,
+      name: settings[plan].name || plan,
+      amount: Number(settings[plan].amount),
+      billingCycle: settings[plan].billingCycle || "monthly",
+      enabled: settings[plan].enabled ?? true
+    };
+  }
+  return null;
+};
+
+// GET: Settings
+router.get("/", async (req, res) => {
+  try {
+    const settings = await PaymentSettings.findOne();
+    res.json({ success: true, settings });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 router.get("/config", async (req, res) => {
   try {
     const settings = await getPaymentSettings();
@@ -34,59 +58,59 @@ router.get("/config", async (req, res) => {
   }
 });
 
-// ✅ Create Razorpay Order (Fetches key & pricing from DB)
+// Create Order
 router.post("/create-order", verifyToken, async (req, res) => {
   try {
-    const { plan } = req.body; // e.g., 'monthly', 'yearly', 'lifelong', or custom keys like 'featuredCityPlan'
+    const { plan } = req.body;
+    const userId = req.userId;
     const settings = await getPaymentSettings();
+    const planDetails = getPlanDetails(settings, plan);
 
     if (!settings.razorpay.enabled) {
       return res.status(400).json({ success: false, message: "Payment gateway is currently disabled." });
     }
-
-    // Retrieve amount dynamically from DB settings or fallback schema structure
-    let amount = 0;
-    if (settings[plan] && settings[plan].amount) {
-      amount = Number(settings[plan].amount);
-    } else if (plan === "monthly") {
-      amount = settings.featuredCityPlan?.amount || 999;
-    } else if (plan === "yearly") {
-      amount = settings.premiumVerifiedPlan?.amount || 9999;
-    } else if (plan === "lifelong") {
-      amount = 99999;
+    // ✅ Check if user already has an active, unexpired subscription
+    const user = await User.findById(userId);
+    if (user && user.isPremium && user.premiumEndDate && new Date() < new Date(user.premiumEndDate)) {
+      return res.status(400).json({
+        success: false,
+        message: `You already have an active subscription (${user.premiumPlan || "Premium"}) valid until ${new Date(user.premiumEndDate).toDateString()}.`
+      });
     }
+    if (!planDetails || !planDetails.enabled) {
+      return res.status(400).json({ success: false, message: "Selected plan is inactive or invalid." });
+    }
+    const maxLimit = settings.purchaseSettings?.maxPurchaseLimit || 5;
+    const userPurchaseCount = await Payment.countDocuments({ userId, paymentStatus: "success" });
 
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ success: false, message: "Invalid plan or pricing selected." });
+    if (userPurchaseCount >= maxLimit) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `We have reached the maximum purchase limit (${maxLimit} transactions) allowed per account.` 
+      });
     }
 
     const razorpay = getRazorpayInstance(settings);
-    const options = {
-      amount: amount * 100, // amount in paise
+    const order = await razorpay.orders.create({
+      amount: planDetails.amount * 100,
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
-    };
-
-    const order = await razorpay.orders.create(options);
-    return res.json({ success: true, order, amount });
-  } catch (err) {
-    console.error("❌ Razorpay Order Creation Error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Order creation failed",
-      error: err.message,
     });
+
+    return res.json({ success: true, order, planDetails });
+  } catch (err) {
+    console.error("❌ Order Creation Error:", err);
+    return res.status(500).json({ success: false, message: "Order creation failed", error: err.message });
   }
 });
 
-// ✅ Verify Payment & Activate Premium User (Validates HMAC using DB secret)
+// ✅ VERIFY & ACTIVATE PLAN + EMAILS + NOTIFICATIONS + FEATURES
 router.post("/verify", verifyToken, async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, serviceCoverage } = req.body;
     const userId = req.userId;
     const settings = await getPaymentSettings();
 
-    // Verify signature using the DB-stored secret
     const expectedSignature = crypto
       .createHmac("sha256", settings.razorpay.keySecret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -96,65 +120,122 @@ router.post("/verify", verifyToken, async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid payment signature" });
     }
 
-    // Determine amount dynamically from DB
-    let amount = 0;
-    if (settings[plan] && settings[plan].amount) {
-      amount = Number(settings[plan].amount);
-    } else if (plan === "monthly") {
-      amount = settings.featuredCityPlan?.amount || 999;
-    } else if (plan === "yearly") {
-      amount = settings.premiumVerifiedPlan?.amount || 9999;
-    } else if (plan === "lifelong") {
-      amount = 99999;
+    const planDetails = getPlanDetails(settings, plan);
+    if (!planDetails) {
+      return res.status(400).json({ success: false, message: "Invalid plan configuration." });
     }
 
-    // Record transaction
+    // 1. Record Transaction in DB
     const payment = await Payment.create({
       userId,
-      amount: amount || req.body.amount,
-      plan,
+      amount: planDetails.amount,
+      plan: planDetails.name,
       paymentMethod: "razorpay",
       paymentStatus: "success",
       transactionId: razorpay_payment_id,
+      orderId: razorpay_order_id,
     });
 
-    // Calculate plan duration
+    // 2. Compute expiration date
     const startDate = new Date();
     let endDate = new Date(startDate);
-
-    if (plan === "monthly" || settings[plan]?.billingCycle === "monthly") {
-      endDate.setMonth(endDate.getMonth() + 1);
-    } else if (plan === "yearly" || settings[plan]?.billingCycle === "yearly") {
+    if (planDetails.billingCycle === "yearly") {
       endDate.setFullYear(endDate.getFullYear() + 1);
-    } else if (plan === "lifelong") {
-      endDate.setFullYear(endDate.getFullYear() + 99);
+    } else {
+      endDate.setMonth(endDate.getMonth() + 1);
     }
 
-    // Update User Profile
-    await User.findByIdAndUpdate(userId, {
-      isPremium: true,
-      premiumPlan: plan,
-      premiumStartDate: startDate,
-      premiumEndDate: endDate,
-      paymentId: payment._id,
+    // 3. Define feature limits mapping based on plan type
+    let featureConfig = {};
+    if (plan === "featuredCityPlan") {
+      featureConfig = {
+        imageLimit: 5,
+        keywordLimit: 5,
+        hasAnalytics: false,
+        hasWhatsAppApi: false,
+        serviceCoverage: serviceCoverage || "Standard City",
+        badges: ["Featured", "Verified"]
+      };
+    } else if (plan === "premiumVerifiedPlan") {
+      featureConfig = {
+        imageLimit: 10,
+        keywordLimit: 10,
+        hasAnalytics: true,
+        hasWhatsAppApi: true, // Request a Quote via WhatsApp API
+        serviceCoverage: serviceCoverage || "Expanded Coverage",
+        badges: ["Verified", "Premium Shield"]
+      };
+    }
+
+    // 4. Update User Schema with active plan & custom feature rules
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        isPremium: true,
+        premiumPlan: planDetails.name,
+        premiumStartDate: startDate,
+        premiumEndDate: endDate,
+        paymentId: payment._id,
+        planFeatures: featureConfig,
+      },
+      { new: true }
+    );
+
+    // 5. Send Notification to Admin Panel
+    await Notification.create({
+      title: "New Subscription Payment 🎉",
+      message: `${updatedUser.name || "A user"} successfully subscribed to ${planDetails.name} for ₹${planDetails.amount}.`,
+      type: "payment"
     });
 
-    return res.json({ success: true, message: "Payment verified & premium activated." });
+    
+
+    // Send to User
+    if (updatedUser.email) {
+      await sendInvoiceMail(
+        updatedUser.email,
+        updatedUser.name,
+        planDetails,
+        razorpay_payment_id,
+        planDetails.amount,
+        endDate
+      );
+    }
+
+
+    const admin = await Admin.findOne({});
+    if (!admin || !admin.email) {
+      return res.status(404).json({ success: false, message: "Admin email not found" });
+    }
+    // Send copy to Admin Email (configured via env)
+    if (admin.email) {
+      await sendInvoiceMail(
+        admin.email,
+        updatedUser.name,
+        planDetails,
+        razorpay_payment_id,
+        planDetails.amount,
+        endDate
+      );
+    }
+
+    return res.json({ success: true, message: "Payment verified, features updated, and invoice sent!" });
   } catch (err) {
-    console.error("❌ Razorpay Verification Error:", err);
+    console.error("❌ Verification Error:", err);
     return res.status(500).json({ success: false, message: "Payment verification failed", error: err.message });
   }
 });
 
-// Admin Analytics Endpoints
-router.get("/all", async (req, res) => {
+// Admin Notifications Route (for your Admin Panel Dashboard bell/notifications dropdown)
+router.get("/notifications", async (req, res) => {
   try {
-    const payments = await Payment.find().populate("userId", "name email");
-    res.json({ success: true, payments });
+    const notifications = await Notification.find().sort({ createdAt: -1 }).limit(20);
+    res.json({ success: true, notifications });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 router.get("/totalrevenue", async (req, res) => {
   try {
@@ -222,5 +303,7 @@ router.get("/counts", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+
 
 module.exports = router;

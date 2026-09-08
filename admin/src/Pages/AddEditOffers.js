@@ -675,29 +675,59 @@ const AddEditOffers = () => {
     });
   };
 
-  const handleMediaUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // const handleMediaUpload = async (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
+  //   if (file.type.startsWith("video/")) {
+  //     const videoElement = document.createElement("video");
+  //     videoElement.preload = "metadata";
+  //     videoElement.src = URL.createObjectURL(file);
+
+  //     videoElement.onloadedmetadata = async () => {
+  //       window.URL.revokeObjectURL(videoElement.src);
+  //       if (videoElement.duration > 12.5) {
+  //         alert("Video run-length exceeds your strict 12-second limitation profile!");
+  //         e.target.value = ""; 
+  //         return;
+  //       }
+  //       await directMediaUploadFile(file);
+  //     };
+  //   } else {
+  //     await directMediaUploadFile(file);
+  //   }
+  // };
+
+  const handleMediaUpload = async (e) => {
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
+
+  for (const file of files) {
     if (file.type.startsWith("video/")) {
+      // Keep your video validation check
       const videoElement = document.createElement("video");
       videoElement.preload = "metadata";
       videoElement.src = URL.createObjectURL(file);
 
-      videoElement.onloadedmetadata = async () => {
-        window.URL.revokeObjectURL(videoElement.src);
-        if (videoElement.duration > 12.5) {
-          alert("Video run-length exceeds your strict 12-second limitation profile!");
-          e.target.value = ""; 
-          return;
-        }
-        await directMediaUploadFile(file);
-      };
+      await new Promise((resolve) => {
+        videoElement.onloadedmetadata = async () => {
+          window.URL.revokeObjectURL(videoElement.src);
+          if (videoElement.duration > 12.5) {
+            alert(`Video "${file.name}" exceeds the 12-second limitation profile!`);
+            resolve();
+            return;
+          }
+          await directMediaUploadFile(file);
+          resolve();
+        };
+      });
     } else {
       await directMediaUploadFile(file);
     }
-  };
-
+  }
+  // Clear file input so the same files can be chosen again if needed
+  e.target.value = "";
+};
   const directMediaUploadFile = async (file) => {
     setUploadingMedia(true);
     const uploadData = new FormData();
@@ -932,7 +962,13 @@ const AddEditOffers = () => {
           <Form.Group className="mb-4">
             <Form.Label className="fw-semibold">Media</Form.Label>
             <Form.Text className="text-muted d-block mb-2">Upload multiple images or a short marketing video clip <strong> <br /> (Maximum limit: 12 Seconds)</strong>.</Form.Text>
-            <Form.Control type="file" accept="image/*,video/*" onChange={handleMediaUpload} disabled={uploadingMedia} />
+            <Form.Control 
+              type="file" 
+              accept="image/*,video/*" 
+              multiple  // 🟢 Enables selecting multiple files at once
+              onChange={handleMediaUpload} 
+              disabled={uploadingMedia} 
+            />
             
             {uploadingMedia && (
               <div className="d-flex align-items-center gap-2 mt-2 text-info small">

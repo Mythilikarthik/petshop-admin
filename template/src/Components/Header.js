@@ -4,7 +4,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import "./Css/Header.css";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../contexts/AuthContext";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaWhatsapp } from "react-icons/fa";
 import { HeadProvider, Meta, Title } from "react-head";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import AuthGateModal from "../hooks/AuthGateModel";
@@ -412,7 +412,7 @@ const getPageTitle = () => {
                 Directory
               </NavLink>
 
-              {/* <NavLink
+              <NavLink
                 to="/offers"
                 className={({ isActive }) =>
                   isActive ? "nav-link active" : "nav-link"
@@ -420,7 +420,7 @@ const getPageTitle = () => {
                 onClick={() => setExpanded(false)}
               >
                 Offers
-              </NavLink> */}
+              </NavLink>
 
               <NavLink
                 to="/blog"
@@ -445,7 +445,18 @@ const getPageTitle = () => {
 
             {/* RIGHT BUTTONS */}
             <div className="d-flex justify-content-center justify-content-lg-end gap-3 mt-3 mt-lg-0">
-              
+              {/* 🟢 WhatsApp Quick Connect Button */}
+              <a
+  href={`https://wa.me/${home.footerContact?.replace(/\D/g, '')}?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20Vet%20and%20Pets!`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="btn d-flex align-items-center gap-2 text-white px-3 py-2 rounded-pill shadow-sm text-decoration-none"
+  style={{ backgroundColor: '#25D366', fontSize: '14px', fontWeight: 600 }}
+  title="Chat with us on WhatsApp"
+>
+  <FaWhatsapp size={18} />
+  <span className="d-none d-xl-inline">WhatsApp</span>
+</a>
               {/* <button
                 className="login-btn py-2 px-4 border-2 border-orange-500 text-orange-500 rounded-full hover:bg-orange-500 hover:text-white transition duration-300"
                 onClick={() => {
