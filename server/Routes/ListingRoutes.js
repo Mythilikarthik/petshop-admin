@@ -1610,7 +1610,8 @@ router.get("/directory/approved", async (req, res) => {
         $addFields: {
           rating: {
             $round: [{ $ifNull: [{ $avg: "$reviews.rating" }, 0] }, 1]
-          }
+          }, 
+          startingPrice: { $ifNull: ["$startingPrice", 0] } 
         }
       },
 

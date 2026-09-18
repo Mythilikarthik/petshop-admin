@@ -31,54 +31,99 @@ const SpecializedServiceSchema = new mongoose.Schema({
 
 
 // ✅ Normalize + build uniqueKey
+// SpecializedServiceSchema.pre("save", function (next) {
+//   // normalize service name
+//   this.serviceName = this.serviceName.toLowerCase().trim();
+
+//   // sort category
+//   const category = (this.category || [])
+//     .map(id => id.toString())
+//     .sort();
+
+//   // sort pets
+//   const pets = (this.petCategories || [])
+//     .map(id => id.toString())
+//     .sort();
+
+//   // assign back sorted arrays
+//   this.category = category;
+//   this.petCategories = pets;
+
+//   // build unique key
+//   this.uniqueKey = `${this.serviceName}__${category.join(",")}__${pets.join(",")}`;
+
+//   next();
+// });
+
+
+// // ✅ Handle update
+// SpecializedServiceSchema.pre("findOneAndUpdate", function (next) {
+//   const update = this.getUpdate();
+
+//   if (!update) return next();
+
+//   if (update.serviceName) {
+//     update.serviceName = update.serviceName.toLowerCase().trim();
+//   }
+
+//   const category = (update.category || [])
+//     .map(id => id.toString())
+//     .sort();
+
+//   const pets = (update.petCategories || [])
+//     .map(id => id.toString())
+//     .sort();
+
+//   if (category.length) update.category = category;
+//   if (pets.length) update.petCategories = pets;
+
+//   if (update.serviceName || category.length || pets.length) {
+//     update.uniqueKey = `${update.serviceName}__${category.join(",")}__${pets.join(",")}`;
+//   }
+
+//   next();
+// });
+
+
+
 SpecializedServiceSchema.pre("save", function (next) {
-  // normalize service name
-  this.serviceName = this.serviceName.toLowerCase().trim();
+  // Keep original serviceName casing for the document, but use lowercase for the unique key
+  const normalizedName = this.serviceName.toLowerCase().trim();
 
-  // sort category
-  const category = (this.category || [])
-    .map(id => id.toString())
-    .sort();
+  const category = (this.category || []).map(id => id.toString()).sort();
+  const pets = (this.petCategories || []).map(id => id.toString()).sort();
 
-  // sort pets
-  const pets = (this.petCategories || [])
-    .map(id => id.toString())
-    .sort();
-
-  // assign back sorted arrays
   this.category = category;
   this.petCategories = pets;
 
-  // build unique key
-  this.uniqueKey = `${this.serviceName}__${category.join(",")}__${pets.join(",")}`;
+  // uniqueKey remains lowercase to prevent duplicates like "Test" and "test"
+  this.uniqueKey = `${normalizedName}__${category.join(",")}__${pets.join(",")}`;
 
   next();
 });
 
 
-// ✅ Handle update
 SpecializedServiceSchema.pre("findOneAndUpdate", function (next) {
   const update = this.getUpdate();
-
   if (!update) return next();
 
-  if (update.serviceName) {
-    update.serviceName = update.serviceName.toLowerCase().trim();
+  let normalizedName = update.serviceName;
+  if (normalizedName) {
+    normalizedName = normalizedName.toLowerCase().trim();
   }
 
-  const category = (update.category || [])
-    .map(id => id.toString())
-    .sort();
-
-  const pets = (update.petCategories || [])
-    .map(id => id.toString())
-    .sort();
+  const category = (update.category || []).map(id => id.toString()).sort();
+  const pets = (update.petCategories || []).map(id => id.toString()).sort();
 
   if (category.length) update.category = category;
   if (pets.length) update.petCategories = pets;
 
   if (update.serviceName || category.length || pets.length) {
-    update.uniqueKey = `${update.serviceName}__${category.join(",")}__${pets.join(",")}`;
+    // Grab existing serviceName if it's not being updated, or use the new one normalized
+    const currentNameForQuery = normalizedName || update.serviceName?.toLowerCase().trim();
+    if (currentNameForQuery) {
+      update.uniqueKey = `${currentNameForQuery}__${category.join(",")}__${pets.join(",")}`;
+    }
   }
 
   next();
@@ -87,6 +132,9 @@ SpecializedServiceSchema.pre("findOneAndUpdate", function (next) {
 
 // ❌ REMOVE THIS (VERY IMPORTANT)
 // SpecializedServiceSchema.index({ serviceName: 1, category: 1, petCategories: 1 }, { unique: true });
+
+
+
 
 
 // Prevent delete if used

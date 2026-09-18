@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Css/Directory.css';
 import { Row, Col, Card, Button, Container, Image, Badge, Modal, Carousel, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { BsClock, BsClockFill, BsClockHistory, BsCloudCheckFill, BsGeoAltFill, BsStarFill, BsBookmarkFill, BsBookmark } from "react-icons/bs";
+import { BsClock, BsClockFill, BsClockHistory, BsCloudCheckFill, BsGeoAltFill, BsStarFill, BsBookmarkFill, BsBookmark, BsTagFill, BsTag, BsGeoAlt, BsCurrencyRupee } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 // import dummyImage from '../dummy.jpg';
 import AdSlider from '../Components/AdSlider';
@@ -14,6 +14,8 @@ import { FaStar, FaCar, FaSnowflake, FaTruck, FaVideo, FaWheelchair, FaCouch, Fa
   FaNotesMedical, FaPills, FaHandHoldingMedical, FaRunning, FaBabyCarriage, 
   FaBookOpen, FaBuilding, FaVial, FaPhone, FaTools, FaHeart,
   FaYoutube,FaHandSparkles ,FaShieldAlt,FaMapMarkerAlt,
+  FaDoorOpen,
+  FaDoorClosed,
  } from 'react-icons/fa';
 import { TiTick } from "react-icons/ti";
 import { MdVerified } from "react-icons/md";
@@ -269,6 +271,48 @@ useEffect(() => {
   }, []);
 
 
+  // Business Open / Closed status evaluator
+  const getBusinessStatus = (businessHours) => {
+    if (!businessHours || !Array.isArray(businessHours) || businessHours.length === 0) {
+      return { status: "UNAVAILABLE", text: "N/A", colorClass: "text-muted", dotClass: "bg-secondary" };
+    }
+
+    const now = new Date();
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const currentDay = daysOfWeek[now.getDay()];
+
+    const todaySchedule = businessHours.find(
+      (b) => b.day?.toLowerCase() === currentDay.toLowerCase()
+    );
+
+    if (!todaySchedule || (!todaySchedule.closed && (!todaySchedule.open || !todaySchedule.close))) {
+      return { status: "UNAVAILABLE", text: "N/A", colorClass: "text-muted", dotClass: "bg-secondary" };
+    }
+
+    if (todaySchedule.closed) {
+      return { status: "CLOSED", text: "Closed", colorClass: "text-danger", dotClass: "bg-danger" };
+    }
+
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const currentTime = `${hours}:${minutes}`;
+
+    const { open, close } = todaySchedule;
+
+    let isOpen = false;
+    if (close < open) {
+      isOpen = currentTime >= open || currentTime < close;
+    } else {
+      isOpen = currentTime >= open && currentTime < close;
+    }
+
+    if (isOpen) {
+      return { status: "OPEN", text: "Open Now", colorClass: "text-success", dotClass: "bg-success" };
+    } else {
+      return { status: "CLOSED", text: "Closed", colorClass: "text-danger", dotClass: "bg-danger" };
+    }
+  };
+
 const PAGE_SIZE = 21;
 
   // Filtered listings
@@ -416,7 +460,9 @@ const city = normalize(l.city?.city);
     const quickFilterMatch =
       !quickFilter ||
       (quickFilter === "topRated" && rating >= 4) ||
-      (quickFilter === "verified" && l.isVerified === true);
+      (quickFilter === "verified" && l.isVerified === true) ||
+      (quickFilter === "openNow" && getBusinessStatus(l.businessHours).status === "OPEN") ||
+      (quickFilter === "closed" && getBusinessStatus(l.businessHours).status === "CLOSED");
 
     return (
       categoryMatch &&
@@ -812,47 +858,7 @@ useEffect(() => {
     }
   };
 
-  // Business Open / Closed status evaluator
-  const getBusinessStatus = (businessHours) => {
-    if (!businessHours || !Array.isArray(businessHours) || businessHours.length === 0) {
-      return { status: "UNAVAILABLE", text: "N/A", colorClass: "text-muted", dotClass: "bg-secondary" };
-    }
-
-    const now = new Date();
-    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const currentDay = daysOfWeek[now.getDay()];
-
-    const todaySchedule = businessHours.find(
-      (b) => b.day?.toLowerCase() === currentDay.toLowerCase()
-    );
-
-    if (!todaySchedule || (!todaySchedule.closed && (!todaySchedule.open || !todaySchedule.close))) {
-      return { status: "UNAVAILABLE", text: "N/A", colorClass: "text-muted", dotClass: "bg-secondary" };
-    }
-
-    if (todaySchedule.closed) {
-      return { status: "CLOSED", text: "Closed", colorClass: "text-danger", dotClass: "bg-danger" };
-    }
-
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const currentTime = `${hours}:${minutes}`;
-
-    const { open, close } = todaySchedule;
-
-    let isOpen = false;
-    if (close < open) {
-      isOpen = currentTime >= open || currentTime < close;
-    } else {
-      isOpen = currentTime >= open && currentTime < close;
-    }
-
-    if (isOpen) {
-      return { status: "OPEN", text: "Open Now", colorClass: "text-success", dotClass: "bg-success" };
-    } else {
-      return { status: "CLOSED", text: "Closed", colorClass: "text-danger", dotClass: "bg-danger" };
-    }
-  };
+  
 //   useEffect(() => {
 //   if (routeCity) setSelectedCity(routeCity);
 //   if (routeCategory) setSelectedCategory(routeCategory);
@@ -1470,7 +1476,7 @@ middleHomeAds.length > 0 &&
               variant={quickFilter === "topRated" ? "primary" : "outline-secondary"}
               onClick={() => setQuickFilter("topRated")}
             >
-              <FaStar fill="#ff8800" /> Top Rated
+              Top Rated
             </Button>
 
             <Button
@@ -1478,8 +1484,24 @@ middleHomeAds.length > 0 &&
               variant={quickFilter === "verified" ? "primary" : "outline-secondary"}
               onClick={() => setQuickFilter("verified")}
             >
-              <TiTick /> Verified
+               Verified
             </Button>
+            <Button
+      size="sm"
+      variant={quickFilter === "openNow" ? "primary" : "outline-secondary"}
+      onClick={() => setQuickFilter("openNow")}
+    >
+      Open Now
+    </Button>
+
+    {/* ✅ NEW: Closed Filter Button */}
+    <Button className='d-none'
+      size="sm"
+      variant={quickFilter === "closed" ? "primary" : "outline-secondary"}
+      onClick={() => setQuickFilter("closed")}
+    >
+     Closed
+    </Button>
 
             {quickFilter && (
               <Button size="sm" variant="link" onClick={() => setQuickFilter("")}>
@@ -1766,8 +1788,8 @@ middleHomeAds.length > 0 &&
         {listing.description}
       </Card.Text>
 
-      <div className="service-location mt-2 d-flex gap-2 align-items-center">
-        <BsGeoAltFill /> {listing.city.city}
+      <div className="service-location m-0 d-flex gap-2 align-items-center">
+        <BsGeoAlt /> {listing.city.city}
       </div>
       {/* <div className="service-location mt-2">
         {listing.businessHours?.map((bh, index) => (
@@ -1801,8 +1823,8 @@ middleHomeAds.length > 0 &&
       : "Hours not available";
   })()}
 </div> */}
-<div className="service-location mt-2 d-flex gap-2 align-items-center">
-  <BsClockFill /> 
+<div className="service-location  m-0 d-flex gap-2 align-items-center">
+  <BsClock /> 
   {(() => {
     const today = new Date().toLocaleString("en-US", { weekday: "long" });
 
@@ -1822,6 +1844,9 @@ middleHomeAds.length > 0 &&
     return `Open Today: ${todayHours.open} - ${todayHours.close}`;
   })()}
 </div>
+<div className="service-location mb-5 d-flex gap-2 align-items-center">
+        <BsCurrencyRupee /> {listing.startingPrice ? listing.startingPrice : "---"}
+      </div>
 
       {/* <div className="service-tags mt-2">
         {listing.categories?.map((cat, index) => (

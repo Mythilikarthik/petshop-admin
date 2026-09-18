@@ -751,21 +751,15 @@ const Dashboard = () => {
       try {
         const res = await fetch(`${API_BASE}/api/stats/offers`);
         const data = await res.json();
-        if (data.success && data.offers) {
+        
+        if (data.success && Array.isArray(data.offers)) {
           setOffersData(data.offers);
         } else {
-          // Fallback static mock data showcasing varied expiration dates
-          setOffersData([
-            { id: 1, title: '20% Off Dog Grooming', store: 'Happy Paw Clinic', claims: 45, views: 150, status: 'Active', expiryDate: '2026-07-25' },
-            { id: 2, title: 'Buy 1 Get 1 Cat Food', store: 'Purrfect Pet Store', claims: 82, views: 310, status: 'Active', expiryDate: '2026-07-11' },
-            { id: 3, title: 'Free Vet Consultation', store: 'Woof & Whiskers', claims: 12, views: 95, status: 'Expired', expiryDate: '2026-06-30' },
-            { id: 4, title: 'Pet Hotel Discount', store: 'Bark Resort', claims: 34, views: 110, status: 'Active', expiryDate: '2026-07-12' },
-            { id: 5, title: 'Free Bird Seed Pack', store: 'Avian Worlds', claims: 5, views: 24, status: 'Active', expiryDate: '2026-08-01' },
-            { id: 6, title: 'Premium Leash Giveaway', store: 'Pet Gear Co', claims: 91, views: 400, status: 'Expired', expiryDate: '2026-05-15' },
-          ]);
+          setOffersData([]);
         }
       } catch (err) {
         console.error("Error fetching offers data:", err);
+        setOffersData([]);
       }
     };
 

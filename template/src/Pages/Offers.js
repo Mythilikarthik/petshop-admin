@@ -40,6 +40,15 @@ const Offers = () => {
     currentIndex: 0 
   });
 
+
+  // Add these state variables near the top of your Offers component
+const [selectedCity, setSelectedCity] = useState('all');
+const [expiryFilter, setExpiryFilter] = useState('all'); // 'all', 'ending_soon', 'active'
+const [sortBy, setSortBy] = useState('newest'); // 'newest', 'most_viewed', 'most_saved'
+
+// Extract unique cities dynamically from the loaded posts for the dropdown filter
+const availableCities = [...new Set(posts.map(post => post.business?.city).filter(Boolean))];
+
   const handleOpenLightbox = (mediaArray, startIndex) => {
     setLightboxData({
       show: true,
@@ -166,13 +175,61 @@ const Offers = () => {
     return () => clearInterval(interval);
   }, [posts]);
 
+  // const filteredPosts = (() => {
+  //   if (targetOfferId) {
+  //     return posts.filter(post => post._id === targetOfferId);
+  //   }
+  //   return activeCategory === 'all' 
+  //     ? posts 
+  //     : posts.filter(post => post.category === activeCategory);
+  // })();
   const filteredPosts = (() => {
+    let result = [...posts];
+
+    // 1. Target Offer ID from URL
     if (targetOfferId) {
-      return posts.filter(post => post._id === targetOfferId);
+      return result.filter(post => post._id === targetOfferId);
     }
-    return activeCategory === 'all' 
-      ? posts 
-      : posts.filter(post => post.category === activeCategory);
+
+    // 2. Category Filter
+    if (activeCategory !== 'all') {
+      result = result.filter(post => post.category === activeCategory);
+    }
+
+    // 3. City Filter
+    if (selectedCity !== 'all') {
+      result = result.filter(post => post.business?.city === selectedCity);
+    }
+
+    // 4. Expiry Filter
+    if (expiryFilter === 'ending_soon') {
+      const now = new Date();
+      const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+      result = result.filter(post => {
+        const end = new Date(post.endDate);
+        return end >= now && end <= threeDaysFromNow;
+      });
+    }
+
+    // 5. Sorting Logic
+    result.sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      if (sortBy === 'most_viewed') {
+        const viewsA = a.analytics?.viewedByIPs?.length || a.analytics?.views || 0;
+        const viewsB = b.analytics?.viewedByIPs?.length || b.analytics?.views || 0;
+        return viewsB - viewsA;
+      }
+      if (sortBy === 'most_saved') {
+        const savesA = a.analytics?.savedByUsers?.length || a.analytics?.saves || 0;
+        const savesB = b.analytics?.savedByUsers?.length || b.analytics?.saves || 0;
+        return savesB - savesA;
+      }
+      return 0;
+    });
+
+    return result;
   })();
 
   useEffect(() => {
@@ -360,7 +417,7 @@ const Offers = () => {
         )}
 
         <Row>
-          <Col md={3}>
+          {/* <Col md={3}>
             <div className="position-sticky bg-light-blur py-3 mb-4 border-bottom" style={{ top: '120px', zIndex: 102, backdropFilter: 'blur(8px)', backgroundColor: 'rgba(248, 250, 252, 0.8)' }}>
               <div className="d-flex gap-2 flex-column overflow-auto pb-1" style={{ scrollbarWidth: 'none' }}>
                 {CATEGORIES.map((cat) => {
@@ -393,6 +450,111 @@ const Offers = () => {
                   );
                 })}
               </div>
+            </div>
+          </Col> */}
+          <Col md={3}>
+            <div className="position-sticky py-3 mb-4" style={{ top: '120px', zIndex: 102 }}>
+              
+              {/* Category Filters */}
+              <div className="mb-4">
+                <h6 className="fw-bold text-dark mb-3 px-1" style={{ fontSize: '0.9rem' }}>Feeds Category</h6>
+                <div className="d-flex gap-2 flex-column">
+                  {CATEGORIES.map((cat) => {
+                    const Icon = cat.icon;
+                    const isActive = activeCategory === cat.id && !targetOfferId;
+                    return (
+                      <Button
+                        key={cat.id}
+                        onClick={() => {
+                          if (targetOfferId) handleClearUrlFilter();
+                          setActiveCategory(cat.id);
+                        }}
+                        style={{
+                          backgroundColor: isActive ? '#ff4e00' : '#ffffff',
+                          color: isActive ? '#ffffff' : '#475569',
+                          borderColor: isActive ? '#ff4e00' : '#e2e8f0',
+                          borderRadius: '10px',
+                          padding: '0.5rem 1rem',
+                          fontSize: '0.875rem',
+                          fontWeight: 500,
+                          textAlign: 'left',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        className="d-flex align-items-center gap-2 border w-100"
+                      >
+                        <Icon size={16} />
+                        {cat.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* City Filter */}
+              <div className="mb-4">
+                <h6 className="fw-bold text-dark mb-2 px-1" style={{ fontSize: '0.9rem' }}>Filter by City</h6>
+                <select 
+                  className="form-select form-select-sm"
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  style={{ borderRadius: '8px', padding: '0.5rem' }}
+                >
+                  <option value="all">All Cities</option>
+                  {availableCities.map((city, idx) => (
+                    <option key={idx} value={city}>{city}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Expiry Filter */}
+              <div className="mb-4">
+                <h6 className="fw-bold text-dark mb-2 px-1" style={{ fontSize: '0.9rem' }}>Expiry Filter</h6>
+                <select 
+                  className="form-select form-select-sm"
+                  value={expiryFilter}
+                  onChange={(e) => setExpiryFilter(e.target.value)}
+                  style={{ borderRadius: '8px', padding: '0.5rem' }}
+                >
+                  <option value="all">All Active Offers</option>
+                  <option value="ending_soon">Ending Soon (Next 3 Days)</option>
+                </select>
+              </div>
+
+              {/* Sort By Filter */}
+              <div className="mb-3">
+                <h6 className="fw-bold text-dark mb-2 px-1" style={{ fontSize: '0.9rem' }}>Sort By</h6>
+                <select 
+                  className="form-select form-select-sm"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{ borderRadius: '8px', padding: '0.5rem' }}
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="most_viewed">Most Viewed</option>
+                  <option value="most_saved">Most Saved</option>
+                </select>
+              </div>
+
+              {/* Reset Filters Option */}
+              {(activeCategory !== 'all' || selectedCity !== 'all' || expiryFilter !== 'all' || sortBy !== 'newest') && (
+                <Button 
+                  variant="outline-danger" 
+                  size="sm" 
+                  className="w-100 mt-2" 
+                  style={{ borderRadius: '8px' }}
+                  onClick={() => {
+                    setActiveCategory('all');
+                    setSelectedCity('all');
+                    setExpiryFilter('all');
+                    setSortBy('newest');
+                    handleClearUrlFilter();
+                  }}
+                >
+                  Reset All Filters
+                </Button>
+              )}
+
             </div>
           </Col>
 

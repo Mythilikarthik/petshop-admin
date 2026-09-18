@@ -2034,9 +2034,15 @@ const { text, colorClass, dotClass } = getBusinessStatus(listing.businessHours);
                   {listing.shopName}
                 </h1>
               </div>
+              
 
               {/* ACTION BUTTONS BAR */}
               <div className="d-flex flex-wrap gap-2">
+                {listing.whatsapp && (
+                  <a href={`https://wa.me/${listing.whatsapp}`} target="_blank" rel="noreferrer" className="btn-clean-primary" style={{ background: '#22c55e' }}>
+                    <FaWhatsapp /> WhatsApp
+                  </a>
+                )}
                 <button 
                 className={`btn ${isSaved ? 'btn-danger' : 'btn-clean-outline'}`}
                 onClick={handleSaveListing}
@@ -2049,11 +2055,7 @@ const { text, colorClass, dotClass } = getBusinessStatus(listing.businessHours);
                   <FaPhoneAlt /> {showPhone ? listing.phone : "Call"}
                 </button> */}
 
-                {listing.whatsappNumber && (
-                  <a href={`https://wa.me/${listing.whatsappNumber}`} target="_blank" rel="noreferrer" className="btn-clean-primary" style={{ background: '#22c55e' }}>
-                    <FaWhatsapp /> WhatsApp
-                  </a>
-                )}
+                
 
                 {listing.address && (
                   <a 

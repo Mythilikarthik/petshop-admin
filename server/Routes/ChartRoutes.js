@@ -222,14 +222,71 @@ router.get("/new-shop-owners", async (req, res) => {
   res.json({ success: true, count: count.length });
 });
 
+// router.get('/offers', async (req, res) => {
+//   try {
+//     const { startDate, endDate } = req.query;
+//     const now = new Date();
+//     const sevenDaysFromNow = new Date();
+//     sevenDaysFromNow.setDate(now.getDate() + 7);
+
+//     // 1. Build an optional date range match object for creation date filtering
+//     let dateFilter = {};
+//     if (startDate || endDate) {
+//       dateFilter.createdAt = {};
+//       if (startDate) dateFilter.createdAt.$gte = new Date(startDate);
+//       if (endDate) dateFilter.createdAt.$lte = new Date(endDate);
+//     }
+
+//     // 2. Execute Aggregation Pipeline
+//     const stats = await Offer.aggregate([
+//       { $match: dateFilter },
+//       {
+//         $group: {
+//           _id: null,
+//           // Sum total views across filtered items based on the length of array
+//           totalViews: { $sum: { $size: { $ifNull: ["$analytics.viewedByIPs", []] } } },
+//           // Sum total explicit saves from analytics schema field
+//           totalSaves: { $sum: { $ifNull: ["$analytics.saves", 0] } },
+//           // Count metrics where endDate is approaching but not past
+//           expiringSoon: {
+//             $sum: {
+//               $cond: [
+//                 {
+//                   $and: [
+//                     { $gt: ["$endDate", now] },
+//                     { $lte: ["$endDate", sevenDaysFromNow] }
+//                   ]
+//                 },
+//                 1,
+//                 0
+//               ]
+//             }
+//           }
+//         }
+//       }
+//     ]);
+
+//     // Handle empty database states cleanly
+//     const result = stats[0] || { totalViews: 0, totalSaves: 0, expiringSoon: 0 };
+
+//     return res.status(200).json({
+//       success: true,
+//       data: result
+//     });
+
+//   } catch (err) {
+//     console.error("Error computing Offer stats:", err);
+//     return res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+
+
 router.get('/offers', async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     const now = new Date();
-    const sevenDaysFromNow = new Date();
-    sevenDaysFromNow.setDate(now.getDate() + 7);
 
-    // 1. Build an optional date range match object for creation date filtering
+    // 1. Build an optional date range filter for creation date
     let dateFilter = {};
     if (startDate || endDate) {
       dateFilter.createdAt = {};
@@ -237,45 +294,34 @@ router.get('/offers', async (req, res) => {
       if (endDate) dateFilter.createdAt.$lte = new Date(endDate);
     }
 
-    // 2. Execute Aggregation Pipeline
-    const stats = await Offer.aggregate([
-      { $match: dateFilter },
-      {
-        $group: {
-          _id: null,
-          // Sum total views across filtered items based on the length of array
-          totalViews: { $sum: { $size: { $ifNull: ["$analytics.viewedByIPs", []] } } },
-          // Sum total explicit saves from analytics schema field
-          totalSaves: { $sum: { $ifNull: ["$analytics.saves", 0] } },
-          // Count metrics where endDate is approaching but not past
-          expiringSoon: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $gt: ["$endDate", now] },
-                    { $lte: ["$endDate", sevenDaysFromNow] }
-                  ]
-                },
-                1,
-                0
-              ]
-            }
-          }
-        }
-      }
-    ]);
+    // 2. Fetch individual offer documents from MongoDB
+    const offers = await Offer.find(dateFilter).sort({ createdAt: -1 }).lean();
 
-    // Handle empty database states cleanly
-    const result = stats[0] || { totalViews: 0, totalSaves: 0, expiringSoon: 0 };
+    // 3. Map offers to match the frontend table structure
+    const formattedOffers = offers.map(offer => {
+      const views = offer.analytics?.viewedByIPs?.length || 0;
+      const claims = offer.analytics?.saves || 0;
+      const endDateVal = new Date(offer.endDate);
+      const isExpired = endDateVal < now;
+
+      return {
+        id: offer._id,
+        title: offer.title || 'Untitled Offer',
+        store: offer.business?.name || 'Unknown Store',
+        claims: claims,
+        views: views,
+        status: isExpired ? 'Expired' : 'Active',
+        expiryDate: offer.endDate,
+      };
+    });
 
     return res.status(200).json({
       success: true,
-      data: result
+      offers: formattedOffers // Must match data.offers in frontend
     });
 
   } catch (err) {
-    console.error("Error computing Offer stats:", err);
+    console.error("Error fetching Offer stats:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
