@@ -47,8 +47,8 @@ import PetGrroomingSouthIndia from './Pages/PetGrroomingSouthIndia';
 import PetGrroomingSouthIndiaDirectory from './Pages/PetGrroomingSouthIndiaDirectoryPage';
 import GoldenRetrieverPuppies from './Pages/GoldenRetrieverPuppies';
 import GoldenRetrieverPuppiesDirectory from './Pages/GoldenRetrieverPuppiesDirectory';
-import ChihuahuaPuppies from './Pages/GoldenRetrieverPuppies';
-import ChihuahuaPuppiesDirectory from './Pages/GoldenRetrieverPuppiesDirectory';
+import ChihuahuaPuppies from './Pages/ChihuahuaPuppies';
+import ChihuahuaPuppiesDirectory from './Pages/ChihuahuaPuppiesDirectory';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
