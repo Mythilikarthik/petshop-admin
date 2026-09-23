@@ -95,6 +95,7 @@ router.get('/sitemap.xml', async (req, res) => {
       { url: '/pet-shops', changefreq: 'daily', priority: 0.9 },
       { url: '/pet-shops-south-india', changefreq: 'daily', priority: 0.9 },
       { url: '/golden-retriever-puppies-for-sale', changefreq: 'daily', priority: 0.9 },
+      { url: '/chihuahua-puppies-for-sale', changefreq: 'daily', priority: 0.9 },
       { url: '/pet-grooming-south-india', changefreq: 'daily', priority: 0.9 },
       { url: '/blog', changefreq: 'daily', priority: 0.8 },
       { url: '/contact-us', changefreq: 'monthly', priority: 0.4 },
@@ -144,6 +145,31 @@ router.get('/sitemap.xml', async (req, res) => {
           // This matches your frontend route: /pet-shop/:areaName
           links.push({
             url: `/golden-retriever-puppies-for-sale/${areaSlug}`, 
+            changefreq: 'weekly',
+            priority: 0.7
+          });
+        }
+      });
+    } catch (excelError) {
+      console.error('Error reading Excel file for sitemap:', excelError);
+    }
+
+    try {
+      // Adjust the relative path to point to your actual Excel file location on the server
+      const excelPath = path.join(__dirname, '../assets/chihuahua.xlsx'); 
+      //console.log("Path", excelPath);
+      const workbook = XLSX.readFile(excelPath);
+      const firstSheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[firstSheetName];
+      const parsedRows = XLSX.utils.sheet_to_json(sheet);
+
+      // Loop through each row and create the subpage URL pattern
+      parsedRows.forEach(row => {
+        if (row && row.Areas) {
+          const areaSlug = createSlug(row.Areas);
+          // This matches your frontend route: /pet-shop/:areaName
+          links.push({
+            url: `/chihuahua-puppies-for-sale/${areaSlug}`, 
             changefreq: 'weekly',
             priority: 0.7
           });
