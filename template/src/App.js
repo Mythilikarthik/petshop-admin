@@ -47,6 +47,8 @@ import PetGrroomingSouthIndia from './Pages/PetGrroomingSouthIndia';
 import PetGrroomingSouthIndiaDirectory from './Pages/PetGrroomingSouthIndiaDirectoryPage';
 import GoldenRetrieverPuppies from './Pages/GoldenRetrieverPuppies';
 import GoldenRetrieverPuppiesDirectory from './Pages/GoldenRetrieverPuppiesDirectory';
+import ChihuahuaPuppies from './Pages/GoldenRetrieverPuppies';
+import ChihuahuaPuppiesDirectory from './Pages/GoldenRetrieverPuppiesDirectory';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -207,6 +209,8 @@ function AppContent() {
         <Route path='/pet-boarding-chennai' element={<PetBoardingChennaiDirectory />} />
         <Route path='/golden-retriever-puppies-for-sale/:areaName' element={<GoldenRetrieverPuppies />} />
         <Route path='/golden-retriever-puppies-for-sale' element={<GoldenRetrieverPuppiesDirectory />} />
+        <Route path='/chihuahua-puppies-for-sale/:areaName' element={<ChihuahuaPuppies />} />
+        <Route path='/chihuahua-puppies-for-sale' element={<ChihuahuaPuppiesDirectory />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />
       <a 

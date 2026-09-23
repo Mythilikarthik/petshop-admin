@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
-import excelFile from '../assets/golden-retriever.xlsx';
+import excelFile from '../assets/chihuahua.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
 
-export default function GoldenRetrieverPuppiesDirectoryPage() {
+export default function ChihuahuaPuppiesDirectoryPage() {
   const [cities, setCities] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -92,9 +92,9 @@ const getParagraphText = (htmlString) => {
               className="badge px-3 py-2 text-uppercase mb-3 rounded-pill fw-bold"
               style={{ backgroundColor: '#fff5f0', color: '#ff4e00', border: '1px solid #ffe8df' }}
             >
-              Golden Retriever Puppies Directory
+              Chihuahua puppies Directory
             </span>
-            <h1 className="fw-bold text-dark mb-3">Find Golden Retriever Puppies Near You</h1>
+            <h1 className="fw-bold text-dark mb-3">Find Chihuahua puppies Near You</h1>
             {/* <p className="text-muted mb-4">
               Select your city to explore top-rated local groomers, service packages, and estimated pricing.
             </p> */}
@@ -117,7 +117,7 @@ const getParagraphText = (htmlString) => {
           {filteredCities.length > 0 ? (
             filteredCities.map((city) => (
               <Col key={city.slug} sm={6} md={4} lg={3}>
-                <Link to={`/golden-retriever-puppies-for-sale/${city.slug}`} className="text-decoration-none">
+                <Link to={`/chihuahua-puppies-for-sale/${city.slug}`} className="text-decoration-none">
                   <Card className="city-card h-100 p-3">
                     <Card.Body className="d-flex flex-column justify-content-between p-2">
                       <div>

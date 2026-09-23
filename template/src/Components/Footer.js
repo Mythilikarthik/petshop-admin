@@ -33,6 +33,9 @@ const Footer = ({home, categoryPage}) => {
     }, {
         categoryName: "Golden Retriever Puppies for Sale",
         categorySlug: "golden-retriever-puppies-for-sale"
+    }, {
+        categoryName: "Chihuahua Puppies for Sale",
+        categorySlug: "chihuahua-puppies-for-sale"
     }]
   return (
     <div className='footer'>

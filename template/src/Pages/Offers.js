@@ -32,6 +32,7 @@ const Offers = () => {
   const [savedPosts, setSavedPosts] = useState({});
   const [carouselIndices, setCarouselIndices] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
   
   // Looping Lightbox States
   const [lightboxData, setLightboxData] = useState({ 
@@ -344,6 +345,13 @@ const availableCities = [...new Set(posts.map(post => post.business?.city).filte
     }
   };
 
+  const toggleDescription = (postId) => {
+  setExpandedDescriptions(prev => ({
+    ...prev,
+    [postId]: !prev[postId]
+  }));
+};
+
   const moveCarousel = (postId, direction, mediaLength) => {
     const currentIndex = carouselIndices[postId] || 0;
     let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
@@ -615,7 +623,7 @@ const availableCities = [...new Set(posts.map(post => post.business?.city).filte
                                       src={getMediaUrl(currentMedia.url)} 
                                       alt="Main media asset" 
                                       className="img-fluid w-100 h-100"
-                                      style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 1 }}
+                                      style={{ objectFit: 'contain', width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 1 }}
                                     />
                                     {/* Zoom Hint Badge */}
                                     <div className="position-absolute bottom-0 end-0 m-2 px-2 py-1 rounded bg-dark bg-opacity-75 text-white d-flex align-items-center gap-1 small" style={{ zIndex: 2, fontSize: '11px' }}>
@@ -693,12 +701,35 @@ const availableCities = [...new Set(posts.map(post => post.business?.city).filte
                                 {post.title}
                               </Card.Title>
 
-                              <Card.Text 
+                              {/* <Card.Text 
                                 className="text-secondary small mb-2"
                                 style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '40px' }}
                               >
                                 {post.description}
-                              </Card.Text>
+                              </Card.Text> */}
+                              {/* Description with conditional clamping */}
+  <Card.Text 
+    className="text-secondary small mb-1"
+    style={
+      !expandedDescriptions[post._id] 
+        ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } 
+        : {}
+    }
+  >
+    {post.description}
+  </Card.Text>
+
+  {/* View More / View Less Toggle Button */}
+  {post.description && post.description.length > 90 && (
+    <Button 
+      variant="link" 
+      onClick={() => toggleDescription(post._id)}
+      className="p-0 text-decoration-none fw-semibold mb-2 shadow-none"
+      style={{ fontSize: '12px', color: '#ff4e00' }}
+    >
+      {expandedDescriptions[post._id] ? 'View Less' : 'View More'}
+    </Button>
+  )}
                             </div>
                             
 

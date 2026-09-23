@@ -959,7 +959,7 @@ const Dashboard = () => {
           { text: 'text-white', bg: 'bg-info', number: `${businessListing}`, linkto : '/business-listing', label: 'Business Listings', icon: <AiOutlineShopping size={80} /> },
           { text: 'text-white', bg: 'bg-success', number: `${pendingListing}`, signupCount: signupCount, claimedPendingCount: claimedPendingCount, linkto : '/business-listing', label: 'Pending Listings', icon: <AiFillSignal size={80} /> },
           { text: '', bg: 'bg-warning', number: `${Array.isArray(userList) ? userList.length : userList}`, label: 'Users', linkto : '/user-management', icon: <AiOutlineUserAdd size={80} /> },
-          { text: 'text-white', bg: 'bg-primary', number: newShopOwners, linkto: '/business-listing', label: 'Service Providers', icon: <AiOutlineShop size={80} /> },
+          { text: 'text-white', bg: 'bg-primary', number: newShopOwners, linkto: '/user-management', label: 'Service Providers', icon: <AiOutlineShop size={80} /> },
           { text: 'text-white', bg: 'bg-danger', number: `${reviewCount}`, linkto : '/review-management', label: 'Total Reviews', icon: <AiOutlineMessage size={80} /> },
         ].map((stat, i) => (
           <Col className='mb-3' lg={4} md={6} sm={6} key={i}>
