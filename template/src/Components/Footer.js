@@ -5,6 +5,7 @@ import { AiFillFacebook, AiFillInstagram, AiFillLinkedin, AiFillTwitterCircle, A
 import { Link } from 'react-router-dom'
 import { HiOutlineLocationMarker, HiOutlineMail, HiOutlinePhone, HiOutlineClock} from "react-icons/hi";
 import CategoryPage from '../Pages/CategoryPage'
+import { HiArrowLongRight } from 'react-icons/hi2'
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -37,6 +38,7 @@ const Footer = ({home, categoryPage}) => {
         categoryName: "Chihuahua Puppies for Sale",
         categorySlug: "chihuahua-puppies-for-sale"
     }]
+    const displayedCategories = directoryCategory.slice(0, 5);
   return (
     <div className='footer'>
         <footer className="bg-gray-900 text-white ">
@@ -87,23 +89,38 @@ const Footer = ({home, categoryPage}) => {
                                 <li><Link to="/contact" className="text-white">Contact Us</Link></li>
                             </ul>
                         </Col>
-                        <Col>
+                        {/* <Col>
                             <h5 className="mb-3">Directory Categories</h5>
                             <ul className="list-unstyled">
-                                {/* {console.log("Footer categoryPage:", categoryPage)} */}
+                                
                                 {directoryCategory && directoryCategory.map((category) => (
                                     <li key={category.categoryName}>
                                         <Link to={`/${category.categorySlug.toLowerCase()}`} className="text-white">{category.categoryName}</Link>
                                     </li>
                                 ))}
-                                {/* <li><Link to="/directory?category=dogs" className="text-white">Dogs</Link></li>
-                                <li><Link to="/directory?category=cats" className="text-white">Cats</Link></li>
-                                <li><Link to="/directory?category=birds" className="text-white">Birds</Link></li>
-                                <li><Link to="/directory?category=fish" className="text-white">Fish</Link></li>
-                                <li><Link to="/directory?category=small-pets" className="text-white">Small Pets</Link></li>
-                                <li><Link to="/directory?category=exotic-pets" className="text-white">Exotic Pets</Link></li> */}
                             </ul>
 
+                        </Col> */}
+                        <Col>
+                            <h5 className="mb-3">Directory Categories</h5>
+                            <ul className="list-unstyled">
+                                {displayedCategories.map((category) => (
+                                    <li key={category.categoryName} className="mb-1">
+                                        <Link to={`/${category.categorySlug.toLowerCase()}`} className="text-white">{category.categoryName}</Link>
+                                    </li>
+                                ))}
+                                {directoryCategory.length > 5 && (
+                                    <li className="mt-2">
+                                        <Link 
+                                            to="/directory-categories" 
+                                            className="text-info text-decoration-none text-orange footer-view-more"
+                                            style={{ fontSize: '0.9rem' }}
+                                        >
+                                            View More <HiArrowLongRight />
+                                        </Link>
+                                    </li>
+                                )}
+                            </ul>
                         </Col>
                         <Col>
                             <h5 className="mb-3">Pet Categories</h5>

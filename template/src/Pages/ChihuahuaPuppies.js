@@ -372,7 +372,7 @@ const renderFormattedContent = (content) => {
             </Col>
           )} */}
           {currentAreaData['breeders list'] && (
-            <Col md={6} className="d-flex align-items-stretch">
+            <Col md={12} className="d-flex align-items-stretch">
               <Card className="custom-card w-100 p-4">
                 <Card.Body 
                     className="excel-content p-0"
@@ -382,8 +382,8 @@ const renderFormattedContent = (content) => {
             </Col>
           )}
 
-          {currentAreaData['Pricing & Commercial Data'] && (
-            <Col md={6} className="d-flex align-items-stretch">
+          {/* {currentAreaData['Pricing & Commercial Data'] && (
+            <Col md={12} className="d-flex align-items-stretch">
               <Card className="custom-card w-100 p-4">
                 <Card.Body 
                   className="excel-content p-0"
@@ -391,7 +391,19 @@ const renderFormattedContent = (content) => {
                 />
               </Card>
             </Col>
-          )}
+          )} */}
+          {currentAreaData['Pricing & Commercial Data'] && (
+  <Col md={12} className="d-flex align-items-stretch">
+    <Card className="custom-card w-100 p-4">
+      <Card.Body className="excel-content p-0">
+        <h2 className="mb-3">Intro</h2>
+        <div 
+          dangerouslySetInnerHTML={{ __html: currentAreaData['Pricing & Commercial Data'] }} 
+        />
+      </Card.Body>
+    </Card>
+  </Col>
+)}
 
           {currentAreaData['Health, Lineage & Legal Compliance'] && (
             <Col md={6} className="d-flex align-items-stretch">

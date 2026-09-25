@@ -109,8 +109,14 @@ const getParagraphText = (htmlString) => {
                 style={{ fontSize: '1rem', boxShadow: 'none' }}
               />
             </InputGroup>
+
+            <p className='text-justify'>
+            Do you want to bring a loving, compact friend home? Look up healthy, responsible, and registered Chihuahua puppies in South India locations like Chennai, Bangalore, Hyderabad, Coimbatore, and Kochi. The dog is ideal for an apartment setting and is alert and loyal, easily adjusting to city life in the south within a compact package that hides a lot of personality. Find active local ads that include information on initial vaccinations, deworming and KCI registration.
+          </p>
           </Col>
         </Row>
+
+        
 
         {/* City Grid Cards */}
         <Row className="g-4">

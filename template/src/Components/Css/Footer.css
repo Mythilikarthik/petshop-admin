@@ -43,3 +43,8 @@
   border-top: 1px solid #374151;
   padding: 30px 0;
 }
+.footer .footer-view-more {
+  color: #ff4e00 !important;
+  text-decoration: underline !important;
+  text-align: center !important;
+}

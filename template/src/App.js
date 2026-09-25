@@ -49,6 +49,7 @@ import GoldenRetrieverPuppies from './Pages/GoldenRetrieverPuppies';
 import GoldenRetrieverPuppiesDirectory from './Pages/GoldenRetrieverPuppiesDirectory';
 import ChihuahuaPuppies from './Pages/ChihuahuaPuppies';
 import ChihuahuaPuppiesDirectory from './Pages/ChihuahuaPuppiesDirectory';
+import FooterDirectoryCategory from './Pages/FooterDirectoryCategory';
 
 const API_BASE =
   process.env.NODE_ENV === "production"
@@ -211,6 +212,7 @@ function AppContent() {
         <Route path='/golden-retriever-puppies-for-sale' element={<GoldenRetrieverPuppiesDirectory />} />
         <Route path='/chihuahua-puppies-for-sale/:areaName' element={<ChihuahuaPuppies />} />
         <Route path='/chihuahua-puppies-for-sale' element={<ChihuahuaPuppiesDirectory />} />
+        <Route path='/directory-categories' element={<FooterDirectoryCategory />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />
       <a 
