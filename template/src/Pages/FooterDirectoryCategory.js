@@ -30,6 +30,9 @@ export default function FooterDirectoryCategory() {
   }, {
       categoryName: "Chihuahua Puppies for Sale",
       categorySlug: "chihuahua-puppies-for-sale"
+  }, {
+      categoryName: "German Shepherd Puppies for Sale",
+      categorySlug: "german-shepherd-puppies-for-sale"
   }];
 
   // Filter categories by search term

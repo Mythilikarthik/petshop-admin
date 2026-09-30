@@ -138,6 +138,10 @@ body {
   max-width: 100%;
   height: auto;
 }
+
+.excel-content {
+  text-align: justify;
+}
 /* Optional: Smooth fade-in animation */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
