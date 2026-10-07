@@ -33,6 +33,9 @@ export default function FooterDirectoryCategory() {
   }, {
       categoryName: "German Shepherd Puppies for Sale",
       categorySlug: "german-shepherd-puppies-for-sale"
+  }, {
+      categoryName: "Labrador Puppies for Sale",
+      categorySlug: "labrador-puppies-for-sale"
   }];
 
   // Filter categories by search term

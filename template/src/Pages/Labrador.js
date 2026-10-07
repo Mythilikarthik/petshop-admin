@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Badge, Spinner, Breadcrumb } from 'react-bootstrap';
-import excelFile from '../assets/german-shepherd.xlsx';
+import excelFile from '../assets/labrador.xlsx';
 import { Helmet } from 'react-helmet-async';
 
-export default function GermanShepherdPuppies() {
+export default function LabradorPuppies() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,7 +70,7 @@ export default function GermanShepherdPuppies() {
       <Container className="py-5 text-center">
         <Card className="p-5 border-0 shadow-sm rounded-4">
           <h2 className="fw-bold text-dark">Area Not Found</h2>
-          <p className="mb-0">We couldn't find any german shepherd puppies data for "{areaName}".</p>
+          <p className="mb-0">We couldn't find any labrador puppies data for "{areaName}".</p>
         </Card>
       </Container>
     );
@@ -179,19 +179,54 @@ const renderSlashFix = (htmlString) => {
   return { __html: cleanedString };
 };
 
+
+// --- Smart Region-Matched Random Nearby Cities Generator (Returns Objects) ---
+  const getRandomNearbyCities = () => {
+    if (!data || data.length === 0 || !currentAreaData?.Areas) return [];
+
+    const getRegion = (str) => {
+      if (!str) return '';
+      const parts = str.split(',');
+      return parts.length > 1 ? parts[parts.length - 1].trim().toLowerCase() : str.trim().toLowerCase();
+    };
+
+    const currentRegion = getRegion(currentAreaData.Areas);
+
+    let filtered = data.filter((row) => {
+      if (!row.Areas) return false;
+      const isSameRegion = getRegion(row.Areas) === currentRegion;
+      const isNotCurrent = createSlug(row.Areas) !== createSlug(area);
+      return isSameRegion && isNotCurrent;
+    });
+
+    if (filtered.length < 4) {
+      const otherCities = data.filter((row) => row.Areas && createSlug(row.Areas) !== createSlug(area));
+      filtered = [...filtered, ...otherCities.filter(c => !filtered.includes(c))];
+    }
+
+    const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 4);
+
+    // Map to objects containing name and slug
+    return selected.map((item) => ({
+      name: item.Areas,
+      slug: createSlug(item.Areas),
+    }));
+  };
+
   return (
     <>
     {/* {console.log(currentAreaData?.Meta_title)} */}
     <Helmet>
       <title>
         {currentAreaData?.title ||
-          "German Shepherd puppies"}
+          "Labrador puppies"}
       </title>
       <meta
         name="description"
         content={
           currentAreaData?.['meta desc'] ||
-          "German Shepherd puppies"
+          "Labrador puppies"
         }
       />
     </Helmet>
@@ -366,8 +401,8 @@ const renderSlashFix = (htmlString) => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: '/' }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: '/german-shepherd-puppies-for-sale' }}>
-                German Shepherd Puppies For Sale
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: '/labrador-puppies-for-sale' }}>
+                Labrador Puppies For Sale
               </Breadcrumb.Item>
               <Breadcrumb.Item active className='text-capitalize'>
                 {currentAreaData.Areas || areaName}
@@ -414,7 +449,7 @@ const renderSlashFix = (htmlString) => {
             </Col>
           )} */}
           {currentAreaData['breeders list'] && (
-            <Col md={6} className="d-flex align-items-stretch">
+            <Col md={12} className="d-flex align-items-stretch">
               <Card className="custom-card w-100 p-4">
 
                 <Card.Body className="excel-content p-0">
@@ -438,10 +473,10 @@ const renderSlashFix = (htmlString) => {
             </Col>
           )} */}
           {currentAreaData['Pricing & Commercial Data'] && (
-  <Col md={6} className="d-flex align-items-stretch">
+  <Col md={12} className="d-flex align-items-stretch">
     <Card className="custom-card w-100 p-4">
       <Card.Body className="excel-content p-0">
-        <h2 className="mb-3">Pricing & Commercial Data</h2>
+        {/* <h2 className="mb-3">Pricing & Commercial Data</h2> */}
         <div 
           
           dangerouslySetInnerHTML={renderSlashFix(currentAreaData['Pricing & Commercial Data'])}
@@ -452,13 +487,13 @@ const renderSlashFix = (htmlString) => {
 )}
 
           {currentAreaData['Health, Lineage & Legal Compliance'] && (
-            <Col md={6} className="d-flex align-items-stretch">
+            <Col md={12} className="d-flex align-items-stretch">
                 <Card className="custom-card w-100 p-4">
                 <Card.Body 
                     className="excel-content p-0"
                     
                 >
-                    <h2 className="mb-3">Health, Lineage & Legal Compliance</h2>
+                    {/* <h2 className="mb-3">Health, Lineage & Legal Compliance</h2> */}
                     <div 
                     dangerouslySetInnerHTML={renderSlashFix(currentAreaData['Health, Lineage & Legal Compliance'])}
                     />
@@ -468,13 +503,13 @@ const renderSlashFix = (htmlString) => {
             )}
 
           {currentAreaData['Care guide & Maintenance Costs'] && (
-            <Col md={6} className="d-flex align-items-stretch">
+            <Col md={12} className="d-flex align-items-stretch">
               <Card className="custom-card w-100 p-4">
                 <Card.Body 
                   className="excel-content p-0"
                   
                 >
-                    <h2 className="mb-3">Care guide & Maintenance Costs</h2>
+                    {/* <h2 className="mb-3">Care guide & Maintenance Costs</h2> */}
                     <div 
                     dangerouslySetInnerHTML={{ __html: currentAreaData['Care guide & Maintenance Costs'] }}
                     />
@@ -562,6 +597,25 @@ const renderSlashFix = (htmlString) => {
     </Card>
   </Col>
 )}
+
+{/* --- Nearby Cities Links Footer --- */}
+          <Col md={12}>
+            <div className="p-3 text-muted text-center" style={{ backgroundColor: '#efefef', fontSize: '0.95rem', borderTop: '1px solid #eee', marginTop: '20px' }}>
+              Nearby cities:{' '}
+              {getRandomNearbyCities().map((city, index, arr) => (
+                <React.Fragment key={city.slug}>
+                  <Link 
+                    to={`/labrador-puppies-for-sale/${city.slug}`} 
+                    className="text-decoration-none text-muted fw-semibold  text-capitalize"
+                    style={{ transition: 'color 0.2s' }}
+                  >
+                    {city.name}
+                  </Link>
+                  {index < arr.length - 1 && ' | '}
+                </React.Fragment>
+              ))}
+            </div>
+          </Col>
         </Row>
       </Container>
     </div>
