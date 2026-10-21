@@ -1871,7 +1871,12 @@ middleHomeAds.length > 0 &&
         className="details-btn mt-auto"
         // onClick={() => navigate(`/listing/${listing._id}`)} 
         
-        onClick = {() => navigate(`/listings/${listing.slug}`)}
+        //onClick = {() => navigate(`/listings/${listing.slug}`)}
+        onClick={() => {
+          // Pass the active selectedCategory (or "All Categories" if empty/all)
+          const categoryParam = selectedCategory ? selectedCategory : "All Categories";
+          navigate(`/listings/${listing.slug}?ref_category=${encodeURIComponent(categoryParam)}`);
+        }}
       >
         View Details
       </Button>

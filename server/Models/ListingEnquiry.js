@@ -13,6 +13,7 @@ const ListingEnquirySchema = new mongoose.Schema({
     enum: ["phone_view", "whatsapp", "email", "url_view"],
     required: true,
   },
+  filtered_category: { type: String, default: "" },
   ip: String,
   isSeen: {
     type: Boolean,

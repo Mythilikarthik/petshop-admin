@@ -1153,7 +1153,7 @@
 // export default ListingDetailPage;
 
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { 
   FaStar, FaWhatsapp, FaFacebook, FaInstagram, FaTwitter, FaMapMarkerAlt, 
   FaShieldAlt, FaEnvelope, FaClock, FaTags, FaAngleLeft, 
@@ -1503,6 +1503,9 @@ const STYLES = `
 `;
 
 const ListingDetailPage = () => {
+  const location = new useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const trackedCategory = queryParams.get("ref_category") || "";
   // const AMENITY_ICONS = {
   //   "Parking": <FaCar />,
   //   "Air Conditioning": <FaSnowflake />,
@@ -1819,6 +1822,7 @@ const handleSaveListing = async () => {
         userName: user.name,
         userEmail: user.email,
         action: "phone_view",
+        filtered_category: trackedCategory,
       }),
     });
     setShowPhone(true);
@@ -1839,6 +1843,7 @@ const handleSaveListing = async () => {
         userName: user.name,
         userEmail: user.email,
         action: "url_view",
+        filtered_category: trackedCategory,
       }),
     });
     setShowUrl(true);

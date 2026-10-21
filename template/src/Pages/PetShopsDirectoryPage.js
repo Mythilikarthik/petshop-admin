@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/pet-shop.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetShopsDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -52,6 +53,18 @@ export default function PetShopsDirectoryPage() {
   }
 
   return (
+    <>
+    <Helmet>
+          
+          <meta
+            name="description"
+            content="Find pet shops near you across India offering pet food, treats, toys, accessories, aquarium supplies, and essential products for dogs, cats, birds, fish, and small pets."
+          />
+          <meta
+            name="keywords"
+            content="pet shops, pet shops near me, pet stores near me, pet shop near me, pet stores, pet supplies, pet food shops, pet accessories, dog food shops, cat food shops, dog supplies, cat supplies, bird supplies, fish aquarium shops, aquarium shops near me, pet products, pet care products, pet food and accessories, local pet shops, best pet shops, pet shops in India, pet stores in India, pet supplies near me, pet food near me, dog accessories, cat accessories, bird food, fish food, pet shop directory, pet care stores"
+          />
+        </Helmet>
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -142,5 +155,6 @@ export default function PetShopsDirectoryPage() {
         </Row>
       </Container>
     </div>
+    </>
   );
 }

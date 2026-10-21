@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/pet-grooming-south-india.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetGroomingDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -59,6 +60,19 @@ const getParagraphText = (htmlString) => {
 };
 
   return (
+    <>
+    <Helmet>
+          
+          <meta
+            name="description"
+            content="Find pet grooming services across South India for dogs and cats. Compare groomers, salons, mobile grooming, grooming packages, prices, and local pet care providers."
+          />
+          <meta
+            name="keywords"
+            content="pet grooming South India, pet grooming services South India, pet groomers South India, pet grooming near me, pet grooming services near me, dog grooming South India, cat grooming South India, dog groomers near me, cat groomers near me, pet grooming salons South India, pet salon South India, mobile pet grooming South India, at home pet grooming, dog grooming services, cat grooming services, professional pet grooming, pet grooming prices, pet grooming packages, pet spa South India, dog bath and grooming, cat grooming salon, pet grooming India, pet care services South India, pet groomers in Tamil Nadu, pet groomers in Kerala, pet groomers in Karnataka, pet groomers in Andhra Pradesh, pet groomers in Telangana."
+          />
+        </Helmet>
+    
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -160,5 +174,6 @@ const getParagraphText = (htmlString) => {
         </Row>
       </Container>
     </div>
+    </>
   );
 }

@@ -53,6 +53,8 @@ import GermanShepherd from './Pages/GermanShepherd';
 import GermanShepherdDirectory from './Pages/GermanShepherdDirectory';
 import Labrador from './Pages/Labrador';
 import LabradorDirectory from './Pages/LabradorDirectory';
+import PetInsuranceInIndia from './Pages/PetInsuranceInIndia';
+import PetInsuranceInIndiaDirectory from './Pages/PetInsuranceInIndiaDirectory';
 import FooterDirectoryCategory from './Pages/FooterDirectoryCategory';
 
 
@@ -222,6 +224,8 @@ function AppContent() {
         <Route path='/german-shepherd-puppies-for-sale' element={<GermanShepherdDirectory />} />
         <Route path='/labrador-puppies-for-sale/:areaName' element={<Labrador />} />
         <Route path='/labrador-puppies-for-sale' element={<LabradorDirectory />} />
+        <Route path='/pet-insurance-in-india/:categories' element={<PetInsuranceInIndia />} />
+        <Route path='/pet-insurance-in-india' element={<PetInsuranceInIndiaDirectory />} />
         <Route path='/directory-categories' element={<FooterDirectoryCategory />} />
       </Routes>        
       <Footer home={home} categoryPage={categoryPage} />

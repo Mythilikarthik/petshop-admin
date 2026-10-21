@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/content.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetGroomingDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -52,6 +53,19 @@ export default function PetGroomingDirectoryPage() {
   }
 
   return (
+    <>
+    <Helmet>
+      
+      <meta
+        name="description"
+        content="Find trusted pet grooming services near you for dogs and cats. Compare groomers, grooming services, prices, and convenient options across India."
+      />
+      <meta
+        name="keywords"
+        content="pet grooming, pet grooming services, pet grooming near me, dog grooming, dog grooming services, cat grooming, cat grooming services, pet groomers near me, dog groomers near me, cat groomers near me, professional pet grooming, pet salon, pet spa, mobile pet grooming, at home pet grooming, pet grooming prices, pet grooming services India, best pet groomers, pet care services, pet grooming directory"
+      />
+    </Helmet>
+    
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -142,5 +156,6 @@ export default function PetGroomingDirectoryPage() {
         </Row>
       </Container>
     </div>
+    </>
   );
 }

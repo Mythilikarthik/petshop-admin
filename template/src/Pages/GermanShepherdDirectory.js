@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/german-shepherd.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function GermanShepherdPuppiesDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -59,6 +60,18 @@ const getParagraphText = (htmlString) => {
 };
 
   return (
+    <>
+    <Helmet>
+          
+          <meta
+            name="description"
+            content="Find German Shepherd puppies for sale in India. Explore puppy listings, prices, breeders, care information, and tips for choosing a healthy German Shepherd puppy."
+          />
+          <meta
+            name="keywords"
+            content="German Shepherd puppies for sale, German Shepherd puppy for sale, German Shepherd puppies India, German Shepherd puppy price India, German Shepherd price in India, German Shepherd dogs for sale, German Shepherd breeders India, German Shepherd breeders near me, German Shepherd puppies near me, buy German Shepherd puppy, German Shepherd puppy listings, German Shepherd dog price, German Shepherd puppy sellers, German Shepherd puppy adoption, German Shepherd puppy care, healthy German Shepherd puppies, German Shepherd pet India, German Shepherd puppies Chennai, German Shepherd puppies Bangalore"
+          />
+        </Helmet>
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -162,5 +175,6 @@ const getParagraphText = (htmlString) => {
         </Row>
       </Container>
     </div>
+    </>
   );
 }

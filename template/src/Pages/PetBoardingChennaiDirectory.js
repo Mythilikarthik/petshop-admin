@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/pet-boarding-chennai.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetBoardingDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -52,6 +53,18 @@ export default function PetBoardingDirectoryPage() {
   }
 
   return (
+    <>
+    <Helmet>
+          
+          <meta
+            name="description"
+            content="Find trusted pet boarding in Chennai for dogs and cats. Compare pet boarding facilities, prices, amenities, daycare, overnight stays, and local pet care providers."
+          />
+          <meta
+            name="keywords"
+            content="pet boarding Chennai, pet boarding in Chennai, pet boarding services Chennai, pet boarding near me, dog boarding Chennai, cat boarding Chennai, dog boarding near me, cat boarding near me, pet hotels Chennai, pet hostel Chennai, pet daycare Chennai, dog daycare Chennai, cat daycare Chennai, overnight pet boarding Chennai, pet boarding facilities Chennai, pet boarding prices Chennai, affordable pet boarding Chennai, professional pet boarding Chennai, pet care services Chennai, pet accommodation Chennai, dog care Chennai, cat care Chennai, pet boarding Tamil Nadu, best pet boarding Chennai, pet boarding services near me, pet care directory Chennai"
+          />
+        </Helmet>
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -142,5 +155,6 @@ export default function PetBoardingDirectoryPage() {
         </Row>
       </Container>
     </div>
+    </>
   );
 }

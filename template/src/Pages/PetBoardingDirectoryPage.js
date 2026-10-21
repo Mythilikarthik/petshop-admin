@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/pet-boarding.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetBoardingDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -52,6 +53,19 @@ export default function PetBoardingDirectoryPage() {
   }
 
   return (
+    <>
+      <Helmet>
+          
+          <meta
+            name="description"
+            content="Find trusted pet boarding services across India for dogs and cats. Compare pet boarding facilities, prices, amenities, care options, and local providers."
+          />
+          <meta
+            name="keywords"
+            content="pet boarding, pet boarding services, pet boarding near me, dog boarding, dog boarding services, cat boarding, cat boarding services, pet boarding facilities, pet boarding prices, pet hotels, pet hostels, dog boarding near me, cat boarding near me, pet daycare, dog daycare, cat daycare, overnight pet boarding, pet care services, pet boarding India, pet boarding facilities India, professional pet boarding, pet accommodation, pet care directory, trusted pet boarding services"
+          />
+        </Helmet>
+    
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -142,5 +156,6 @@ export default function PetBoardingDirectoryPage() {
         </Row>
       </Container>
     </div>
+    </>
   );
 }

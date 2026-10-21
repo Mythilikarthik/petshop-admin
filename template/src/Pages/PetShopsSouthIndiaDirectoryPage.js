@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/pet-shops-south-india.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetShopsDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -52,6 +53,19 @@ export default function PetShopsDirectoryPage() {
   }
 
   return (
+    <>
+    <Helmet>
+          
+          <meta
+            name="description"
+            content="Find pet shops across South India offering pet food, accessories, toys, grooming products, aquarium supplies, and essential products for dogs, cats, birds, and fish."
+          />
+          <meta
+            name="keywords"
+            content="pet shops South India, pet shops in South India, pet stores South India, pet shops near me, pet stores near me, pet supplies South India, pet food shops South India, pet accessories South India, dog food shops South India, cat food shops South India, dog accessories, cat accessories, bird supplies, aquarium shops South India, fish food shops, pet products South India, pet care stores South India, pet food near me, pet supplies near me, local pet shops, pet shops India, pet stores India, pet food and accessories, pet care products, pet shop directory, pet shops in Tamil Nadu, pet shops in Kerala, pet shops in Karnataka, pet shops in Andhra Pradesh, pet shops in Telangana."
+          />
+        </Helmet>
+    
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -142,5 +156,6 @@ export default function PetShopsDirectoryPage() {
         </Row>
       </Container>
     </div>
+    </>
   );
 }

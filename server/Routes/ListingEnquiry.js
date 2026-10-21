@@ -77,7 +77,7 @@ const mongoose = require("mongoose");
 
 router.post("/", async (req, res) => {
   try {
-    const { listingId, userName, userEmail, action } = req.body;
+    const { listingId, userName, userEmail, action, filtered_category } = req.body;
 
     if (!listingId || !userName || !userEmail) {
       return res.status(400).json({
@@ -128,6 +128,7 @@ router.post("/", async (req, res) => {
       userName,
       userEmail,
       action: enquiryAction,
+      filtered_category: filtered_category || "",
       ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
     });
 
@@ -150,7 +151,7 @@ router.post("/", async (req, res) => {
 });
 router.post("/url", async (req, res) => {
   try {
-    const { listingId, userName, userEmail, action } = req.body;
+    const { listingId, userName, userEmail, action, filtered_category } = req.body;
 
     if (!listingId || !userName || !userEmail) {
       return res.status(400).json({
@@ -184,6 +185,7 @@ router.post("/url", async (req, res) => {
       listingId,
       userEmail,
       action: enquiryAction,
+      filtered_category: filtered_category || "",
       createdAt: { $gte: last24Hours },
     });
 

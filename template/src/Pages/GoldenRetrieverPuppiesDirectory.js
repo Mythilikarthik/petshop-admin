@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/golden-retriever.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function GoldenRetrieverPuppiesDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -59,6 +60,18 @@ const getParagraphText = (htmlString) => {
 };
 
   return (
+    <>
+    <Helmet>
+          
+          <meta
+            name="description"
+            content="Find Golden Retriever puppies for sale in India. Explore puppy listings, breeders, prices, care information, and tips for choosing a healthy Golden Retriever puppy."
+          />
+          <meta
+            name="keywords"
+            content="golden retriever puppies for sale, golden retriever puppies, golden retriever puppy for sale, golden retriever puppies India, golden retriever for sale, golden retriever price India, golden retriever puppy price, golden retriever breeders India, golden retriever breeders near me, golden retriever puppies near me, buy golden retriever puppy, golden retriever puppy listings, golden retriever dogs for sale, golden retriever puppy adoption, golden retriever puppy care, healthy golden retriever puppies, golden retriever puppy sellers, golden retriever dog price, golden retriever pet India, golden retriever puppies Chennai, golden retriever puppies Bangalore, golden retriever puppies Hyderabad"
+          />
+        </Helmet>
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -160,5 +173,7 @@ const getParagraphText = (htmlString) => {
         </Row>
       </Container>
     </div>
+
+    </>
   );
 }

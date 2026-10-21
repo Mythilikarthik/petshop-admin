@@ -766,6 +766,7 @@ const handleSort = (field) => {
                 <p><strong>Email:</strong> {enq.userEmail || "N/A"}</p>
                 <p><strong>Action:</strong> {enq.action}</p>
                 <p><strong>IP:</strong> {enq.ip}</p>
+                <p><strong>Filtered Category:</strong> {enq.filtered_category || "--"}</p>
                 <p><strong>Date:</strong> {new Date(enq.createdAt).toLocaleString()}</p>
               </div>
             ))}

@@ -36,6 +36,9 @@ export default function FooterDirectoryCategory() {
   }, {
       categoryName: "Labrador Puppies for Sale",
       categorySlug: "labrador-puppies-for-sale"
+  }, {
+      categoryName: "Pet Insurance in India",
+      categorySlug: "pet-insurance-in-india"
   }];
 
   // Filter categories by search term

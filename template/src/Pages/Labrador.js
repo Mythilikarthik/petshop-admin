@@ -599,9 +599,9 @@ const renderSlashFix = (htmlString) => {
 )}
 
 {/* --- Nearby Cities Links Footer --- */}
-          <Col md={12}>
+          {/* <Col md={12}>
             <div className="p-3 text-muted text-center" style={{ backgroundColor: '#efefef', fontSize: '0.95rem', borderTop: '1px solid #eee', marginTop: '20px' }}>
-              Nearby cities:{' '}
+              Nearby Areas:{' '}
               {getRandomNearbyCities().map((city, index, arr) => (
                 <React.Fragment key={city.slug}>
                   <Link 
@@ -614,6 +614,30 @@ const renderSlashFix = (htmlString) => {
                   {index < arr.length - 1 && ' | '}
                 </React.Fragment>
               ))}
+            </div>
+          </Col> */}
+
+          {/* --- Nearby Areas Links Footer --- */}
+          <Col md={12}>
+            <div className="p-3 text-muted text-center" style={{ backgroundColor: '#efefef', fontSize: '0.95rem', borderTop: '1px solid #eee', marginTop: '20px' }}>
+              Nearby Areas:{' '}
+              {getRandomNearbyCities().map((city, index, arr) => {
+                // Extract only the part before the comma (e.g., "Shivaji Nagar" from "Shivaji Nagar, Bangalore")
+                const displayName = city.name.split(',')[0].trim();
+
+                return (
+                  <React.Fragment key={city.slug}>
+                    <Link 
+                      to={`/labrador-puppies-for-sale/${city.slug}`} 
+                      className="text-decoration-none text-muted fw-semibold text-capitalize"
+                      style={{ transition: 'color 0.2s' }}
+                    >
+                      {displayName}
+                    </Link>
+                    {index < arr.length - 1 && ' | '}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </Col>
         </Row>

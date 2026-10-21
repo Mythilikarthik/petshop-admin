@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/chihuahua.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function ChihuahuaPuppiesDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -59,6 +60,18 @@ const getParagraphText = (htmlString) => {
 };
 
   return (
+    <>
+    <Helmet>
+          
+          <meta
+            name="description"
+            content="Find Chihuahua puppies for sale in India. Explore Chihuahua puppy listings, prices, breeders, care information, and tips for choosing a healthy puppy."
+          />
+          <meta
+            name="keywords"
+            content="Chihuahua puppies for sale, Chihuahua puppy for sale, Chihuahua puppies India, Chihuahua puppy price India, Chihuahua price in India, Chihuahua dogs for sale, Chihuahua breeders India, Chihuahua breeders near me, Chihuahua puppies near me, buy Chihuahua puppy, Chihuahua puppy listings, Chihuahua dog price, Chihuahua puppy sellers, Chihuahua puppy adoption, Chihuahua puppy care, healthy Chihuahua puppies, Chihuahua pet India, Chihuahua puppies Chennai, Chihuahua puppies Bangalore, Chihuahua puppies Hyderabad, Chihuahua puppies Mumbai, Chihuahua puppies Delhi, Chihuahua puppies Pune, Chihuahua dog breeders, Chihuahua puppies for sale India."
+          />
+        </Helmet>
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -166,5 +179,6 @@ const getParagraphText = (htmlString) => {
         </Row>
       </Container>
     </div>
+    </>
   );
 }

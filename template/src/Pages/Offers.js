@@ -1622,7 +1622,7 @@ const Offers = () => {
                               )}
                             </div>
                             
-                            <div className="d-flex gap-3 px-3 py-2 rounded mb-3 border bg-light" style={{ fontSize: '12px', fontWeight: 500, color: '#64748b' }}>
+                            {/* <div className="d-flex gap-3 px-3 py-2 rounded mb-3 border bg-light" style={{ fontSize: '12px', fontWeight: 500, color: '#64748b' }}>
                               <span className="d-flex align-items-center gap-1">
                                 <BiShow size={14} /> 
                                 {post.analytics?.viewedByIPs ? post.analytics.viewedByIPs.length : (post.analytics?.views || 0)} View(s)
@@ -1635,7 +1635,7 @@ const Offers = () => {
                                 <BiShareAlt size={14} style={{ color: '#0284c7' }} /> 
                                 {(post.analytics?.clicks?.share?.length || 0)} Share(s)
                               </span>
-                            </div>
+                            </div> */}
 
                             <div onClick={(e) => e.stopPropagation()}>
                               <ButtonGroup className="w-100 gap-2">
