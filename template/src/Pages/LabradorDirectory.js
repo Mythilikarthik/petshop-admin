@@ -4,6 +4,8 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/labrador.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
+
 
 export default function LabradorPuppiesDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -59,6 +61,18 @@ const getParagraphText = (htmlString) => {
 };
 
   return (
+    <>
+    <Helmet>
+          
+          <meta
+            name="description"
+            content="Find Labrador puppies for sale near you and explore healthy Labrador Retriever puppies, trusted breeders, adoption options, prices, and tips for choosing the right puppy for your family."
+          />
+          <meta
+            name="keywords"
+            content="Labrador puppies for sale near you, Labrador puppies for sale, Labrador Retriever puppies, Labrador puppies near me, Labrador puppy price, buy Labrador puppy, Labrador breeders near me, Labrador puppies in India, healthy Labrador puppies, Labrador puppy adoption, Labrador puppy care, best Labrador puppies for families"
+          />
+        </Helmet>
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -162,5 +176,6 @@ const getParagraphText = (htmlString) => {
         </Row>
       </Container>
     </div>
+    </>
   );
 }

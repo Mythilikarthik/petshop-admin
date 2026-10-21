@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { Container, Row, Col, Card, Spinner, Form, InputGroup } from 'react-bootstrap';
 import excelFile from '../assets/pet-insurance.xlsx';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
+import { Helmet } from 'react-helmet-async';
 
 export default function PetInsuranceInIndiaDirectoryPage() {
   const [cities, setCities] = useState([]);
@@ -59,6 +60,18 @@ const getParagraphText = (htmlString) => {
 };
 
   return (
+    <>
+    <Helmet>
+          
+          <meta
+            name="description"
+            content="Find pet insurance near you and compare coverage options, premiums, veterinary expenses, accident protection, illness coverage, and plans to help manage your pet’s healthcare costs."
+          />
+          <meta
+            name="keywords"
+            content="pet insurance near you, pet insurance near me, pet insurance in India, dog insurance plans, cat insurance plans, pet health insurance, veterinary expense coverage, pet insurance premiums, dog medical insurance, cat health insurance, pet accident coverage, affordable pet insurance, best pet insurance plans in India"
+          />
+        </Helmet>
     <div style={{ backgroundColor: '#fdfbfb', minHeight: '100vh', padding: '40px 0' }}>
       <style>{`
         .city-card {
@@ -162,5 +175,6 @@ const getParagraphText = (htmlString) => {
         </Row>
       </Container>
     </div>
+    </>
   );
 }
